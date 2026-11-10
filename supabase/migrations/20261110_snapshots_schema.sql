@@ -22,19 +22,23 @@ CREATE TABLE IF NOT EXISTS public.project_snapshots (
 ALTER TABLE public.project_snapshots ENABLE ROW LEVEL SECURITY;
 
 -- Politiques RLS granulaires : chaque utilisateur n'accède qu'à ses propres instantanés
+DROP POLICY IF EXISTS "project_snapshots_select_own" ON public.project_snapshots;
 CREATE POLICY "project_snapshots_select_own"
   ON public.project_snapshots FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "project_snapshots_insert_own" ON public.project_snapshots;
 CREATE POLICY "project_snapshots_insert_own"
   ON public.project_snapshots FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "project_snapshots_update_own" ON public.project_snapshots;
 CREATE POLICY "project_snapshots_update_own"
   ON public.project_snapshots FOR UPDATE
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "project_snapshots_delete_own" ON public.project_snapshots;
 CREATE POLICY "project_snapshots_delete_own"
   ON public.project_snapshots FOR DELETE
   USING (auth.uid() = user_id);

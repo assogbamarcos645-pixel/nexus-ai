@@ -29,19 +29,23 @@ CREATE TABLE IF NOT EXISTS public.user_preferences (
 
 ALTER TABLE public.user_preferences ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "user_preferences_select_own" ON public.user_preferences;
 CREATE POLICY "user_preferences_select_own"
   ON public.user_preferences FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "user_preferences_insert_own" ON public.user_preferences;
 CREATE POLICY "user_preferences_insert_own"
   ON public.user_preferences FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "user_preferences_update_own" ON public.user_preferences;
 CREATE POLICY "user_preferences_update_own"
   ON public.user_preferences FOR UPDATE
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "user_preferences_delete_own" ON public.user_preferences;
 CREATE POLICY "user_preferences_delete_own"
   ON public.user_preferences FOR DELETE
   USING (auth.uid() = user_id);
@@ -58,19 +62,23 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "profiles_select_own" ON public.profiles;
 CREATE POLICY "profiles_select_own"
   ON public.profiles FOR SELECT
   USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "profiles_insert_own" ON public.profiles;
 CREATE POLICY "profiles_insert_own"
   ON public.profiles FOR INSERT
   WITH CHECK (auth.uid() = id);
 
+DROP POLICY IF EXISTS "profiles_update_own" ON public.profiles;
 CREATE POLICY "profiles_update_own"
   ON public.profiles FOR UPDATE
   USING (auth.uid() = id)
   WITH CHECK (auth.uid() = id);
 
+DROP POLICY IF EXISTS "profiles_delete_own" ON public.profiles;
 CREATE POLICY "profiles_delete_own"
   ON public.profiles FOR DELETE
   USING (auth.uid() = id);
@@ -113,19 +121,23 @@ CREATE TABLE IF NOT EXISTS public.conversations (
 
 ALTER TABLE public.conversations ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "conversations_select_own" ON public.conversations;
 CREATE POLICY "conversations_select_own"
   ON public.conversations FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "conversations_insert_own" ON public.conversations;
 CREATE POLICY "conversations_insert_own"
   ON public.conversations FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "conversations_update_own" ON public.conversations;
 CREATE POLICY "conversations_update_own"
   ON public.conversations FOR UPDATE
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "conversations_delete_own" ON public.conversations;
 CREATE POLICY "conversations_delete_own"
   ON public.conversations FOR DELETE
   USING (auth.uid() = user_id);
@@ -146,19 +158,23 @@ CREATE TABLE IF NOT EXISTS public.messages (
 
 ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "messages_select_own" ON public.messages;
 CREATE POLICY "messages_select_own"
   ON public.messages FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "messages_insert_own" ON public.messages;
 CREATE POLICY "messages_insert_own"
   ON public.messages FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "messages_update_own" ON public.messages;
 CREATE POLICY "messages_update_own"
   ON public.messages FOR UPDATE
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "messages_delete_own" ON public.messages;
 CREATE POLICY "messages_delete_own"
   ON public.messages FOR DELETE
   USING (auth.uid() = user_id);
@@ -181,19 +197,23 @@ CREATE TABLE IF NOT EXISTS public.memories (
 
 ALTER TABLE public.memories ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "memories_select_own" ON public.memories;
 CREATE POLICY "memories_select_own"
   ON public.memories FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "memories_insert_own" ON public.memories;
 CREATE POLICY "memories_insert_own"
   ON public.memories FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "memories_update_own" ON public.memories;
 CREATE POLICY "memories_update_own"
   ON public.memories FOR UPDATE
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "memories_delete_own" ON public.memories;
 CREATE POLICY "memories_delete_own"
   ON public.memories FOR DELETE
   USING (auth.uid() = user_id);
@@ -215,19 +235,23 @@ CREATE TABLE IF NOT EXISTS public.projects (
 
 ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "projects_select_own" ON public.projects;
 CREATE POLICY "projects_select_own"
   ON public.projects FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "projects_insert_own" ON public.projects;
 CREATE POLICY "projects_insert_own"
   ON public.projects FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "projects_update_own" ON public.projects;
 CREATE POLICY "projects_update_own"
   ON public.projects FOR UPDATE
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "projects_delete_own" ON public.projects;
 CREATE POLICY "projects_delete_own"
   ON public.projects FOR DELETE
   USING (auth.uid() = user_id);
@@ -250,19 +274,23 @@ CREATE TABLE IF NOT EXISTS public.project_files (
 
 ALTER TABLE public.project_files ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "project_files_select_own" ON public.project_files;
 CREATE POLICY "project_files_select_own"
   ON public.project_files FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "project_files_insert_own" ON public.project_files;
 CREATE POLICY "project_files_insert_own"
   ON public.project_files FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "project_files_update_own" ON public.project_files;
 CREATE POLICY "project_files_update_own"
   ON public.project_files FOR UPDATE
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "project_files_delete_own" ON public.project_files;
 CREATE POLICY "project_files_delete_own"
   ON public.project_files FOR DELETE
   USING (auth.uid() = user_id);
