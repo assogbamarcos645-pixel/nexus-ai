@@ -428,6 +428,13 @@ async function realChat(
     const durationMs = Math.round(performance.now() - startTime);
 
     if (!response.ok) {
+      if (response.status === 404) {
+        console.warn(
+          '[NEXUS AI] Endpoint /api/chat introuvable (404). Bascule transparente vers le moteur local simulé.',
+        );
+        return mockChat(request, signal);
+      }
+
       let rawError = `Erreur HTTP ${response.status}`;
       try {
         const errorJson = await response.json();
@@ -481,6 +488,13 @@ async function realChat(
   } catch (err: unknown) {
     if (err instanceof DOMException && err.name === 'AbortError') {
       throw err;
+    }
+
+    if (err instanceof TypeError && err.message.toLowerCase().includes('fetch')) {
+      console.warn(
+        '[NEXUS AI] Serveur proxy injoignable. Bascule transparente vers le moteur local simulé.',
+      );
+      return mockChat(request, signal);
     }
 
     const durationMs = Math.round(performance.now() - startTime);

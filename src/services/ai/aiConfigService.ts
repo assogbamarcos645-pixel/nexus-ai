@@ -78,25 +78,6 @@ export function getAIConfig(): AIControlCenterConfig {
 
     const parsed = JSON.parse(raw);
 
-    // Migration automatique : si l'utilisateur utilisait l'ancien mode démonstration simulé,
-    // on le bascule automatiquement sur le modèle par défaut configuré (Google Gemini)
-    if (parsed.activeProviderId === 'demo' || parsed.settings?.isDemoMode === true) {
-      const migratedSettings = sanitizeAdvancedSettings(parsed.settings);
-      migratedSettings.isDemoMode = false;
-      const migratedConfig: AIControlCenterConfig = {
-        activeProviderId: DEFAULT_PROVIDER_ID,
-        activeModelId: DEFAULT_MODEL_ID,
-        settings: migratedSettings,
-        lastTestResult: parsed.lastTestResult,
-      };
-      try {
-        localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(migratedConfig));
-      } catch {
-        // Ignorer si localStorage est en lecture seule
-      }
-      return migratedConfig;
-    }
-
     // Migration automatique des anciens modèles Gemini vers gemini-2.5-flash
     if (
       parsed.activeModelId === 'gemini-3.8-flash' ||
@@ -281,11 +262,16 @@ export async function testProviderConnection(
     }
 
     let errorMessage = `Erreur HTTP ${response.status}`;
-    try {
-      const errorJson = await response.json();
-      if (errorJson.message) errorMessage = errorJson.message;
-    } catch {
-      // Ignorer si la réponse n'est pas du JSON
+    if (response.status === 404) {
+      errorMessage =
+        'Serveur proxy injoignable sur cette URL (Erreur HTTP 404). Pour tester sans serveur backend, basculez en Mode Démonstration dans le Centre de Contrôle.';
+    } else {
+      try {
+        const errorJson = await response.json();
+        if (errorJson.message) errorMessage = errorJson.message;
+      } catch {
+        // Ignorer si la réponse n'est pas du JSON
+      }
     }
 
     const failureResult: ConnectionTestResult = {

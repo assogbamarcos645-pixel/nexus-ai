@@ -262,6 +262,24 @@ INSTRUCTIONS IMPÉRATIVES :
         },
         signal,
       );
+
+      // Si le moteur a basculé en mode simulé ou si aucune syntaxe markdown n'a été produite
+      if (response.isSimulated || !response.content.includes('```')) {
+        const sim = generateSimulatedInlineCode(file, prompt, selectedCode, isWholeFile);
+        return {
+          id: `copilot-inline-mock-${Date.now()}`,
+          filePath: file.path,
+          prompt,
+          explanation: sim.explanation,
+          originalSnippet,
+          suggestedSnippet: sim.suggestedSnippet,
+          range: selectionRange,
+          isWholeFile,
+          timestamp: new Date(),
+          isMock: true,
+        };
+      }
+
       rawResponse = response.content;
     }
 
