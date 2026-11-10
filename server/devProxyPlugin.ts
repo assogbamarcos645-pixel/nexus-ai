@@ -449,8 +449,14 @@ EXPERTISE TECHNIQUE (Génie Logiciel) :
   }
 }
 
-function generateNaturalDemoResponse(message: string, agentId?: string, images?: string[]): string {
-  const lower = message.toLowerCase().trim();
+function generateNaturalDemoResponse(
+  message: string,
+  agentId?: string,
+  images?: string[],
+  conversationHistory?: Array<{ role: string; content: string }>,
+): string {
+  const cleanSnippet = message.trim();
+  const lower = cleanSnippet.toLowerCase();
 
   // Détection vision multimodale ou conversion de maquette / capture d'écran
   if (
@@ -555,75 +561,132 @@ console.log('[NEXUS LAB] Projet maquette initialisé avec succès.');
 Note : Le projet peut être ouvert et édité directement dans NEXUS LAB.`;
   }
 
-  // Détection des salutations, marques d'amitié et prises de contact
+  // 2. Détection de reprise de contexte / historique de conversation
+  const isRecall =
+    lower.includes('tu disais quoi') ||
+    lower.includes('tu disais') ||
+    lower.includes('de quoi on parlait') ||
+    lower.includes('de quoi tu parlais') ||
+    lower.includes('on en était où') ||
+    lower.includes('on en etait ou') ||
+    lower.includes('on parlait de quoi') ||
+    lower.includes('tu te rappelles') ||
+    lower.includes('tu te souviens') ||
+    lower.includes('rappelle-moi') ||
+    lower.includes('c’était quoi le sujet') ||
+    lower.includes("c'etait quoi le sujet") ||
+    lower === 'quoi ?' ||
+    lower === 'quoi?';
+
+  if (isRecall) {
+    if (Array.isArray(conversationHistory) && conversationHistory.length > 0) {
+      const previousTurns = conversationHistory.filter(
+        (m) => m.content && m.content.trim() && m.content.trim() !== cleanSnippet,
+      );
+      const lastAssistant = [...previousTurns].reverse().find((m) => m.role === 'assistant');
+      const lastUser = [...previousTurns].reverse().find((m) => m.role === 'user');
+
+      if (lastAssistant && lastAssistant.content) {
+        const cleanContent = lastAssistant.content
+          .replace(/[#*`_>]/g, '')
+          .split('\n')
+          .map((s) => s.trim())
+          .filter(Boolean)[0] || '';
+        const shortSnippet = cleanContent.length > 110 ? cleanContent.slice(0, 107) + '...' : cleanContent;
+        return `On parlait de ceci juste avant :\n> « ${shortSnippet} »\n\nTu veux qu'on poursuive sur ce point ou qu'on aborde un autre sujet ?`;
+      }
+      if (lastUser && lastUser.content) {
+        const shortUser = lastUser.content.length > 100 ? lastUser.content.slice(0, 97) + '...' : lastUser.content;
+        return `Tu m'avais demandé : « ${shortUser} ».\n\nSouhaites-tu que l'on développe cela ensemble ?`;
+      }
+    }
+    return `On vient tout juste de commencer notre échange ! Dis-moi sur quel sujet ou projet tu souhaites qu'on travaille.`;
+  }
+
+  // 3. Détection de demande d'identité / présentation
+  const isIdentity =
+    lower.includes('qui es-tu') ||
+    lower.includes('qui es tu') ||
+    lower.includes("qui t'es") ||
+    lower.includes('tu es qui') ||
+    lower.includes('présente-toi') ||
+    lower.includes('presente-toi') ||
+    lower.includes('que sais-tu faire') ||
+    lower.includes('tu peux faire quoi');
+
+  if (isIdentity) {
+    return `Je suis l'assistant IA de **NEXUS AI**.
+
+Voici ce sur quoi je peux t'accompagner :
+- **Développement & Code :** Écrire, concevoir et débugger des composants React, TypeScript, Node.js ou Tailwind CSS.
+- **NEXUS LAB :** Prototyper et tester des projets web en direct avec prévisualisation locale.
+- **Vision & Maquettes :** Transformer des maquettes et captures d'écran en interfaces web modernes.
+- **Assistance & Résolution :** Répondre à tes questions techniques, optimiser ton code ou structurer tes idées.
+
+Sur quoi souhaites-tu avancer ?`;
+  }
+
+  // 4. Détection des salutations
   const isGreeting =
     /^(cc|coucou|salut|bonjour|bonsoir|hello|hi|hey|yo|slt|bjr|bsr|wesh)[\s!.?]*$/i.test(lower) ||
-    lower.includes('bonjour') ||
-    lower.includes('salut') ||
-    lower.includes('qui es-tu') ||
-    lower.includes('hello') ||
-    lower.includes('bonsoir') ||
-    lower.includes('coucou') ||
-    lower === 'cc' ||
-    lower.startsWith('cc ') ||
+    lower.startsWith('salut') ||
+    lower.startsWith('bonjour') ||
+    lower.startsWith('bonsoir') ||
+    lower.startsWith('coucou') ||
+    lower.startsWith('hello') ||
     lower.startsWith('hey ') ||
     lower.startsWith('yo ');
 
-  // Détection des questions sur l'humeur, la forme ou les nouvelles
+  if (isGreeting) {
+    if (agentId === 'coder') {
+      return `Salut ! Prêt à coder. Quel composant, fonction ou projet souhaites-tu qu'on développe ?`;
+    }
+    return `Bonjour ! Comment puis-je t'aider aujourd'hui ? Tu as un projet ou une question en particulier ?`;
+  }
+
+  // 5. Détection des questions sur la forme / humeur
   const isWellbeing =
     lower.includes('comment vas-tu') ||
     lower.includes('comment tu vas') ||
     lower.includes('comment allez-vous') ||
     lower.includes('comment ça va') ||
     lower.includes('comment ca va') ||
-    lower.includes('ça va') ||
-    lower.includes('ca va') ||
+    lower === 'ça va' ||
+    lower === 'ca va' ||
+    lower === 'ça va ?' ||
+    lower === 'ca va ?' ||
+    lower.startsWith('ça va ') ||
+    lower.startsWith('ca va ') ||
     lower.includes('tu vas bien') ||
     lower.includes('la forme') ||
     lower.includes('quoi de neuf');
 
-  // Détection des remerciements et politesses
+  if (isWellbeing) {
+    return `Ça va très bien, merci ! Et toi, la forme ? Qu'est-ce qu'on construit de beau aujourd'hui ?`;
+  }
+
+  // 6. Détection des remerciements et politesses
   const isThanks =
     lower.includes('merci') ||
-    lower.includes('super') ||
-    lower.includes('génial') ||
-    lower.includes('parfait') ||
-    lower.includes('top') ||
-    lower.includes('impeccable') ||
+    lower === 'super' ||
+    lower.startsWith('super !') ||
+    lower.startsWith('super,') ||
+    lower === 'top' ||
+    lower.startsWith('top !') ||
+    lower === 'génial' ||
+    lower === 'parfait' ||
+    lower === 'impeccable' ||
     lower.includes('bonne journée') ||
     lower.includes('bonne soirée') ||
     lower.includes('au revoir') ||
     lower.includes('à bientôt') ||
     lower.includes('a bientot');
 
-  if (isWellbeing) {
-    return `Bonjour ! Tout va très bien, je vous remercie chaleureusement de demander. Et vous, comment vous portez-vous aujourd'hui ?
-
-C'est toujours un vrai plaisir d'échanger avec vous. Que vous ayez envie de discuter d'un sujet qui vous tient à cœur, d'explorer une idée, de poser une question générale ou de collaborer sur un projet, je suis à votre entière écoute avec bienveillance.
-
-De quoi souhaiteriez-vous que nous parlions ?`;
-  }
-
-  if (isGreeting) {
-    return `Bonjour ! C'est un réel plaisir de vous retrouver. Comment allez-vous aujourd'hui ?
-
-Je suis à votre entière disposition pour échanger librement et en toute convivialité. Nous pouvons aborder n'importe quel domaine :
-• Discuter d'idées, de réflexions, de sciences, de culture ou de sujets du quotidien
-• Concevoir, structurer ou explorer de nouveaux projets créatifs ou techniques
-• Résoudre des défis concrets, poser des questions ou simplement dialoguer à votre rythme
-
-N'hésitez pas à me partager ce qui vous intéresse ou ce que vous avez en tête en ce moment !`;
-  }
-
   if (isThanks) {
-    return `Je vous en prie, c'est un véritable plaisir ! Je suis ravi d'avoir pu vous être utile.
-
-N'hésitez surtout pas si vous souhaitez approfondir un point, poursuivre la discussion sur un autre thème ou explorer une nouvelle idée ensemble.
-
-Je reste à votre entière disposition, et vous souhaite d'ores et déjà d'excellents échanges !`;
+    return `Avec grand plaisir ! N'hésite pas si tu as d'autres questions ou si tu souhaites aller plus loin.`;
   }
 
-  // Si la demande concerne explicitement du code ou du développement
+  // 7. Si la demande concerne explicitement du code ou du développement
   if (
     agentId === 'coder' ||
     lower.includes('écris une fonction') ||
@@ -633,7 +696,7 @@ Je reste à votre entière disposition, et vous souhaite d'ores et déjà d'exce
     lower.includes('composant react') ||
     lower.includes('refactorise')
   ) {
-    return `Voici une implémentation soignée, modulaire et typée pour répondre à votre besoin :
+    return `Voici une implémentation soignée, modulaire et typée pour répondre à ton besoin :
 
 \`\`\`typescript
 export interface TaskConfig<T> {
@@ -693,20 +756,27 @@ Avec plaisir ! Voici une synthèse structurée et claire :
 #### 3. Prochaines Étapes
 Mise en œuvre des axes prioritaires et validation collaborative des résultats.
 
-Souhaitez-vous que nous développions une section en particulier ?`;
+Souhaites-tu que nous développions une section en particulier ?`;
   }
 
-  // Discussion naturelle, courtoise et ouverte sur n'importe quel sujet
-  const cleanSnippet = message.trim();
-  return `C'est un sujet très intéressant ! Merci pour votre message.
+  // 9. Questions directes (qui se terminent par '?' ou mots interrogatifs)
+  if (
+    cleanSnippet.endsWith('?') ||
+    lower.startsWith('pourquoi') ||
+    lower.startsWith('comment') ||
+    lower.startsWith("qu'est-ce") ||
+    lower.startsWith('quest-ce') ||
+    lower.startsWith("c'est quoi") ||
+    lower.startsWith('est-ce que') ||
+    lower.startsWith('quelle') ||
+    lower.startsWith('quel')
+  ) {
+    const topic = cleanSnippet.replace(/\?+$/, '').trim();
+    return `C'est une excellente question sur **${topic}**.\n\nEn pratique, l'approche dépend des objectifs et des contraintes du projet. Tu souhaites une explication conceptuelle ou qu'on passe directement à un exemple de code concret ?`;
+  }
 
-À propos de : « ${cleanSnippet.length > 80 ? cleanSnippet.slice(0, 77) + '...' : cleanSnippet} »
-
-Pour que nous puissions approfondir cet échange de la façon la plus agréable et enrichissante possible :
-• Qu'avez-vous particulièrement en tête ou quel aspect aimeriez-vous que nous explorions en premier ?
-• S'agit-il d'une réflexion générale, d'un conseil pratique, d'une explication conceptuelle ou d'un projet spécifique ?
-
-Prenez tout votre temps, je suis à votre écoute pour échanger en détail et vous répondre avec grand plaisir !`;
+  // 10. Discussion naturelle et directe (remplace l'ancien texte artificiel)
+  return `Bien reçu ! Peux-tu me préciser ce que tu souhaites faire ou explorer à ce sujet ? Je suis là pour t'accompagner.`;
 }
 
         // ── 3. POST /api/chat ───────────────────────────────────────────────
@@ -735,7 +805,7 @@ Prenez tout votre temps, je suis à votre écoute pour échanger en détail et v
 
           // Si démo ou aucun secret configuré, génère une réponse simulée ultra-rapide et naturelle
           if (providerId === 'demo') {
-            const reply = generateNaturalDemoResponse(message, agentId, images);
+            const reply = generateNaturalDemoResponse(message, agentId, images, conversationHistory);
 
             if (isStream) {
               initSseResponse(res);
@@ -877,7 +947,7 @@ Prenez tout votre temps, je suis à votre écoute pour échanger en détail et v
                   const reason = errJson.error?.message || `Erreur HTTP ${streamRes.status}`;
                   const fallbackNotice = `> *Note : Le modèle ${geminiModel} est temporairement indisponible (${reason}). Bascule automatique sur le moteur de secours.*\n\n`;
                   sendSseChunk(res, fallbackNotice);
-                  const reply = generateNaturalDemoResponse(message, agentId);
+                  const reply = generateNaturalDemoResponse(message, agentId, images, conversationHistory);
                   const tokens = reply.match(/(\s+|\S+)/g) || [reply];
                   let idx = 0;
                   const interval = setInterval(() => {
@@ -970,7 +1040,7 @@ Prenez tout votre temps, je suis à votre écoute pour échanger en détail et v
               if (!geminiRes.ok) {
                 const errJson = (await geminiRes.json().catch(() => ({}))) as any;
                 const reason = errJson.error?.message || `Erreur HTTP ${geminiRes.status}`;
-                const fallbackReply = `> *Note : Le modèle ${geminiModel} est temporairement saturé (${reason}). Bascule automatique sur le moteur de secours.*\n\n` + generateNaturalDemoResponse(message, agentId);
+                const fallbackReply = `> *Note : Le modèle ${geminiModel} est temporairement saturé (${reason}). Bascule automatique sur le moteur de secours.*\n\n` + generateNaturalDemoResponse(message, agentId, images, conversationHistory);
                 return sendJson(res, 200, {
                   content: fallbackReply,
                   tokens: {
@@ -1030,7 +1100,7 @@ Prenez tout votre temps, je suis à votre écoute pour échanger en détail et v
                   if (isStream) {
                     initSseResponse(res);
                     sendSseChunk(res, reasonNotice);
-                    const reply = generateNaturalDemoResponse(message, agentId);
+                    const reply = generateNaturalDemoResponse(message, agentId, images, conversationHistory);
                     const tokens = reply.match(/(\s+|\S+)/g) || [reply];
                     let idx = 0;
                     const interval = setInterval(() => {
@@ -1050,7 +1120,7 @@ Prenez tout votre temps, je suis à votre écoute pour échanger en détail et v
                     req.on('close', () => clearInterval(interval));
                     return;
                   }
-                  const demoReply = reasonNotice + generateNaturalDemoResponse(message, agentId);
+                  const demoReply = reasonNotice + generateNaturalDemoResponse(message, agentId, images, conversationHistory);
                   return sendJson(res, 200, {
                     content: demoReply,
                     tokens: {
@@ -1139,7 +1209,7 @@ Prenez tout votre temps, je suis à votre écoute pour échanger en détail et v
                   } catch {
                     // ignore
                   }
-                  const reply = generateNaturalDemoResponse(message, agentId);
+                  const reply = generateNaturalDemoResponse(message, agentId, images, conversationHistory);
                   sendSseChunk(res, reply);
                   endSse(res);
                   return;
@@ -1176,7 +1246,7 @@ Prenez tout votre temps, je suis à votre écoute pour échanger en détail et v
                   // ignore
                 }
 
-                const demoReply = reasonNotice + generateNaturalDemoResponse(message, agentId);
+                const demoReply = reasonNotice + generateNaturalDemoResponse(message, agentId, images, conversationHistory);
                 return sendJson(res, 200, {
                   content: demoReply,
                   tokens: {
@@ -1673,7 +1743,7 @@ Prenez tout votre temps, je suis à votre écoute pour échanger en détail et v
           } catch (callErr: unknown) {
             const errorMsg = callErr instanceof Error ? callErr.message : String(callErr);
             console.warn(`[NEXUS PROXY] Erreur réseau (${errorMsg}), bascule de secours sur le moteur local.`);
-            const fallbackReply = `> *Note : Échec de communication avec l'API distante (${errorMsg}). Bascule automatique sur le moteur local.*\n\n` + generateNaturalDemoResponse(message, agentId);
+            const fallbackReply = `> *Note : Échec de communication avec l'API distante (${errorMsg}). Bascule automatique sur le moteur local.*\n\n` + generateNaturalDemoResponse(message, agentId, images, conversationHistory);
             if (isStream) {
               initSseResponse(res);
               sendSseChunk(res, fallbackReply);
