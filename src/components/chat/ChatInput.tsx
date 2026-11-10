@@ -97,12 +97,16 @@ export function ChatInput({
     reader.readAsDataURL(file);
   };
 
-  // Auto-resize textarea
+  // Auto-resize textarea compact et précis
   useEffect(() => {
     const el = textareaRef.current;
     if (!el) return;
     el.style.height = 'auto';
-    el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
+    if (!value) {
+      el.style.height = '26px';
+    } else {
+      el.style.height = `${Math.min(Math.max(el.scrollHeight, 26), 130)}px`;
+    }
   }, [value]);
 
   // Focus automatique garanti du curseur sans déplacement intempestif de la page
@@ -226,7 +230,7 @@ export function ChatInput({
       onDrop={handleDrop}
       className={cn(
         'w-full mx-auto shrink-0 transition-all duration-200 relative',
-        centered ? 'max-w-3xl px-2 sm:px-0' : 'max-w-3xl px-3 sm:px-4 pb-2 sm:pb-3',
+        centered ? 'max-w-2xl px-2 sm:px-0' : 'max-w-2xl px-3 sm:px-4 pb-1 sm:pb-1.5',
       )}
     >
       {/* Zone de prévisualisation des maquettes / captures d'écran attachées */}
@@ -268,7 +272,7 @@ export function ChatInput({
       )}
 
       {error && (
-        <div className="flex items-center gap-2 mb-2 px-3.5 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs shadow-xs">
+        <div className="flex items-center gap-2 mb-2 px-3 py-1.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs shadow-xs">
           <AlertCircle size={14} className="shrink-0" />
           <span>{error}</span>
         </div>
@@ -312,170 +316,164 @@ export function ChatInput({
         </div>
       )}
 
-      {/* Conteneur principal moderne Liquid Glass (Style Moderne ChatGPT / Claude) */}
+      {/* Pilule principale Liquid Glass compacte et épurée */}
       <div
         onClick={() => textareaRef.current?.focus({ preventScroll: true })}
         className={cn(
-          'relative flex flex-col rounded-2xl sm:rounded-3xl transition-all duration-300 cursor-text',
-          'liquid-glass shadow-[0_4px_24px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.45)]',
+          'relative flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl sm:rounded-2xl transition-all duration-200 cursor-text',
+          'liquid-glass shadow-[0_2px_14px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.4)]',
           effectiveImages.length > 0 && 'border-cyan-500/40 ring-1 ring-cyan-500/20',
           'border border-slate-200/80 dark:border-white/10 hover:border-slate-300 dark:hover:border-sky-400/30',
           'focus-within:border-blue-500/80 dark:focus-within:border-sky-400 focus-within:ring-2 focus-within:ring-blue-500/20',
         )}
       >
-        {/* Zone supérieure : Champ de saisie multi-lignes étendu sur toute la largeur */}
-        <div className="px-3.5 pt-3 sm:px-4 sm:pt-3.5 pb-1">
-          <textarea
-            id="chat-input"
-            ref={textareaRef}
-            rows={1}
-            autoFocus
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onPaste={handlePaste}
-            placeholder={activePlaceholder}
-            disabled={isLoading}
-            aria-label={activePlaceholder}
-            className={cn(
-              'w-full resize-none bg-transparent text-sm sm:text-[15px] text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500',
-              'outline-none scrollbar-thin leading-relaxed',
-              'min-h-[44px] max-h-[160px]',
-              'disabled:opacity-50',
-            )}
-          />
+        {/* Outils à gauche : Pièce jointe & Image */}
+        <div className="flex items-center gap-0.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            title={language === 'fr' ? 'Joindre un fichier texte ou code' : 'Attach a text or code file'}
+            aria-label={language === 'fr' ? 'Joindre un fichier' : 'Attach file'}
+            className="btn-tactile p-1 sm:p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
+          >
+            <Paperclip size={15} />
+          </button>
+
+          <button
+            type="button"
+            onClick={handleImageAction}
+            title={language === 'fr' ? 'Créer ou décrire une image' : 'Create or describe an image'}
+            aria-label={language === 'fr' ? 'Outil image' : 'Image tool'}
+            className="btn-tactile p-1 sm:p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
+          >
+            <ImageIcon size={15} />
+          </button>
+
+          <div className="h-3.5 w-px bg-slate-200 dark:bg-slate-800 mx-0.5 sm:mx-1" aria-hidden="true" />
         </div>
 
-        {/* Zone inférieure : Barre d'actions & outils dédiée */}
-        <div
-          className="flex items-center justify-between gap-2 px-2.5 sm:px-3.5 pb-2.5 pt-1 select-none"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Outils à gauche : Pièce jointe & Image */}
-          <div className="flex items-center gap-1">
+        {/* Zone de saisie centrale compacte */}
+        <textarea
+          id="chat-input"
+          ref={textareaRef}
+          rows={1}
+          autoFocus
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onPaste={handlePaste}
+          placeholder={activePlaceholder}
+          disabled={isLoading}
+          aria-label={activePlaceholder}
+          className={cn(
+            'flex-1 min-w-0 resize-none bg-transparent text-[13.5px] sm:text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500',
+            'outline-none scrollbar-thin leading-snug py-0.5',
+            'min-h-[26px] max-h-[130px]',
+            'disabled:opacity-50',
+          )}
+        />
+
+        {/* Sélecteur d'agent compact + Bouton d'envoi */}
+        <div className="flex items-center gap-1 sm:gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+          {/* Menu sélecteur d'agent NEXUS */}
+          <div className="relative" ref={dropdownRef}>
             <button
               type="button"
-              onClick={() => fileInputRef.current?.click()}
-              title={language === 'fr' ? 'Joindre un fichier texte ou code' : 'Attach a text or code file'}
-              aria-label={language === 'fr' ? 'Joindre un fichier' : 'Attach file'}
-              className="btn-tactile p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
-            >
-              <Paperclip size={17} />
-            </button>
-
-            <button
-              type="button"
-              onClick={handleImageAction}
-              title={language === 'fr' ? 'Créer ou décrire une image' : 'Create or describe an image'}
-              aria-label={language === 'fr' ? 'Outil image' : 'Image tool'}
-              className="btn-tactile p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
-            >
-              <ImageIcon size={17} />
-            </button>
-          </div>
-
-          {/* Contrôles à droite : Sélecteur d'agent + Bouton d'envoi / arrêt */}
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            {/* Menu sélecteur d'agent NEXUS */}
-            <div className="relative" ref={dropdownRef}>
-              <button
-                type="button"
-                id="btn-agent-selector-pill"
-                onClick={() => setIsAgentMenuOpen((prev) => !prev)}
-                className={cn(
-                  'btn-tactile flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-semibold cursor-pointer select-none transition-all',
-                  'bg-slate-100 hover:bg-slate-200/80 text-slate-700 border border-slate-200/80',
-                  'dark:bg-slate-800/80 dark:hover:bg-slate-700/80 dark:text-slate-200 dark:border-slate-700/80',
-                )}
-                title={language === 'fr' ? 'Choisir l’agent spécialisé' : 'Choose specialized agent'}
-              >
-                <span
-                  className="w-2 h-2 rounded-full shadow-xs shrink-0"
-                  style={{ backgroundColor: currentAgent.color }}
-                />
-                <span className="tracking-tight font-medium text-[11.5px] max-w-[130px] truncate">
-                  {currentAgent.id === 'general' ? 'NEXUS Architect' : currentAgent.name}
-                </span>
-                <ChevronDown
-                  size={12}
-                  className={cn(
-                    'text-slate-400 dark:text-slate-400 transition-transform duration-200 shrink-0',
-                    isAgentMenuOpen && 'rotate-180',
-                  )}
-                />
-              </button>
-
-              {/* Menu déroulant des agents vers le haut */}
-              {isAgentMenuOpen && (
-                <div className="absolute right-0 bottom-full mb-2 w-72 sm:w-80 max-w-[calc(100vw-2rem)] rounded-2xl bg-white/98 dark:bg-[#0f1526]/98 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800 shadow-[0_16px_40px_rgba(15,23,42,0.16)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.8)] p-1.5 z-50 animate-nexus-pop">
-                  <div className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800/80 mb-1">
-                    {language === 'fr' ? 'Agents Spécialisés — Génie Logiciel' : 'Specialized Agents — Software Engineering'}
-                  </div>
-                  {agents.map((ag) => {
-                    const isSelected = ag.id === selectedAgentId;
-                    return (
-                      <button
-                        key={ag.id}
-                        type="button"
-                        onClick={() => {
-                          onSelectAgent?.(ag.id);
-                          setIsAgentMenuOpen(false);
-                          textareaRef.current?.focus({ preventScroll: true });
-                        }}
-                        className={cn(
-                          'btn-tactile w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs cursor-pointer mb-0.5',
-                          isSelected
-                            ? 'bg-blue-50/90 text-blue-950 font-semibold dark:bg-slate-800 dark:text-white'
-                            : 'text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/50',
-                        )}
-                      >
-                        <div className="flex items-start gap-2.5 min-w-0 pr-2">
-                          <span
-                            className="w-2.5 h-2.5 rounded-full mt-1 shrink-0"
-                            style={{ backgroundColor: ag.color }}
-                          />
-                          <div className="flex flex-col min-w-0">
-                            <span className="truncate font-medium">{ag.name}</span>
-                            <span className="text-[10px] text-slate-400 dark:text-slate-400 truncate">{ag.description}</span>
-                          </div>
-                        </div>
-                        {isSelected && <Check size={14} className="text-blue-600 dark:text-sky-400 shrink-0" />}
-                      </button>
-                    );
-                  })}
-                </div>
+              id="btn-agent-selector-pill"
+              onClick={() => setIsAgentMenuOpen((prev) => !prev)}
+              className={cn(
+                'btn-tactile flex items-center gap-1 sm:gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold cursor-pointer select-none transition-all',
+                'bg-blue-50/90 hover:bg-blue-100/80 text-blue-950 border border-blue-200/70',
+                'dark:bg-slate-800/90 dark:hover:bg-slate-700/80 dark:text-slate-200 dark:border-slate-700/80',
               )}
-            </div>
+              title={language === 'fr' ? 'Choisir l’agent spécialisé' : 'Choose specialized agent'}
+            >
+              <span
+                className="w-1.5 h-1.5 rounded-full shadow-xs shrink-0"
+                style={{ backgroundColor: currentAgent.color }}
+              />
+              <span className="tracking-tight font-medium max-w-[105px] truncate hidden sm:inline">
+                {currentAgent.id === 'general' ? 'NEXUS Architect' : currentAgent.name}
+              </span>
+              <span className="tracking-tight font-medium text-[10.5px] sm:hidden">
+                {currentAgent.id === 'general' ? 'Architect' : currentAgent.name.split(' ')[0]}
+              </span>
+              <ChevronDown
+                size={11}
+                className={cn('text-slate-400 dark:text-slate-400 transition-transform duration-200 shrink-0', isAgentMenuOpen && 'rotate-180')}
+              />
+            </button>
 
-            {/* Bouton Stop ou Envoyer */}
-            {isLoading ? (
-              <button
-                type="button"
-                id="btn-stop"
-                onClick={onStop}
-                aria-label={t('chat.stop')}
-                className="btn-tactile flex items-center justify-center w-8.5 h-8.5 sm:w-9 sm:h-9 rounded-full bg-red-500 hover:bg-red-600 text-white shadow-xs cursor-pointer shrink-0"
-              >
-                <Square size={13} fill="currentColor" />
-              </button>
-            ) : (
-              <button
-                type="button"
-                id="btn-send"
-                onClick={onSend}
-                disabled={!value.trim()}
-                aria-label={t('chat.send')}
-                className={cn(
-                  'btn-tactile flex items-center justify-center w-8.5 h-8.5 sm:w-9 sm:h-9 rounded-full text-white shrink-0 cursor-pointer transition-all duration-150',
-                  value.trim()
-                    ? 'bg-blue-600 hover:bg-blue-500 active:bg-blue-700 shadow-md shadow-blue-500/25 active:scale-95'
-                    : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 opacity-40 cursor-not-allowed shadow-none',
-                )}
-              >
-                <Send size={14} className="-ml-0.5 translate-x-0.5" />
-              </button>
+            {/* Menu déroulant des agents vers le haut */}
+            {isAgentMenuOpen && (
+              <div className="absolute right-0 bottom-full mb-1.5 w-72 sm:w-80 max-w-[calc(100vw-2rem)] rounded-2xl bg-white/98 dark:bg-[#0f1526]/98 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800 shadow-[0_16px_40px_rgba(15,23,42,0.16)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.8)] p-1.5 z-50 animate-nexus-pop">
+                <div className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800/80 mb-1">
+                  {language === 'fr' ? 'Agents Spécialisés — Génie Logiciel' : 'Specialized Agents — Software Engineering'}
+                </div>
+                {agents.map((ag) => {
+                  const isSelected = ag.id === selectedAgentId;
+                  return (
+                    <button
+                      key={ag.id}
+                      type="button"
+                      onClick={() => {
+                        onSelectAgent?.(ag.id);
+                        setIsAgentMenuOpen(false);
+                        textareaRef.current?.focus({ preventScroll: true });
+                      }}
+                      className={cn(
+                        'btn-tactile w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-xs cursor-pointer mb-0.5',
+                        isSelected
+                          ? 'bg-blue-50/90 text-blue-950 font-semibold dark:bg-slate-800 dark:text-white'
+                          : 'text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/50',
+                      )}
+                    >
+                      <div className="flex items-start gap-2.5 min-w-0 pr-2">
+                        <span
+                          className="w-2.5 h-2.5 rounded-full mt-1 shrink-0"
+                          style={{ backgroundColor: ag.color }}
+                        />
+                        <div className="flex flex-col min-w-0">
+                          <span className="truncate font-medium">{ag.name}</span>
+                          <span className="text-[10px] text-slate-400 dark:text-slate-400 truncate">{ag.description}</span>
+                        </div>
+                      </div>
+                      {isSelected && <Check size={14} className="text-blue-600 dark:text-sky-400 shrink-0" />}
+                    </button>
+                  );
+                })}
+              </div>
             )}
           </div>
+
+          {/* Bouton Stop ou Envoyer compact */}
+          {isLoading ? (
+            <button
+              type="button"
+              id="btn-stop"
+              onClick={onStop}
+              aria-label={t('chat.stop')}
+              className="btn-tactile flex items-center justify-center w-7.5 h-7.5 sm:w-8 sm:h-8 rounded-full bg-red-500 hover:bg-red-600 text-white shadow-xs cursor-pointer shrink-0"
+            >
+              <Square size={12} fill="currentColor" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              id="btn-send"
+              onClick={onSend}
+              disabled={!value.trim()}
+              aria-label={t('chat.send')}
+              className={cn(
+                'btn-tactile flex items-center justify-center w-7.5 h-7.5 sm:w-8 sm:h-8 rounded-full text-white shrink-0 cursor-pointer transition-all duration-150',
+                value.trim()
+                  ? 'bg-blue-600 hover:bg-blue-500 active:bg-blue-700 shadow-xs active:scale-95'
+                  : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 opacity-40 cursor-not-allowed shadow-none',
+              )}
+            >
+              <Send size={13} className="-ml-0.5 translate-x-0.5" />
+            </button>
+          )}
         </div>
       </div>
     </div>
