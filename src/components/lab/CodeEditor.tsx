@@ -87,6 +87,49 @@ function getTabFileIcon(path: string) {
   }
 }
 
+function MonacoLoadingSkeleton({ content, isDark }: { content: string; isDark: boolean }) {
+  const lines = useMemo(() => (content || '').split('\n').slice(0, 35), [content]);
+
+  return (
+    <div
+      className={cn(
+        'h-full w-full font-mono text-[13px] leading-relaxed overflow-hidden select-none p-3 flex flex-col',
+        isDark ? 'bg-[#070712] text-slate-300' : 'bg-white text-slate-800',
+      )}
+    >
+      <div className="flex-1 overflow-hidden space-y-0.5">
+        {lines.map((line, idx) => (
+          <div key={idx} className="flex items-start gap-4">
+            <span
+              className={cn(
+                'w-8 text-right shrink-0 select-none text-[11px] font-mono',
+                isDark ? 'text-slate-600' : 'text-slate-400',
+              )}
+            >
+              {idx + 1}
+            </span>
+            <span className="whitespace-pre truncate font-mono opacity-85">
+              {line || ' '}
+            </span>
+          </div>
+        ))}
+      </div>
+      <div
+        className={cn(
+          'flex items-center justify-between pt-2 border-t text-[11px]',
+          isDark ? 'border-white/5 text-slate-500' : 'border-slate-100 text-slate-400',
+        )}
+      >
+        <span className="flex items-center gap-1.5 animate-pulse">
+          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+          Initialisation de l’éditeur...
+        </span>
+        <span className="font-mono text-[10px]">Monaco Engine</span>
+      </div>
+    </div>
+  );
+}
+
 export function CodeEditor({
   file,
   content,
@@ -593,9 +636,10 @@ export function CodeEditor({
             onChange={(val) => onChange(val ?? '')}
             onMount={handleEditorDidMount}
             loading={
-              <div className="h-full flex items-center justify-center text-xs text-slate-400 dark:text-white/40 font-mono">
-                Chargement de l'éditeur Monaco...
-              </div>
+              <MonacoLoadingSkeleton
+                content={content}
+                isDark={resolvedTheme === 'dark'}
+              />
             }
             options={{
               minimap: { enabled: false },

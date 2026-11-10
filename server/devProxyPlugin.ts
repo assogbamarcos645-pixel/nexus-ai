@@ -397,15 +397,17 @@ export function nexusDevProxyPlugin(): Plugin {
         }
 
 function getAgentSystemPrompt(agentId?: string): string {
+  const commonConductRule = `
+POSTURE RELATIONNELLE, COURTOISIE & DIALOGUE UNIVERSEL :
+- Adopte une posture polie, courtoise, respectueuse, chaleureuse et naturelle.
+- Tu es un véritable partenaire d'échange : tu ne te limites PAS uniquement au code ou à l'informatique. Tu es ouvert et capable de converser sur n'importe quel sujet (sciences, culture générale, philosophie, vie quotidienne, créativité, méthodologie, etc.) avec bienveillance et intelligence.
+- Salutations & Prises de contact : Si l'utilisateur te salue ou envoie un message amical ("cc", "salut", "bonjour", "comment vas-tu", etc.), accueille-le chaleureusement et engage la discussion avec courtoisie avant d'aborder des aspects techniques.
+- Zéro rigidité : Ne réponds JAMAIS comme un robot protocolaire ou un formulaire directif. Privilégie un ton humain, fluide, agréable et collaboratif.`;
+
   switch (agentId) {
     case 'coder':
       return `Tu es CodeX, Ingénieur Logiciel Full-Stack Senior sur la plateforme NEXUS AI.
-
-POSTURE & TON :
-- Ton naturel, réactif, bienveillant et axé solution : Tu es le pair-programmeur idéal, prêt à concevoir du code propre et élégant.
-- Accueil & Salutations : Si l'utilisateur te salue, réponds amicalement avant d'aborder le travail technique.
-- Clarté : Sois direct et concis sur le code tout en maintenant un échange fluide, agréable et collaboratif.
-- Pas de jargon superflu, mais un haut niveau d'exigence sur la qualité de réalisation.
+${commonConductRule}
 
 EXPERTISE TECHNIQUE (Génie Logiciel) :
 - RÈGLE ABSOLUE DE PRODUCTION : Ne JAMAIS tronquer le code (interdiction stricte de laisser des "// TODO", "// ...", "// implémenter ici"). Fournis toujours des modules complets, testables et directement exécutables.
@@ -413,11 +415,7 @@ EXPERTISE TECHNIQUE (Génie Logiciel) :
 - Stack de prédilection : React 19, TypeScript, Node.js, Python, Rust, Go, SQL.`;
     case 'writer':
       return `Tu es DocOps, Spécialiste de la Documentation Technique et Architecte d'API sur NEXUS AI.
-
-POSTURE & TON :
-- Ton fluide, soigné, structuré et toujours accueillant.
-- Accueil & Salutations : Réponds avec courtoisie et prévenance dès que l'utilisateur t'adresse la parole.
-- Pédagogie : Rends la documentation agréable à lire, vivante, précise et parfaitement organisée.
+${commonConductRule}
 
 EXPERTISE TECHNIQUE (Génie Logiciel) :
 - Rôle : Rédiger des spécifications d'API sans faille, des Architectural Decision Records (ADR), des RFCs d'ingénierie et de la documentation de code de très haut niveau.
@@ -425,11 +423,7 @@ EXPERTISE TECHNIQUE (Génie Logiciel) :
 - Style : Précis, exhaustif, parfaitement formaté en Markdown, avec typage clair de chaque champ d'entrée/sortie, codes d'erreur HTTP et exemples de payloads JSON.`;
     case 'analyst':
       return `Tu es Perf & Data, Database Administrator (DBA) et Ingénieur d'Optimisation des Performances sur NEXUS AI.
-
-POSTURE & TON :
-- Ton naturel, scientifique, méthodique et pédagogue.
-- Accueil & Salutations : Réponds simplement et poliment avant de plonger dans les données ou l'analyse des métriques.
-- Esprit d'équipe : Démystifie les goulets d'étranglement avec bienveillance et propose des solutions concrètes.
+${commonConductRule}
 
 EXPERTISE TECHNIQUE (Génie Logiciel) :
 - Rôle : Débusquer les goulots d'étranglement, optimiser les algorithmes et concevoir des schémas de bases de données performants.
@@ -437,11 +431,7 @@ EXPERTISE TECHNIQUE (Génie Logiciel) :
 - Approche : Factuelle et basée sur les métriques (benchmarks, millisecondes, débit, consommation mémoire).`;
     case 'researcher':
       return `Tu es CyberSec & QA, Auditeur en Cybersécurité Applicative (AppSec) et Spécialiste Qualité Logicielle sur NEXUS AI.
-
-POSTURE & TON :
-- Ton rassurant, positif, constructif et accueillant. Pas de ton alarmiste ni anxiogène.
-- Accueil & Salutations : Salue cordialement l'utilisateur et mets-le en confiance.
-- Pédagogie de la sécurité : Explique toujours le rationnel derrière chaque vulnérabilité et propose un chemin de correction immédiat et pragmatique.
+${commonConductRule}
 
 EXPERTISE TECHNIQUE (Génie Logiciel) :
 - Rôle : Identifier les vulnérabilités de sécurité, concevoir des suites de tests automatisés et traquer les cas limites (edge cases).
@@ -450,13 +440,7 @@ EXPERTISE TECHNIQUE (Génie Logiciel) :
     case 'general':
     default:
       return `Tu es NEXUS Architect, Lead Developer et Architecte Logiciel Principal sur la plateforme NEXUS AI.
-
-POSTURE & TON :
-- Ton chaleureux, naturel, fluide et senior : Comporte-toi comme un Lead Architect bienveillant et pédagogue travaillant en binôme (pair-programming) avec un collègue développeur.
-- Accueil & Salutations : Si l'utilisateur te salue ou demande comment tu vas ("Bonjour", "Salut", "Comment vas-tu ?", "Ça va ?"), réponds toujours de manière courtoise, chaleureuse et naturelle (par ex. "Bonjour ! Tout va très bien, merci. Sur quel composant ou projet souhaitez-vous que nous travaillions aujourd'hui ?").
-- Zéro rigidité : Ne te présente jamais comme un examinateur d'entretien d'embauche ou un robot protocolaire. Sois accessible, constructif et à l'écoute.
-- Concision & Clarté : Évite les formules creuses ou la complaisance artificielle, mais reste toujours agréable et collaboratif.
-- Emojis : Utilise-les avec parcimonie et sobriété pour une lecture aérée, sans surcharge visuelle.
+${commonConductRule}
 
 EXPERTISE TECHNIQUE (Génie Logiciel) :
 - Rôle : Concevoir des systèmes logiciels robustes, modulaires, scalables et hautement maintenables.
@@ -571,30 +555,85 @@ console.log('[NEXUS LAB] Projet maquette initialisé avec succès.');
 Note : Le projet peut être ouvert et édité directement dans NEXUS LAB.`;
   }
 
-  if (
+  // Détection des salutations, marques d'amitié et prises de contact
+  const isGreeting =
+    /^(cc|coucou|salut|bonjour|bonsoir|hello|hi|hey|yo|slt|bjr|bsr|wesh)[\s!.?]*$/i.test(lower) ||
     lower.includes('bonjour') ||
     lower.includes('salut') ||
     lower.includes('qui es-tu') ||
     lower.includes('hello') ||
+    lower.includes('bonsoir') ||
+    lower.includes('coucou') ||
+    lower === 'cc' ||
+    lower.startsWith('cc ') ||
+    lower.startsWith('hey ') ||
+    lower.startsWith('yo ');
+
+  // Détection des questions sur l'humeur, la forme ou les nouvelles
+  const isWellbeing =
     lower.includes('comment vas-tu') ||
     lower.includes('comment tu vas') ||
+    lower.includes('comment allez-vous') ||
+    lower.includes('comment ça va') ||
+    lower.includes('comment ca va') ||
     lower.includes('ça va') ||
     lower.includes('ca va') ||
-    lower.includes('bonsoir')
-  ) {
-    return `Bonjour ! Tout va pour le mieux, merci. Je suis NEXUS AI, votre studio d'ingénierie logicielle et pair-programmeur.
+    lower.includes('tu vas bien') ||
+    lower.includes('la forme') ||
+    lower.includes('quoi de neuf');
 
-Je suis à votre disposition pour vous accompagner :
-• Architecture système & Clean Architecture (DDD, découplage, scalabilité)
-• Conception & développement complet (React 19, TypeScript, Python, Node.js)
-• Spécifications OpenAPI, refactorisation, tests et audits de sécurité
-• Optimisation de performances et requêtes SQL
+  // Détection des remerciements et politesses
+  const isThanks =
+    lower.includes('merci') ||
+    lower.includes('super') ||
+    lower.includes('génial') ||
+    lower.includes('parfait') ||
+    lower.includes('top') ||
+    lower.includes('impeccable') ||
+    lower.includes('bonne journée') ||
+    lower.includes('bonne soirée') ||
+    lower.includes('au revoir') ||
+    lower.includes('à bientôt') ||
+    lower.includes('a bientot');
 
-Sur quel sujet ou projet souhaitez-vous que nous avancions ensemble aujourd'hui ?`;
+  if (isWellbeing) {
+    return `Bonjour ! Tout va très bien, je vous remercie chaleureusement de demander. Et vous, comment vous portez-vous aujourd'hui ?
+
+C'est toujours un vrai plaisir d'échanger avec vous. Que vous ayez envie de discuter d'un sujet qui vous tient à cœur, d'explorer une idée, de poser une question générale ou de collaborer sur un projet, je suis à votre entière écoute avec bienveillance.
+
+De quoi souhaiteriez-vous que nous parlions ?`;
   }
 
-  if (agentId === 'coder' || lower.includes('code') || lower.includes('fonction') || lower.includes('react') || lower.includes('typescript') || lower.includes('python')) {
-    return `Voici une implémentation modulaire et typée pour la production :
+  if (isGreeting) {
+    return `Bonjour ! C'est un réel plaisir de vous retrouver. Comment allez-vous aujourd'hui ?
+
+Je suis à votre entière disposition pour échanger librement et en toute convivialité. Nous pouvons aborder n'importe quel domaine :
+• Discuter d'idées, de réflexions, de sciences, de culture ou de sujets du quotidien
+• Concevoir, structurer ou explorer de nouveaux projets créatifs ou techniques
+• Résoudre des défis concrets, poser des questions ou simplement dialoguer à votre rythme
+
+N'hésitez pas à me partager ce qui vous intéresse ou ce que vous avez en tête en ce moment !`;
+  }
+
+  if (isThanks) {
+    return `Je vous en prie, c'est un véritable plaisir ! Je suis ravi d'avoir pu vous être utile.
+
+N'hésitez surtout pas si vous souhaitez approfondir un point, poursuivre la discussion sur un autre thème ou explorer une nouvelle idée ensemble.
+
+Je reste à votre entière disposition, et vous souhaite d'ores et déjà d'excellents échanges !`;
+  }
+
+  // Si la demande concerne explicitement du code ou du développement
+  if (
+    agentId === 'coder' ||
+    lower.includes('écris une fonction') ||
+    lower.includes('code en') ||
+    lower.includes('programme') ||
+    lower.includes('script python') ||
+    lower.includes('composant react') ||
+    lower.includes('refactorise')
+  ) {
+    return `Voici une implémentation soignée, modulaire et typée pour répondre à votre besoin :
 
 \`\`\`typescript
 export interface TaskConfig<T> {
@@ -633,31 +672,41 @@ export async function processTask<T>(
 Points clés de l'implémentation :
 - Typage générique strict préservant l'intégrité des types.
 - Politique de retry exponentielle avec isolation des erreurs réseau.
-- Mesure précise du temps d'exécution sans surcoût mémoire.`;
+- Mesure précise du temps d'exécution sans surcoût mémoire.
+
+Souhaitez-vous que nous l'adaptions à un cas d'usage particulier ou que nous y ajoutions des fonctionnalités ?`;
   }
 
-  if (agentId === 'writer' || lower.includes('rédige') || lower.includes('écris') || lower.includes('document') || lower.includes('synthèse')) {
-    return `### Spécification et Synthèse Technique
+  if (agentId === 'writer' || lower.includes('rédige') || lower.includes('document') || lower.includes('synthèse')) {
+    return `### Spécification et Synthèse
+
+Avec plaisir ! Voici une synthèse structurée et claire :
 
 #### 1. Contexte et Objectifs
-- Définition du périmètre fonctionnel et des exigences système.
-- Établissement du contrat technique d'interface.
+- Définition du périmètre et identification des attentes clés.
+- Établissement des principes directeurs et des priorités.
 
-#### 2. Principes Directeurs
-- Interfaces explicites et prévisibles.
-- Validation défensive aux frontières du système.
-- Modularité sans dépendance circulaire.
+#### 2. Démarche et Recommandations
+- Clarté et lisibilité pour l'ensemble des parties prenantes.
+- Approche progressive et modulaire garantissant la flexibilité.
 
-#### 3. Jalon d'Implémentation
-Validation des schémas d'échanges et contractualisation des endpoints.`;
+#### 3. Prochaines Étapes
+Mise en œuvre des axes prioritaires et validation collaborative des résultats.
+
+Souhaitez-vous que nous développions une section en particulier ?`;
   }
 
-  return `Demande enregistrée : "${message.length > 70 ? message.slice(0, 67) + '...' : message}".
+  // Discussion naturelle, courtoise et ouverte sur n'importe quel sujet
+  const cleanSnippet = message.trim();
+  return `C'est un sujet très intéressant ! Merci pour votre message.
 
-Précisez le contexte technique si nécessaire :
-1. Objectif ciblé (architecture, implémentation, refactorisation, audit de sécurité).
-2. Stack technique ou contraintes d'environnement (TypeScript, React, Python, SQL, etc.).
-3. Format attendu (code source complet, contrat OpenAPI, diagnostic de performance).`;
+À propos de : « ${cleanSnippet.length > 80 ? cleanSnippet.slice(0, 77) + '...' : cleanSnippet} »
+
+Pour que nous puissions approfondir cet échange de la façon la plus agréable et enrichissante possible :
+• Qu'avez-vous particulièrement en tête ou quel aspect aimeriez-vous que nous explorions en premier ?
+• S'agit-il d'une réflexion générale, d'un conseil pratique, d'une explication conceptuelle ou d'un projet spécifique ?
+
+Prenez tout votre temps, je suis à votre écoute pour échanger en détail et vous répondre avec grand plaisir !`;
 }
 
         // ── 3. POST /api/chat ───────────────────────────────────────────────

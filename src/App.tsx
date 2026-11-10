@@ -13,6 +13,7 @@ import { I18nProvider } from '@/i18n/I18nContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { LocalDataImportBanner } from '@/components/auth/LocalDataImportBanner';
 import { EmailConfirmationToast } from '@/components/auth/EmailConfirmationToast';
+import { scheduleMonacoPreload } from '@/services/lab/monacoPreloadService';
 
 const NexusLab = lazy(() =>
   import('@/components/lab/NexusLab').then((m) => ({ default: m.NexusLab })),
@@ -40,7 +41,24 @@ function WorkspaceFallback({ label }: { label: string }) {
  * Root application component — wires all hooks, layouts, and workspaces together.
  */
 function AppContent() {
-  const [activeView, setActiveView] = useState<ActiveAppView>('chat');
+  const [activeView, setActiveView] = useState<ActiveAppView>(() => {
+    try {
+      const saved = localStorage.getItem('nexus_active_view_v1') as ActiveAppView | null;
+      if (saved === 'chat' || saved === 'lab' || saved === 'control-center') return saved;
+    } catch {
+      // Ignorer si localStorage est inaccessible
+    }
+    return 'chat';
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('nexus_active_view_v1', activeView);
+    } catch {
+      // Ignorer si localStorage est inaccessible
+    }
+  }, [activeView]);
+
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isMemoriesModalOpen, setIsMemoriesModalOpen] = useState(false);
@@ -76,6 +94,11 @@ function AppContent() {
     addMessage,
     updateMessage,
   });
+
+  // Préchargement transparent de Monaco Editor en arrière-plan sans impacter l'UI du chat
+  useEffect(() => {
+    scheduleMonacoPreload(400);
+  }, []);
 
   // Écoute de l'événement global pour basculer vers NEXUS LAB lors de la conversion de maquettes
   useEffect(() => {

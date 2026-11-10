@@ -17,6 +17,9 @@ import {
   deleteConversationFromCloud,
 } from '@/services/sync/syncService';
 
+export const CONVERSATIONS_STORAGE_KEY = 'nexus_conversations_v1';
+export const ACTIVE_CONVERSATION_STORAGE_KEY = 'nexus_active_conv_id_v1';
+
 // ─── State ────────────────────────────────────────────────────────────────────
 
 interface ConversationState {
@@ -139,11 +142,13 @@ function reducer(state: ConversationState, action: Action): ConversationState {
         ),
       };
 
-    case 'SET_CONVERSATIONS':
+    case 'SET_CONVERSATIONS': {
+      const activeId = resolveInitialActiveConversationId(action.conversations);
       return {
         conversations: action.conversations,
-        activeConversationId: action.conversations[0]?.id ?? null,
+        activeConversationId: activeId,
       };
+    }
 
     case 'MERGE_CLOUD_CONVERSATIONS': {
       // Fusion intelligente sans écraser les modifications locales récentes
@@ -168,9 +173,25 @@ function reducer(state: ConversationState, action: Action): ConversationState {
   }
 }
 
+function resolveInitialActiveConversationId(conversations: Conversation[]): string | null {
+  if (conversations.length === 0) return null;
+  try {
+    const savedActiveId = localStorage.getItem(ACTIVE_CONVERSATION_STORAGE_KEY);
+    if (savedActiveId && conversations.some((c) => c.id === savedActiveId)) {
+      return savedActiveId;
+    }
+  } catch {
+    // Ignorer si localStorage est inaccessible
+  }
+
+  // Privilégie la première conversation contenant déjà des messages utilisateur
+  const convWithMessages = conversations.find((c) => Array.isArray(c.messages) && c.messages.length > 0);
+  return convWithMessages?.id ?? conversations[0]?.id ?? null;
+}
+
 function loadLocalConversations(): Conversation[] {
   try {
-    const raw = localStorage.getItem('nexus_conversations_v1');
+    const raw = localStorage.getItem(CONVERSATIONS_STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     return parsed.map((c: any) => ({
@@ -214,20 +235,32 @@ export function useConversations() {
         activeConversationId: initialConv.id,
       };
     }
+    const initialActiveId = resolveInitialActiveConversationId(saved);
     return {
       conversations: saved,
-      activeConversationId: saved[0]?.id ?? null,
+      activeConversationId: initialActiveId,
     };
   });
 
-  // Sauvegarde automatique dans le stockage local pour le mode hors-ligne
+  // Sauvegarde automatique des conversations locales
   useEffect(() => {
     try {
-      localStorage.setItem('nexus_conversations_v1', JSON.stringify(state.conversations));
+      localStorage.setItem(CONVERSATIONS_STORAGE_KEY, JSON.stringify(state.conversations));
     } catch (e) {
       console.warn('[NEXUS CHAT] Impossible de persister les conversations locales:', e);
     }
   }, [state.conversations]);
+
+  // Persistance continue de la conversation active pour restauration automatique au rechargement (F5)
+  useEffect(() => {
+    if (state.activeConversationId) {
+      try {
+        localStorage.setItem(ACTIVE_CONVERSATION_STORAGE_KEY, state.activeConversationId);
+      } catch (e) {
+        console.warn('[NEXUS CHAT] Impossible de mémoriser la conversation active:', e);
+      }
+    }
+  }, [state.activeConversationId]);
 
   // Chargement des conversations cloud lors de la connexion
   useEffect(() => {

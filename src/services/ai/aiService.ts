@@ -143,30 +143,85 @@ console.log('[NEXUS LAB] Projet maquette initialisé avec succès.');
 Note : Le projet peut être ouvert et édité directement dans NEXUS LAB.`;
   }
 
-  if (
+  // Détection des salutations, marques d'amitié et prises de contact
+  const isGreeting =
+    /^(cc|coucou|salut|bonjour|bonsoir|hello|hi|hey|yo|slt|bjr|bsr|wesh)[\s!.?]*$/i.test(lower) ||
     lower.includes('bonjour') ||
     lower.includes('salut') ||
     lower.includes('qui es-tu') ||
     lower.includes('hello') ||
+    lower.includes('bonsoir') ||
+    lower.includes('coucou') ||
+    lower === 'cc' ||
+    lower.startsWith('cc ') ||
+    lower.startsWith('hey ') ||
+    lower.startsWith('yo ');
+
+  // Détection des questions sur l'humeur, la forme ou les nouvelles
+  const isWellbeing =
     lower.includes('comment vas-tu') ||
     lower.includes('comment tu vas') ||
+    lower.includes('comment allez-vous') ||
+    lower.includes('comment ça va') ||
+    lower.includes('comment ca va') ||
     lower.includes('ça va') ||
     lower.includes('ca va') ||
-    lower.includes('bonsoir')
-  ) {
-    return `Bonjour ! Tout va pour le mieux, merci. Je suis NEXUS AI, votre studio d'ingénierie logicielle et pair-programmeur.
+    lower.includes('tu vas bien') ||
+    lower.includes('la forme') ||
+    lower.includes('quoi de neuf');
 
-Je suis à votre disposition pour vous accompagner :
-• Architecture système & Clean Architecture (DDD, découplage, scalabilité)
-• Conception & développement complet (React 19, TypeScript, Python, Node.js)
-• Spécifications OpenAPI, refactorisation, tests et audits de sécurité
-• Optimisation de performances et requêtes SQL
+  // Détection des remerciements et politesses
+  const isThanks =
+    lower.includes('merci') ||
+    lower.includes('super') ||
+    lower.includes('génial') ||
+    lower.includes('parfait') ||
+    lower.includes('top') ||
+    lower.includes('impeccable') ||
+    lower.includes('bonne journée') ||
+    lower.includes('bonne soirée') ||
+    lower.includes('au revoir') ||
+    lower.includes('à bientôt') ||
+    lower.includes('a bientot');
 
-Sur quel sujet ou projet souhaitez-vous que nous avancions ensemble aujourd'hui ?`;
+  if (isWellbeing) {
+    return `Bonjour ! Tout va très bien, je vous remercie chaleureusement de demander. Et vous, comment vous portez-vous aujourd'hui ?
+
+C'est toujours un vrai plaisir d'échanger avec vous. Que vous ayez envie de discuter d'un sujet qui vous tient à cœur, d'explorer une idée, de poser une question générale ou de collaborer sur un projet, je suis à votre entière écoute avec bienveillance.
+
+De quoi souhaiteriez-vous que nous parlions ?`;
   }
 
-  if (agentId === 'coder' || lower.includes('code') || lower.includes('fonction') || lower.includes('react') || lower.includes('typescript') || lower.includes('python')) {
-    return `Voici une implémentation modulaire et typée pour la production :
+  if (isGreeting) {
+    return `Bonjour ! C'est un réel plaisir de vous retrouver. Comment allez-vous aujourd'hui ?
+
+Je suis à votre entière disposition pour échanger librement et en toute convivialité. Nous pouvons aborder n'importe quel domaine :
+• Discuter d'idées, de réflexions, de sciences, de culture ou de sujets du quotidien
+• Concevoir, structurer ou explorer de nouveaux projets créatifs ou techniques
+• Résoudre des défis concrets, poser des questions ou simplement dialoguer à votre rythme
+
+N'hésitez pas à me partager ce qui vous intéresse ou ce que vous avez en tête en ce moment !`;
+  }
+
+  if (isThanks) {
+    return `Je vous en prie, c'est un véritable plaisir ! Je suis ravi d'avoir pu vous être utile.
+
+N'hésitez surtout pas si vous souhaitez approfondir un point, poursuivre la discussion sur un autre thème ou explorer une nouvelle idée ensemble.
+
+Je reste à votre entière disposition, et vous souhaite d'ores et déjà d'excellents échanges !`;
+  }
+
+  // Si la demande concerne explicitement du code ou du développement
+  if (
+    agentId === 'coder' ||
+    lower.includes('écris une fonction') ||
+    lower.includes('code en') ||
+    lower.includes('programme') ||
+    lower.includes('script python') ||
+    lower.includes('composant react') ||
+    lower.includes('refactorise')
+  ) {
+    return `Voici une implémentation soignée, modulaire et typée pour répondre à votre besoin :
 
 \`\`\`typescript
 export interface TaskConfig<T> {
@@ -203,33 +258,43 @@ export async function processTask<T>(
 \`\`\`
 
 Points clés de l'implémentation :
-- Typage générique strict préservant l'intégrité des types d'entrée.
-- Politique de retry exponentielle avec isolation des erreurs réseau.
-- Mesure précise du temps d'exécution sans surcoût mémoire.`;
+- Typage générique strict préservant l'intégrité des données d'entrée.
+- Politique de retry exponentielle avec isolation des erreurs.
+- Mesure précise du temps d'exécution.
+
+Souhaitez-vous que nous l'adaptions à un cas d'usage particulier ou que nous y ajoutions des fonctionnalités ?`;
   }
 
-  if (agentId === 'writer' || lower.includes('rédige') || lower.includes('écris') || lower.includes('document') || lower.includes('synthèse')) {
-    return `### Spécification et Synthèse Technique
+  if (agentId === 'writer' || lower.includes('rédige') || lower.includes('document') || lower.includes('synthèse')) {
+    return `### Spécification et Synthèse
+
+Avec plaisir ! Voici une synthèse structurée et claire :
 
 #### 1. Contexte et Objectifs
-- Définition du périmètre fonctionnel et des exigences système.
-- Établissement du contrat technique d'interface.
+- Définition du périmètre et identification des attentes clés.
+- Établissement des principes directeurs et des priorités.
 
-#### 2. Principes Directeurs
-- Interfaces explicites et prévisibles.
-- Validation défensive aux frontières du système.
-- Modularité sans dépendance circulaire.
+#### 2. Démarche et Recommandations
+- Clarté et lisibilité pour l'ensemble des parties prenantes.
+- Approche progressive et modulaire garantissant la flexibilité.
 
-#### 3. Jalon d'Implémentation
-Validation des schémas d'échanges et contractualisation des endpoints.`;
+#### 3. Prochaines Étapes
+Mise en œuvre des axes prioritaires et validation collaborative des résultats.
+
+Souhaitez-vous que nous développions une section en particulier ?`;
   }
 
-  return `Demande enregistrée : "${userMessage.length > 70 ? userMessage.slice(0, 67) + '...' : userMessage}".
+  // Discussion naturelle, courtoise et ouverte sur n'importe quel sujet
+  const cleanSnippet = userMessage.trim();
+  return `C'est un sujet très intéressant ! Merci pour votre message.
 
-Précisez le contexte technique si nécessaire :
-1. Objectif ciblé (architecture, implémentation, refactorisation, audit de sécurité).
-2. Stack technique ou contraintes d'environnement (TypeScript, React, Python, SQL, etc.).
-3. Format attendu (code source complet, contrat OpenAPI, diagnostic de performance).`;
+À propos de : « ${cleanSnippet.length > 80 ? cleanSnippet.slice(0, 77) + '...' : cleanSnippet} »
+
+Pour que nous puissions approfondir cet échange de la façon la plus agréable et enrichissante possible :
+• Qu'avez-vous particulièrement en tête ou quel aspect aimeriez-vous que nous explorions en premier ?
+• S'agit-il d'une réflexion générale, d'un conseil pratique, d'une explication conceptuelle ou d'un projet spécifique ?
+
+Prenez tout votre temps, je suis à votre écoute pour échanger en détail et vous répondre avec grand plaisir !`;
 }
 
 // ─── Exécution en mode simulation ─────────────────────────────────────────────
