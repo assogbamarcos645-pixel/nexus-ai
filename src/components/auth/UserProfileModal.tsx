@@ -200,7 +200,7 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
       aria-modal="true"
       aria-labelledby="profile-modal-title"
     >
-      <div className="relative w-full max-w-lg rounded-2xl bg-surface-950 border border-nexus-500/30 shadow-[0_0_50px_rgba(124,13,244,0.35)] overflow-hidden">
+      <div className="relative w-full max-w-lg max-h-[90dvh] flex flex-col rounded-2xl bg-surface-950 border border-nexus-500/30 shadow-[0_0_50px_rgba(124,13,244,0.35)] overflow-hidden">
         {/* En-tête */}
         <div className="px-6 py-4 border-b border-white/8 bg-surface-900 flex items-center justify-between gap-4 shrink-0">
           <div className="flex items-center gap-3 min-w-0 flex-1">

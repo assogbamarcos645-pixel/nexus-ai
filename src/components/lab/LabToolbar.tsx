@@ -255,7 +255,7 @@ export function LabToolbar({
             title="Enregistrer (Ctrl+S)"
           >
             <Save size={13} />
-            <span className="hidden sm:inline">{isSaving ? '...' : 'Enregistrer'}</span>
+            <span className="hidden lg:inline">{isSaving ? '...' : 'Enregistrer'}</span>
           </button>
 
           {/* Bouton Exporter ZIP */}
@@ -356,7 +356,8 @@ export function LabToolbar({
             title={isDevAssistantOpen ? "Fermer l'assistant IA NEXUS DEV" : "Ouvrir l'assistant IA NEXUS DEV"}
           >
             <Sparkles size={13} className="text-cyan-200" />
-            <span className="hidden sm:inline">NEXUS DEV</span>
+            <span className="hidden lg:inline">NEXUS DEV</span>
+            <span className="hidden sm:inline lg:hidden">DEV</span>
           </button>
 
           {/* Bouton Multi-Agents Swarm (Équipe Autonome) */}

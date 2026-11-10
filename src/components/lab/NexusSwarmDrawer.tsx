@@ -160,11 +160,20 @@ export function NexusSwarmDrawer({
   const isConverged = sessionState?.status === 'converged';
 
   return (
-    <div
-      id="nexus-swarm-drawer"
-      aria-label="Swarm Multi-Agents"
-      className="fixed inset-y-0 right-0 z-50 w-full sm:w-[620px] lg:w-[740px] bg-white/95 dark:bg-[#070714]/95 border-l border-slate-200/90 dark:border-white/10 shadow-2xl backdrop-blur-2xl flex flex-col overflow-hidden animate-in slide-in-from-right duration-300"
-    >
+    <>
+      {/* Arrière-plan sombre cliquable pour fermer le volet sur mobile / tablette / bureau */}
+      <div
+        className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 transition-opacity cursor-pointer animate-fade-in"
+        onClick={onClose}
+        aria-hidden="true"
+        title="Fermer le Swarm"
+      />
+
+      <div
+        id="nexus-swarm-drawer"
+        aria-label="Swarm Multi-Agents"
+        className="fixed inset-y-0 right-0 z-50 w-full sm:w-[620px] lg:w-[740px] bg-white/95 dark:bg-[#070714]/95 border-l border-slate-200/90 dark:border-white/10 shadow-2xl backdrop-blur-2xl flex flex-col overflow-hidden animate-in slide-in-from-right duration-300"
+      >
       {/* 1. Barre d'en-tête du Swarm */}
       <header className="h-14 px-5 border-b border-slate-200/80 dark:border-white/10 bg-slate-100/60 dark:bg-[#06060f] flex items-center justify-between gap-4 shrink-0 select-none">
         <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -547,5 +556,6 @@ export function NexusSwarmDrawer({
         </div>
       </footer>
     </div>
+    </>
   );
 }

@@ -567,6 +567,10 @@ html.dark .markdown-content blockquote {
   background: rgba(37, 99, 235, 0.08);
 }
 .markdown-content table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   width: 100%;
   border-collapse: collapse;
   margin: 0.75rem 0;
@@ -682,5 +686,25 @@ html.dark .markdown-content a:hover {
     transform: scale(1.12);
   }
 }
+
+/* Améliorations tactiles et ergonomiques pour Android, tablettes et mobiles */
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button, a, input, textarea, select {
+  touch-action: manipulation;
+}
+
+/* Prise en charge des zones sécurisées (encoches / barres de gestes Android & iOS) */
+.pb-safe {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
+}
+
+.pt-safe {
+  padding-top: max(0.5rem, env(safe-area-inset-top, 0px));
+}
+
 
 

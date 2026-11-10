@@ -132,7 +132,7 @@ export function AppHeader({
             <button
               type="button"
               onClick={onToggleMobileSidebar}
-              className="md:hidden p-2 -ml-1 rounded-xl text-slate-600 hover:bg-slate-200/60 dark:text-slate-400 dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
+              className="lg:hidden p-2 -ml-1 rounded-xl text-slate-600 hover:bg-slate-200/60 dark:text-slate-400 dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
               aria-label={fr ? 'Ouvrir le menu' : 'Open menu'}
             >
               <Menu size={20} />
@@ -148,7 +148,7 @@ export function AppHeader({
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 sm:gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           {/* Badge indicateur du modèle IA actif (Dynamique & Réactif) */}
           <button
             type="button"

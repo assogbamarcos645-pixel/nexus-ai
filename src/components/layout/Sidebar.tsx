@@ -129,7 +129,7 @@ export function Sidebar({
     <>
       {isOpenOnMobile && (
         <div
-          className="fixed inset-0 bg-slate-900/30 dark:bg-black/60 backdrop-blur-sm z-30 md:hidden"
+          className="fixed inset-0 bg-slate-900/30 dark:bg-black/60 backdrop-blur-sm z-30 lg:hidden"
           onClick={onCloseMobile}
           aria-hidden="true"
         />
@@ -141,9 +141,9 @@ export function Sidebar({
         className={cn(
           'flex flex-col shrink-0 h-full select-none z-40 transition-[width,transform] duration-300 ease-out',
           'liquid-glass border-r border-slate-200/60 dark:border-white/10',
-          'fixed inset-y-0 left-0 md:static',
-          isRail ? 'md:w-[76px]' : 'w-[272px]',
-          isOpenOnMobile ? 'translate-x-0 shadow-2xl' : '-translate-x-full md:translate-x-0',
+          'fixed inset-y-0 left-0 lg:static',
+          isRail ? 'lg:w-[76px]' : 'w-[272px]',
+          isOpenOnMobile ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0',
         )}
       >
         {/* En-tête : marque + repli */}
@@ -172,7 +172,7 @@ export function Sidebar({
               <button
                 type="button"
                 onClick={() => setCollapsed(true)}
-                className="hidden md:inline-flex p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
+                className="hidden lg:inline-flex p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
                 aria-label={fr ? 'Réduire la barre latérale' : 'Collapse sidebar'}
                 title={fr ? 'Réduire' : 'Collapse'}
               >
@@ -182,14 +182,14 @@ export function Sidebar({
                 onClick={onCloseMobile}
                 label={fr ? 'Fermer' : 'Close'}
                 title={fr ? 'Fermer le menu (Échap)' : 'Close menu (Esc)'}
-                className="md:hidden"
+                className="lg:hidden"
               />
             </>
           )}
         </div>
 
         {isRail && (
-          <div className="hidden md:flex justify-center pb-2">
+          <div className="hidden lg:flex justify-center pb-2">
             <button
               type="button"
               onClick={() => setCollapsed(false)}

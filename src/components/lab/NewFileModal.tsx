@@ -50,7 +50,7 @@ export function NewFileModal({ isOpen, onClose, onAddFile }: NewFileModalProps) 
       aria-modal="true"
       aria-labelledby="new-file-title"
     >
-      <div className="relative w-full max-w-md flex flex-col rounded-2xl liquid-glass border border-slate-200/80 dark:border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.3)] dark:shadow-[0_0_50px_rgba(124,13,244,0.35)] overflow-hidden legacy-theme text-slate-900 dark:text-white">
+      <div className="relative w-full max-w-md max-h-[90dvh] flex flex-col rounded-2xl liquid-glass border border-slate-200/80 dark:border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.3)] dark:shadow-[0_0_50px_rgba(124,13,244,0.35)] overflow-hidden legacy-theme text-slate-900 dark:text-white">
         {/* En-tête */}
         <div className="px-5 py-4 border-b border-slate-200/80 dark:border-white/10 liquid-glass flex items-center justify-between gap-4 shrink-0">
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
@@ -72,7 +72,7 @@ export function NewFileModal({ isOpen, onClose, onAddFile }: NewFileModalProps) 
         </div>
 
         {/* Corps */}
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+        <form onSubmit={handleSubmit} className="p-5 space-y-4 overflow-y-auto scrollbar-thin flex-1">
           <div>
             <label htmlFor="input-file-path" className="block text-xs font-semibold text-slate-700 dark:text-white/70 uppercase tracking-wider mb-1.5">
               Nom ou chemin du fichier

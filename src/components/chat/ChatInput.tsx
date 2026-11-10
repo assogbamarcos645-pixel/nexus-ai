@@ -316,7 +316,7 @@ export function ChatInput({
       <div
         onClick={() => textareaRef.current?.focus({ preventScroll: true })}
         className={cn(
-          'relative flex items-center gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-2xl transition-all duration-300 cursor-text',
+          'relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2.5 rounded-2xl transition-all duration-300 cursor-text',
           'liquid-glass',
           effectiveImages.length > 0 && 'border-cyan-500/40 ring-1 ring-cyan-500/20',
           'hover:border-slate-300 dark:hover:border-sky-400/30',
@@ -346,7 +346,7 @@ export function ChatInput({
           </button>
 
           {/* Séparateur vertical fin */}
-          <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 mx-1" aria-hidden="true" />
+          <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 mx-0.5 sm:mx-1" aria-hidden="true" />
         </div>
 
         {/* Zone de texte centrale avec auto-focus et collage d'images (Ctrl+V) */}
@@ -363,14 +363,14 @@ export function ChatInput({
           disabled={isLoading}
           aria-label={activePlaceholder}
           className={cn(
-            'flex-1 resize-none bg-transparent text-sm sm:text-[14.5px] text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500',
+            'flex-1 min-w-0 resize-none bg-transparent text-sm sm:text-[14.5px] text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500',
             'outline-none scrollbar-thin leading-relaxed py-1',
             'disabled:opacity-50',
           )}
         />
 
         {/* Sélecteur d'agent en pilule "NEXUS v" + Bouton d'envoi rond */}
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
           {/* Menu sélecteur d'agent NEXUS */}
           <div className="relative" ref={dropdownRef}>
             <button
@@ -378,28 +378,31 @@ export function ChatInput({
               id="btn-agent-selector-pill"
               onClick={() => setIsAgentMenuOpen((prev) => !prev)}
               className={cn(
-                'btn-tactile flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold cursor-pointer select-none',
+                'btn-tactile flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-full text-xs font-semibold cursor-pointer select-none',
                 'bg-blue-50/90 hover:bg-blue-100/80 text-blue-950 border border-blue-200/70',
                 'dark:bg-slate-800/90 dark:hover:bg-slate-700/80 dark:text-slate-200 dark:border-slate-700/80',
               )}
               title={language === 'fr' ? 'Choisir l’agent spécialisé' : 'Choose specialized agent'}
             >
               <span
-                className="w-2 h-2 rounded-full shadow-xs"
+                className="w-2 h-2 rounded-full shadow-xs shrink-0"
                 style={{ backgroundColor: currentAgent.color }}
               />
-              <span className="tracking-tight font-medium text-[11.5px]">
+              <span className="tracking-tight font-medium text-[11.5px] hidden sm:inline">
                 {currentAgent.id === 'general' ? 'NEXUS Architect' : currentAgent.name}
+              </span>
+              <span className="tracking-tight font-medium text-[11px] sm:hidden">
+                {currentAgent.id === 'general' ? 'Architect' : currentAgent.name.split(' ')[0]}
               </span>
               <ChevronDown
                 size={12}
-                className={cn('text-slate-400 dark:text-slate-400 transition-transform duration-200', isAgentMenuOpen && 'rotate-180')}
+                className={cn('text-slate-400 dark:text-slate-400 transition-transform duration-200 shrink-0', isAgentMenuOpen && 'rotate-180')}
               />
             </button>
 
             {/* Menu déroulant des agents vers le haut */}
             {isAgentMenuOpen && (
-              <div className="absolute right-0 bottom-full mb-2 w-72 rounded-2xl bg-white/98 dark:bg-[#0f1526]/98 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800 shadow-[0_16px_40px_rgba(15,23,42,0.16)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.8)] p-1.5 z-50 animate-nexus-pop">
+              <div className="absolute right-0 bottom-full mb-2 w-72 sm:w-80 max-w-[calc(100vw-2rem)] rounded-2xl bg-white/98 dark:bg-[#0f1526]/98 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800 shadow-[0_16px_40px_rgba(15,23,42,0.16)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.8)] p-1.5 z-50 animate-nexus-pop">
                 <div className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800/80 mb-1">
                   {language === 'fr' ? 'Agents Spécialisés — Génie Logiciel' : 'Specialized Agents — Software Engineering'}
                 </div>

@@ -171,7 +171,7 @@ export function AdvancedSettings({
       </div>
 
       {/* ── Paramètres d'Inférence Numériques ───────────────────────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
         {/* Longueur max des réponses (maxTokens) */}
         <div className="rounded-2xl liquid-glass liquid-glass-card border border-slate-200/80 dark:border-white/10 p-5 space-y-4">
           <div className="flex items-center justify-between">

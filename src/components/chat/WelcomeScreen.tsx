@@ -126,7 +126,7 @@ function WelcomeScreenComponent({ onSuggestionClick, children }: WelcomeScreenPr
       )}
 
       {/* 4 Cartes d'actions rapides professionnelles (Grille 2x2 ou 4 colonnes avec cascade animée) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 w-full max-w-4xl px-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5 w-full max-w-4xl px-1 sm:px-2">
         {QUICK_ACTIONS.map((action, index) => {
           const IconComponent = action.icon;
           const label = fr ? action.labelFr : action.labelEn;
@@ -141,22 +141,22 @@ function WelcomeScreenComponent({ onSuggestionClick, children }: WelcomeScreenPr
               onClick={() => onSuggestionClick(prompt)}
               style={{ animationDelay: `${index * 90 + 150}ms` }}
               className={cn(
-                'group relative flex flex-col items-start p-4 rounded-2xl text-left cursor-pointer card-interactive animate-nexus-fade-up',
+                'group relative flex flex-col items-start p-3 sm:p-4 rounded-2xl text-left cursor-pointer card-interactive animate-nexus-fade-up',
                 'liquid-glass liquid-glass-card',
                 'text-slate-800 dark:text-white',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500',
               )}
             >
-              <div className="flex items-center justify-between w-full mb-2.5">
-                <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center border shadow-xs transition-all duration-300 group-hover:scale-125 group-hover:-rotate-12', action.badgeBg)}>
-                  <IconComponent size={17} className={action.iconColor} />
+              <div className="flex items-center justify-between w-full mb-2 sm:mb-2.5">
+                <div className={cn('w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center border shadow-xs transition-all duration-300 group-hover:scale-125 group-hover:-rotate-12', action.badgeBg)}>
+                  <IconComponent size={16} className={action.iconColor} />
                 </div>
-                <ArrowUpRight size={16} className="text-slate-400 group-hover:text-sky-400 dark:text-slate-500 dark:group-hover:text-sky-300 transition-all duration-300 opacity-60 group-hover:opacity-100 group-hover:translate-x-1.5 group-hover:-translate-y-1.5 group-hover:scale-125" />
+                <ArrowUpRight size={15} className="text-slate-400 group-hover:text-sky-400 dark:text-slate-500 dark:group-hover:text-sky-300 transition-all duration-300 opacity-60 group-hover:opacity-100 group-hover:translate-x-1.5 group-hover:-translate-y-1.5 group-hover:scale-125" />
               </div>
-              <span className="text-[13.5px] font-semibold text-slate-900 dark:text-white tracking-tight mb-1">
+              <span className="text-[13px] sm:text-[13.5px] font-semibold text-slate-900 dark:text-white tracking-tight mb-0.5 sm:mb-1">
                 {label}
               </span>
-              <span className="text-[11.5px] text-slate-500 dark:text-slate-400 leading-snug line-clamp-2">
+              <span className="text-[11px] sm:text-[11.5px] text-slate-500 dark:text-slate-400 leading-snug line-clamp-2">
                 {desc}
               </span>
             </button>

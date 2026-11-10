@@ -121,7 +121,7 @@ export function ChatWindow({
           </div>
 
           {/* Barre de saisie fixée en bas (Style Deep Slate & Cobalt) */}
-          <div className="shrink-0 w-full bg-gradient-to-t from-[#f8fafc]/95 via-[#f8fafc]/70 to-transparent dark:from-[#0b0f19]/95 dark:via-[#0b0f19]/70 dark:to-transparent backdrop-blur-[2px] pt-1">
+          <div className="shrink-0 w-full bg-gradient-to-t from-[#f8fafc]/95 via-[#f8fafc]/70 to-transparent dark:from-[#0b0f19]/95 dark:via-[#0b0f19]/70 dark:to-transparent backdrop-blur-[2px] pt-1 pb-safe">
             <ChatInput
               value={input}
               onChange={onInputChange}
@@ -136,7 +136,7 @@ export function ChatWindow({
               onAddImage={onAddImage}
               onRemoveImage={onRemoveImage}
             />
-            <p className="text-[11px] text-center text-slate-400 dark:text-white/30 pt-1 pb-1.5 select-none px-4">
+            <p className="text-[10px] sm:text-[11px] text-center text-slate-400 dark:text-white/30 pt-0.5 pb-1 select-none px-4">
               {language === 'fr'
                 ? 'NEXUS AI peut commettre des erreurs. Pensez à vérifier les informations importantes.'
                 : 'NEXUS AI can make mistakes. Consider verifying important information.'}

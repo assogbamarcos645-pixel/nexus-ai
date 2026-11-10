@@ -200,7 +200,7 @@ export function AuthModal({ isOpen, initialMode = 'sign-in', onClose }: AuthModa
       aria-modal="true"
       aria-labelledby="auth-modal-title"
     >
-      <div className="relative w-full max-w-md rounded-2xl bg-surface-950 border border-nexus-500/30 shadow-[0_0_50px_rgba(124,13,244,0.35)] overflow-hidden">
+      <div className="relative w-full max-w-md max-h-[90dvh] flex flex-col rounded-2xl bg-surface-950 border border-nexus-500/30 shadow-[0_0_50px_rgba(124,13,244,0.35)] overflow-hidden">
         {/* En-tête */}
         <div className="px-6 py-5 border-b border-white/8 bg-surface-900/90 flex items-center justify-between gap-4 shrink-0">
           <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -234,7 +234,7 @@ export function AuthModal({ isOpen, initialMode = 'sign-in', onClose }: AuthModa
         </div>
 
         {/* Corps */}
-        <div className="p-6 space-y-5">
+        <div className="p-6 space-y-5 overflow-y-auto scrollbar-thin flex-1">
           {/* Avertissement Mode Local si le cloud n'est pas configuré */}
           {!isConfigured && (
             <div className="p-4 rounded-xl bg-nexus-950/80 border border-nexus-500/30 text-xs text-nexus-200 leading-relaxed space-y-2">

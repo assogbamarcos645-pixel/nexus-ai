@@ -57,7 +57,7 @@ export function NewProjectModal({
       aria-modal="true"
       aria-labelledby="new-project-title"
     >
-      <div className="relative w-full max-w-2xl flex flex-col rounded-2xl liquid-glass border border-slate-200/80 dark:border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.3)] dark:shadow-[0_0_50px_rgba(124,13,244,0.35)] overflow-hidden legacy-theme text-slate-900 dark:text-white">
+      <div className="relative w-full max-w-2xl max-h-[90dvh] flex flex-col rounded-2xl liquid-glass border border-slate-200/80 dark:border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.3)] dark:shadow-[0_0_50px_rgba(124,13,244,0.35)] overflow-hidden legacy-theme text-slate-900 dark:text-white">
         {/* En-tête */}
         <div className="px-6 py-4 border-b border-slate-200/80 dark:border-white/10 liquid-glass flex items-center justify-between gap-4 shrink-0">
           <div className="min-w-0 flex-1">
@@ -76,7 +76,7 @@ export function NewProjectModal({
         </div>
 
         {/* Corps */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto scrollbar-thin flex-1">
           {/* Nom du projet */}
           <div>
             <label htmlFor="input-project-name" className="block text-xs font-semibold text-slate-700 dark:text-white/70 uppercase tracking-wider mb-1.5">

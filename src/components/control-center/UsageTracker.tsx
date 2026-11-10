@@ -89,7 +89,7 @@ export function UsageTracker({
       </div>
 
       {/* ── Cartes KPIs Principales ─────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Requêtes Totales */}
         <div className="rounded-2xl liquid-glass liquid-glass-card border border-slate-200/80 dark:border-white/10 p-4 space-y-1">
           <span className="text-[11px] font-semibold text-slate-500 dark:text-white/50 uppercase tracking-wider block">

@@ -69,15 +69,18 @@ export function NexusLab() {
   const [isDevAssistantOpen, setIsDevAssistantOpen] = useState(false);
   const [isSwarmOpen, setIsSwarmOpen] = useState(false);
   const [showPreview, setShowPreview] = useState(true);
-  const [showExplorer, setShowExplorer] = useState(true);
-  const [layoutMode, setLayoutMode] = useState<LabLayoutMode>('split');
+  const [showExplorer, setShowExplorer] = useState(() => (typeof window !== 'undefined' ? window.innerWidth >= 1024 : true));
+  const [layoutMode, setLayoutMode] = useState<LabLayoutMode>(() =>
+    typeof window !== 'undefined' && window.innerWidth < 1024 ? 'code-only' : 'split',
+  );
   const [activeProposalForDiff, setActiveProposalForDiff] = useState<DevProposal | null>(null);
   const [isMobile, setIsMobile] = useState(() => (typeof window !== 'undefined' ? window.innerWidth < 768 : false));
 
   // Écoute du redimensionnement d'écran pour adapter la disposition
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
+      const width = window.innerWidth;
+      setIsMobile(width < 768);
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -305,7 +308,7 @@ export function NexusLab() {
                       ? 'flex flex-1 w-full'
                       : 'hidden'
                     : showExplorer
-                    ? 'flex md:w-52 lg:w-56'
+                    ? 'flex w-48 md:w-52 lg:w-56'
                     : 'hidden'
                 }`}
               >
@@ -333,7 +336,7 @@ export function NexusLab() {
                     ? 'hidden'
                     : layoutMode === 'code-only'
                     ? 'flex flex-1 w-full'
-                    : 'flex flex-1 md:w-1/2 md:flex-1'
+                    : 'flex flex-1 lg:w-1/2 min-w-0'
                 }`}
               >
                 <CodeEditor
@@ -369,7 +372,7 @@ export function NexusLab() {
                     : layoutMode === 'preview-only'
                     ? 'flex flex-1 w-full min-w-0 flex-col'
                     : showPreview
-                    ? 'flex flex-1 md:w-1/2 md:flex-1 min-w-0 flex-col'
+                    ? 'flex flex-1 lg:w-1/2 min-w-0 flex-col'
                     : 'hidden'
                 }`}
               >
