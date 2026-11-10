@@ -14,16 +14,19 @@ export const API_BASE_URL =
   (typeof process !== 'undefined' && process.env?.VITE_API_BASE_URL) ||
   '';
 
+const DEFAULT_SUPABASE_URL = 'https://updjpdijbxjatllgaxqu.supabase.co';
+const DEFAULT_SUPABASE_ANON_KEY = 'sb_publishable_wgrbYjTz-3ZiEz2rrqCq-Q_JTfV56xe';
+
 /** Configuration Supabase (URL et clé publique anon). */
 export const SUPABASE_URL =
   (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL) ||
   (typeof process !== 'undefined' && process.env?.VITE_SUPABASE_URL) ||
-  '';
+  DEFAULT_SUPABASE_URL;
 
 export const SUPABASE_ANON_KEY =
   (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_ANON_KEY) ||
   (typeof process !== 'undefined' && process.env?.VITE_SUPABASE_ANON_KEY) ||
-  '';
+  DEFAULT_SUPABASE_ANON_KEY;
 
 /**
  * Détermine si le service cloud Supabase est réellement configuré avec des valeurs valides.
