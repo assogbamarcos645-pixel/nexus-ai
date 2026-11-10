@@ -111,6 +111,7 @@
     margin: 0;
     padding: 0;
     overflow: hidden;
+    overscroll-behavior: none;
   }
 
   html {
@@ -704,6 +705,14 @@ button, a, input, textarea, select {
 
 .pt-safe {
   padding-top: max(0.5rem, env(safe-area-inset-top, 0px));
+}
+
+.pl-safe {
+  padding-left: max(0.5rem, env(safe-area-inset-left, 0px));
+}
+
+.pr-safe {
+  padding-right: max(0.5rem, env(safe-area-inset-right, 0px));
 }
 
 

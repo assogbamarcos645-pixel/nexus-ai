@@ -52,11 +52,11 @@ export function ChatInput({
   const defaultPlaceholder =
     language === 'fr'
       ? effectiveImages.length > 0
-        ? 'Décrivez comment convertir cette maquette (ou appuyez sur Entrée)...'
-        : 'Décrivez ce que vous voulez créer, apprendre ou explorer (ou collez une image Ctrl+V)...'
+        ? 'Décrivez la maquette (ou Entrée)...'
+        : 'Message à NEXUS AI (ou collez une image)...'
       : effectiveImages.length > 0
-        ? 'Describe how to convert this mockup (or press Enter)...'
-        : 'Describe what you want to create, learn, or explore (or paste an image Ctrl+V)...';
+        ? 'Describe mockup (or Enter)...'
+        : 'Message NEXUS AI (or paste an image)...';
 
   const activePlaceholder = placeholder || defaultPlaceholder;
   const currentAgent = agents.find((a) => a.id === selectedAgentId) ?? agents[0];
@@ -395,7 +395,7 @@ export function ChatInput({
               <span className="tracking-tight font-medium max-w-[105px] truncate hidden sm:inline">
                 {currentAgent.id === 'general' ? 'NEXUS Architect' : currentAgent.name}
               </span>
-              <span className="tracking-tight font-medium text-[10.5px] sm:hidden">
+              <span className="tracking-tight font-medium text-[10.5px] max-w-[65px] truncate sm:hidden">
                 {currentAgent.id === 'general' ? 'Architect' : currentAgent.name.split(' ')[0]}
               </span>
               <ChevronDown

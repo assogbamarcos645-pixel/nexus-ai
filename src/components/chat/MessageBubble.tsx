@@ -52,14 +52,14 @@ function MessageBubbleComponent({ message }: MessageBubbleProps) {
   return (
     <div
       className={cn(
-        'max-w-3xl mx-auto w-full px-3 sm:px-4 py-1.5 group transition-all virtual-message animate-message-fade-in flex',
+        'max-w-3xl mx-auto w-full px-1.5 sm:px-4 py-1 sm:py-1.5 group transition-all virtual-message animate-message-fade-in flex',
         isUser ? 'justify-end' : 'justify-start',
       )}
     >
       {/* Bulle de message sobre & épurée sans profil */}
       <div
         className={cn(
-          'relative px-5 py-3.5 rounded-2xl text-sm sm:text-[15px] leading-relaxed max-w-[88%] sm:max-w-[82%] transition-all',
+          'relative px-3.5 sm:px-5 py-2.5 sm:py-3.5 rounded-xl sm:rounded-2xl text-[13.5px] sm:text-[15px] leading-relaxed max-w-[94%] sm:max-w-[84%] md:max-w-[80%] transition-all',
           isUser
             ? 'bg-blue-600 text-white rounded-br-xs shadow-[0_4px_16px_rgba(37,99,235,0.25)] border border-blue-500/40'
             : 'liquid-glass text-slate-800 dark:text-slate-100 rounded-bl-xs',

@@ -151,14 +151,14 @@ export function MemoriesModal({ isOpen, onClose, onOpenAuth }: MemoriesModalProp
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
       role="dialog"
       aria-modal="true"
       aria-labelledby="memories-modal-title"
     >
-      <div className="relative w-full max-w-2xl rounded-2xl bg-surface-950 border border-nexus-500/30 shadow-[0_0_50px_rgba(124,13,244,0.35)] overflow-hidden flex flex-col max-h-[85dvh]">
+      <div className="relative w-full max-w-2xl rounded-2xl bg-surface-950 border border-nexus-500/30 shadow-[0_0_50px_rgba(124,13,244,0.35)] overflow-hidden flex flex-col max-h-[92dvh]">
         {/* En-tête */}
-        <div className="px-6 py-4 border-b border-white/8 bg-surface-900/90 flex items-center justify-between gap-4 shrink-0">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-white/8 bg-surface-900/90 flex items-center justify-between gap-4 shrink-0">
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <div className="p-2 rounded-xl bg-gradient-to-br from-nexus-500 to-cyan-500 text-white shadow-[0_0_15px_rgba(124,13,244,0.5)] shrink-0">
               <Brain size={18} />
@@ -198,7 +198,7 @@ export function MemoriesModal({ isOpen, onClose, onOpenAuth }: MemoriesModalProp
             />
           </div>
         ) : (
-          <div className="p-6 flex-1 flex flex-col overflow-hidden space-y-4">
+          <div className="p-3.5 sm:p-6 flex-1 flex flex-col overflow-hidden space-y-4">
             {/* Barre d'outils et recherche */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shrink-0">
               {/* Barre de recherche */}

@@ -112,14 +112,14 @@ export function SnapshotHistoryModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200"
       role="dialog"
       aria-modal="true"
       aria-labelledby="history-modal-title"
     >
-      <div className="relative w-full max-w-2xl flex flex-col rounded-2xl liquid-glass border border-slate-200/80 dark:border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.3)] dark:shadow-[0_0_50px_rgba(124,13,244,0.35)] overflow-hidden legacy-theme text-slate-900 dark:text-white max-h-[85dvh]">
+      <div className="relative w-full max-w-2xl flex flex-col rounded-2xl liquid-glass border border-slate-200/80 dark:border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.3)] dark:shadow-[0_0_50px_rgba(124,13,244,0.35)] overflow-hidden legacy-theme text-slate-900 dark:text-white max-h-[92dvh]">
         {/* En-tête */}
-        <div className="px-6 py-4 border-b border-slate-200/80 dark:border-white/10 liquid-glass flex items-center justify-between gap-4 shrink-0">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-200/80 dark:border-white/10 liquid-glass flex items-center justify-between gap-3 sm:gap-4 shrink-0">
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <div className="p-2 rounded-xl bg-purple-600/15 dark:bg-purple-600/20 text-purple-600 dark:text-purple-400 border border-purple-500/30 shrink-0">
               <History size={18} />
@@ -144,10 +144,11 @@ export function SnapshotHistoryModal({
               <button
                 type="button"
                 onClick={() => setIsCreating(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 shadow-sm hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 shadow-sm hover:scale-105 active:scale-95 transition-all cursor-pointer shrink-0"
               >
                 <Plus size={14} />
-                <span>Créer un instantané</span>
+                <span className="hidden sm:inline">Créer un instantané</span>
+                <span className="sm:hidden">Instantané</span>
               </button>
             )}
             <ModalCloseButton onClick={onClose} label="Fermer" title="Fermer (Échap)" />

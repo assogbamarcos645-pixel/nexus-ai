@@ -135,7 +135,7 @@ export function ControlCenter({ onOpenAuth }: ControlCenterProps) {
   return (
     <div className="flex-1 flex flex-col overflow-y-auto bg-transparent text-slate-900 dark:text-white select-none legacy-theme">
       {/* ── En-tête du Centre de Contrôle ────────────────────────────────────── */}
-      <div className="border-b border-slate-200/80 dark:border-white/10 liquid-glass px-6 py-5 shrink-0">
+      <div className="border-b border-slate-200/80 dark:border-white/10 liquid-glass px-3.5 sm:px-6 py-3.5 sm:py-5 shrink-0">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-nexus-600 via-purple-600 to-cyan-500 flex items-center justify-center text-white shadow-[0_0_25px_rgba(124,13,244,0.45)]">
@@ -202,7 +202,7 @@ export function ControlCenter({ onOpenAuth }: ControlCenterProps) {
         </div>
 
         {/* ── Navigation par Onglets en Liquid Glass Capsule ───────────────── */}
-        <div className="max-w-7xl mx-auto mt-6 flex items-center gap-1.5 p-1 liquid-glass-pill overflow-x-auto no-scrollbar w-fit">
+        <div className="max-w-7xl mx-auto mt-4 sm:mt-6 flex items-center gap-1.5 p-1 liquid-glass-pill overflow-x-auto no-scrollbar w-full sm:w-fit">
           <button
             type="button"
             onClick={() => setActiveTab('dashboard')}
@@ -267,7 +267,7 @@ export function ControlCenter({ onOpenAuth }: ControlCenterProps) {
       </div>
 
       {/* ── Contenu Principal de l'Onglet Actif ─────────────────────────────── */}
-      <div className="flex-1 p-6">
+      <div className="flex-1 p-3 sm:p-6">
         <div className="max-w-7xl mx-auto">
           {isConfigured && !isAuthenticated ? (
             <div className="py-12">

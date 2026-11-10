@@ -89,9 +89,9 @@ export function UsageTracker({
       </div>
 
       {/* ── Cartes KPIs Principales ─────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         {/* Requêtes Totales */}
-        <div className="rounded-2xl liquid-glass liquid-glass-card border border-slate-200/80 dark:border-white/10 p-4 space-y-1">
+        <div className="rounded-2xl liquid-glass liquid-glass-card border border-slate-200/80 dark:border-white/10 p-3 sm:p-4 space-y-1">
           <span className="text-[11px] font-semibold text-slate-500 dark:text-white/50 uppercase tracking-wider block">
             Volume de Requêtes
           </span>
@@ -109,7 +109,7 @@ export function UsageTracker({
         </div>
 
         {/* Taux de Succès */}
-        <div className="rounded-2xl liquid-glass liquid-glass-card border border-slate-200/80 dark:border-white/10 p-4 space-y-1">
+        <div className="rounded-2xl liquid-glass liquid-glass-card border border-slate-200/80 dark:border-white/10 p-3 sm:p-4 space-y-1">
           <span className="text-[11px] font-semibold text-slate-500 dark:text-white/50 uppercase tracking-wider block">
             Taux de Succès
           </span>
@@ -132,7 +132,7 @@ export function UsageTracker({
         </div>
 
         {/* Latence Moyenne */}
-        <div className="rounded-2xl liquid-glass liquid-glass-card border border-slate-200/80 dark:border-white/10 p-4 space-y-1">
+        <div className="rounded-2xl liquid-glass liquid-glass-card border border-slate-200/80 dark:border-white/10 p-3 sm:p-4 space-y-1">
           <span className="text-[11px] font-semibold text-slate-500 dark:text-white/50 uppercase tracking-wider block">
             Latence Moyenne
           </span>
@@ -149,7 +149,7 @@ export function UsageTracker({
         </div>
 
         {/* Coût Estimé Réel */}
-        <div className="rounded-2xl liquid-glass liquid-glass-card border border-slate-200/80 dark:border-white/10 p-4 space-y-1">
+        <div className="rounded-2xl liquid-glass liquid-glass-card border border-slate-200/80 dark:border-white/10 p-3 sm:p-4 space-y-1">
           <span className="text-[11px] font-semibold text-slate-500 dark:text-white/50 uppercase tracking-wider block">
             Coût Estimé (USD)
           </span>
@@ -280,7 +280,7 @@ export function UsageTracker({
           </div>
 
           {/* Filtres */}
-          <div className="flex items-center gap-1.5 bg-surface-950 p-1 rounded-xl border border-white/6">
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-1.5 bg-surface-950 p-1 rounded-xl border border-white/6">
             <button
               type="button"
               onClick={() => setFilterSuccess('all')}

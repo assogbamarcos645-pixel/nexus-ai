@@ -61,13 +61,13 @@ export function DashboardOverview({
   return (
     <div className="space-y-6">
       {/* ── 1. État Principal du Moteur IA ──────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-2xl liquid-glass liquid-glass-card border border-white/12 p-6 shadow-2xl">
+      <div className="relative overflow-hidden rounded-2xl liquid-glass liquid-glass-card border border-white/12 p-4 sm:p-6 shadow-2xl">
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-nexus-600/10 via-cyan-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex items-start gap-4">
+        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
+          <div className="flex items-start gap-3 sm:gap-4">
             <div
-              className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-lg ${
+              className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-lg ${
                 engineStatus.status === 'operational'
                   ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.25)]'
                   : engineStatus.status === 'unavailable'
@@ -76,23 +76,23 @@ export function DashboardOverview({
               }`}
             >
               {engineStatus.status === 'operational' ? (
-                <CheckCircle2 size={28} />
+                <CheckCircle2 size={24} className="sm:w-7 sm:h-7" />
               ) : engineStatus.status === 'unavailable' ? (
-                <XCircle size={28} />
+                <XCircle size={24} className="sm:w-7 sm:h-7" />
               ) : isTesting ? (
-                <RefreshCw size={28} className="animate-spin text-cyan-400" />
+                <RefreshCw size={24} className="animate-spin text-cyan-400 sm:w-7 sm:h-7" />
               ) : (
-                <AlertTriangle size={28} />
+                <AlertTriangle size={24} className="sm:w-7 sm:h-7" />
               )}
             </div>
 
             <div>
-              <div className="flex items-center gap-2.5">
-                <h2 className="text-lg font-bold text-white tracking-wide">
+              <div className="flex items-center gap-2 sm:gap-2.5">
+                <h2 className="text-base sm:text-lg font-bold text-white tracking-wide">
                   État du Moteur IA
                 </h2>
                 <span
-                  className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wider border ${
+                  className={`px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider border ${
                     engineStatus.status === 'operational'
                       ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
                       : engineStatus.status === 'unavailable'
@@ -117,12 +117,12 @@ export function DashboardOverview({
             </div>
           </div>
 
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 shrink-0 w-full md:w-auto">
             <button
               type="button"
               onClick={onRunTest}
               disabled={isTesting}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-white/10 hover:bg-white/15 border border-white/15 hover:border-cyan-400/50 shadow-sm transition-all cursor-pointer disabled:opacity-50"
+              className="flex items-center justify-center gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-semibold text-white bg-white/10 hover:bg-white/15 border border-white/15 hover:border-cyan-400/50 shadow-sm transition-all cursor-pointer disabled:opacity-50"
             >
               <RefreshCw size={14} className={isTesting ? 'animate-spin text-cyan-300' : ''} />
               <span>Tester la connectivité</span>
@@ -130,7 +130,7 @@ export function DashboardOverview({
             <button
               type="button"
               onClick={() => onNavigateTab('providers')}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-nexus-600 to-cyan-600 hover:from-nexus-500 hover:to-cyan-500 shadow-[0_0_15px_rgba(124,13,244,0.35)] transition-all cursor-pointer"
+              className="flex items-center justify-center gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-nexus-600 to-cyan-600 hover:from-nexus-500 hover:to-cyan-500 shadow-[0_0_15px_rgba(124,13,244,0.35)] transition-all cursor-pointer"
             >
               <span>Gérer les fournisseurs</span>
               <ArrowRight size={14} />
@@ -140,9 +140,9 @@ export function DashboardOverview({
       </div>
 
       {/* ── 2. Grille Fournisseur Actif & Métriques Fiables ──────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-5">
         {/* Fournisseur et Modèle Actifs */}
-        <div className="rounded-2xl liquid-glass liquid-glass-card p-5 space-y-4">
+        <div className="rounded-2xl liquid-glass liquid-glass-card p-4 sm:p-5 space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-xs font-semibold text-nexus-300 uppercase tracking-wider">
               <Cpu size={15} />

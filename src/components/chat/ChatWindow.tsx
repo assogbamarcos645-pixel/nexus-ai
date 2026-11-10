@@ -71,12 +71,12 @@ export function ChatWindow({
   return (
     <div className="flex flex-col flex-1 h-full min-h-0 overflow-hidden relative">
       {isEmpty ? (
-        /* État initial d'accueil (comme ChatGPT et Claude) : Centré verticalement avec marge haute garantie */
+        /* État initial d'accueil (comme ChatGPT et Claude) : Centré verticalement avec protection de débordement mobile */
         <div
           ref={messagesContainerRef}
-          className="flex-1 overflow-y-auto scrollbar-thin px-3 sm:px-6"
+          className="flex-1 overflow-y-auto scrollbar-thin px-2 sm:px-6"
         >
-          <div className="min-h-full flex flex-col items-center justify-center py-6 sm:py-10">
+          <div className="min-h-full flex flex-col items-center justify-start sm:justify-center py-3 sm:py-8">
             <WelcomeScreen agent={agent} onSuggestionClick={onSuggestionClick}>
               <ChatInput
                 value={input}
@@ -102,7 +102,7 @@ export function ChatWindow({
           <div
             id="messages-container"
             ref={messagesContainerRef}
-            className="flex-1 overflow-y-auto scrollbar-thin px-2 sm:px-4 py-4 sm:py-6"
+            className="flex-1 overflow-y-auto scrollbar-thin px-1.5 sm:px-4 py-2 sm:py-6"
           >
             {/* Fil de messages épuré sans avatar ni profil */}
             <div className="max-w-3xl mx-auto w-full space-y-3 pt-2">

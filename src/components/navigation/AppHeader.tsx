@@ -126,20 +126,20 @@ export function AppHeader({
 
   return (
     <>
-      <header className="h-16 px-4 sm:px-8 flex items-center justify-between z-20 shrink-0 select-none border-b border-slate-200/60 dark:border-white/10 liquid-glass shadow-[0_4px_24px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-colors">
-        <div className="flex items-center gap-2.5 min-w-0">
+      <header className="h-14 sm:h-16 px-2.5 sm:px-6 md:px-8 flex items-center justify-between z-20 shrink-0 select-none border-b border-slate-200/60 dark:border-white/10 liquid-glass shadow-[0_4px_24px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-colors">
+        <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
           {onToggleMobileSidebar && (
             <button
               type="button"
               onClick={onToggleMobileSidebar}
-              className="lg:hidden p-2 -ml-1 rounded-xl text-slate-600 hover:bg-slate-200/60 dark:text-slate-400 dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
+              className="lg:hidden p-1.5 sm:p-2 -ml-1 rounded-xl text-slate-600 hover:bg-slate-200/60 dark:text-slate-400 dark:hover:bg-slate-800/60 transition-colors cursor-pointer shrink-0"
               aria-label={fr ? 'Ouvrir le menu' : 'Open menu'}
             >
-              <Menu size={20} />
+              <Menu size={19} />
             </button>
           )}
-          <div className="flex items-center gap-2 min-w-0">
-            <h1 className="text-[15px] font-semibold tracking-tight text-slate-900 dark:text-white truncate">
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+            <h1 className="text-sm sm:text-[15px] font-semibold tracking-tight text-slate-900 dark:text-white truncate">
               {viewTitle}
             </h1>
             <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium tracking-wide bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-sky-300 border border-blue-200/70 dark:border-blue-800/50">
@@ -179,7 +179,7 @@ export function AppHeader({
             onClick={toggleTheme}
             aria-label={themeLabel}
             title={themeLabel}
-            className="btn-tactile relative w-10 h-10 grid place-items-center rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 active:scale-90"
+            className="btn-tactile relative w-8.5 h-8.5 sm:w-10 sm:h-10 grid place-items-center rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 active:scale-90"
           >
             <Sun
               size={18}
@@ -219,7 +219,7 @@ export function AppHeader({
             {menuOpen && (
               <div
                 role="menu"
-                className="absolute right-0 top-full mt-2 w-64 rounded-2xl p-1.5 z-50 bg-white/95 dark:bg-[#12121f]/95 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 shadow-[0_20px_50px_rgba(15,23,42,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.6)] animate-nexus-pop"
+                className="absolute right-0 top-full mt-2 w-64 max-w-[calc(100vw-1.5rem)] rounded-2xl p-1.5 z-50 bg-white/95 dark:bg-[#12121f]/95 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 shadow-[0_20px_50px_rgba(15,23,42,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.6)] animate-nexus-pop"
               >
                 <div className="px-3 py-2.5 border-b border-slate-100 dark:border-white/[0.06] mb-1">
                   <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{displayName}</p>

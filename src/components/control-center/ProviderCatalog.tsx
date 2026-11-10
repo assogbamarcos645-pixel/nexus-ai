@@ -211,7 +211,7 @@ export function ProviderCatalog({
               <div
                 key={provider.id}
                 onClick={() => handleProviderClick(provider)}
-                className={`relative rounded-2xl p-5 liquid-glass liquid-glass-card border transition-all cursor-pointer text-left flex flex-col justify-between ${
+                className={`relative rounded-2xl p-4 sm:p-5 liquid-glass liquid-glass-card border transition-all cursor-pointer text-left flex flex-col justify-between ${
                   isSelected
                     ? 'border-cyan-500/70 dark:border-cyan-400/60 shadow-[0_0_25px_rgba(6,182,212,0.25)] ring-2 ring-cyan-500/40'
                     : 'border-slate-200/80 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20'
@@ -488,7 +488,7 @@ export function ProviderCatalog({
                 <div
                   key={model.id}
                   onClick={() => setSelectedModelId(model.id)}
-                  className={`p-4 rounded-xl liquid-glass-card border transition-all cursor-pointer text-left flex flex-col justify-between ${
+                  className={`p-3 sm:p-4 rounded-xl liquid-glass-card border transition-all cursor-pointer text-left flex flex-col justify-between ${
                     isSelected
                       ? 'bg-nexus-500/10 dark:bg-surface-950/90 border-cyan-500 dark:border-cyan-400/60 shadow-md ring-1 ring-cyan-500/40'
                       : 'bg-white/60 dark:bg-surface-950/50 border-slate-200/80 dark:border-white/8 hover:border-slate-300 dark:hover:border-white/20'

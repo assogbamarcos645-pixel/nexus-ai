@@ -139,10 +139,10 @@ export function Sidebar({
         id="sidebar"
         aria-label={fr ? 'Navigation principale' : 'Main navigation'}
         className={cn(
-          'flex flex-col shrink-0 h-full select-none z-40 transition-[width,transform] duration-300 ease-out',
+          'flex flex-col shrink-0 h-full select-none z-40 transition-[width,transform] duration-300 ease-out pt-safe pb-safe',
           'liquid-glass border-r border-slate-200/60 dark:border-white/10',
           'fixed inset-y-0 left-0 lg:static',
-          isRail ? 'lg:w-[76px]' : 'w-[272px]',
+          isRail ? 'lg:w-[76px]' : 'w-[272px] max-w-[85vw]',
           isOpenOnMobile ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0',
         )}
       >
