@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<body style="margin:0; background:#f0f0ff; display:flex; justify-content:center; align-items:center; height:100vh;">
+  <canvas id="c" width="400" height="400" style="border:1px solid red;"></canvas>
+  <script>
+    const img = new Image();
+    img.src = '/mockup.jpg';
+    img.onload = () => {
+      const ctx = document.getElementById('c').getContext('2d');
+      // Logo dans la maquette (1024x688) :
+      // x: 410, y: 130, w: 265, h: 220
+      ctx.drawImage(img, 410, 130, 265, 220, 50, 50, 300, 250);
+    };
+  </script>
+</body>
+</html>

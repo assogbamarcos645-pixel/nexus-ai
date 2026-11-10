@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Test Logo 3D</title>
+  <style>
+    body { margin: 0; background: #f0f2ff; overflow: hidden; }
+    canvas { width: 100vw; height: 100vh; display: block; }
+  </style>
+  <script type="importmap">
+    { "imports": { "three": "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.module.min.js" } }
+  </script>
+</head>
+<body>
+<script type="module">
+import * as THREE from 'three';
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(32, window.innerWidth / window.innerHeight, 0.1, 100);
+camera.position.set(0, 0.1, 6.5);
+camera.lookAt(0, 0, 0);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.25;
+document.body.appendChild(renderer.domElement);
+
+// Éclairage studio
+scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+const key = new THREE.DirectionalLight(0xffffff, 2.2);
+key.position.set(3, 4, 5);
+scene.add(key);
+
+const cyanLight = new THREE.DirectionalLight(0x00f0ff, 2.0);
+cyanLight.position.set(-4, -1, 3);
+scene.add(cyanLight);
+
+const rimLight = new THREE.DirectionalLight(0x9333ea, 1.8);
+rimLight.position.set(-2, 3, -3);
+scene.add(rimLight);
+
+const pivot = new THREE.Group();
+scene.add(pivot);
+
+// Créons les 3 branches du N avec des capsules parfaites et lisses
+// 1. Branche gauche : Capsule inclinée de bas-gauche (-0.85, -0.85, 0.15) vers haut-gauche (-0.75, 0.85, -0.05)
+// 2. Branche diagonale : Capsule reliant haut-gauche (-0.65, 0.85, 0.05) à bas-droite (0.55, -0.85, 0.15)
+// 3. Branche droite : Capsule verticale de bas-droite (0.75, -0.85, -0.05) vers haut-droite (0.85, 0.95, 0.05)
+
+const matProps = {
+  metalness: 0.08,
+  roughness: 0.14,
+  clearcoat: 1.0,
+  clearcoatRoughness: 0.06,
+  ior: 1.5,
+  specularIntensity: 1.2,
+};
+
+// Branche Gauche (Cyan -> Bleu)
+const leftGeo = new THREE.CapsuleGeometry(0.36, 1.6, 32, 64);
+const leftMat = new THREE.MeshPhysicalMaterial({
+  ...matProps,
+  color: new THREE.Color('#00d2ff'),
+  emissive: new THREE.Color('#0044aa'),
+  emissiveIntensity: 0.25,
+});
+const leftMesh = new THREE.Mesh(leftGeo, leftMat);
+leftMesh.position.set(-0.82, 0.0, 0.05);
+leftMesh.rotation.z = -0.04;
+leftMesh.rotation.x = -0.12;
+pivot.add(leftMesh);
+
+// Branche Droite (Bleu -> Cyan cristal)
+const rightGeo = new THREE.CapsuleGeometry(0.36, 1.7, 32, 64);
+const rightMat = new THREE.MeshPhysicalMaterial({
+  ...matProps,
+  color: new THREE.Color('#38bdf8'),
+  emissive: new THREE.Color('#1e1b4b'),
+  emissiveIntensity: 0.2,
+});
+const rightMesh = new THREE.Mesh(rightGeo, rightMat);
+rightMesh.position.set(0.82, 0.08, 0.0);
+rightMesh.rotation.z = -0.03;
+rightMesh.rotation.x = 0.08;
+pivot.add(rightMesh);
+
+// Branche Diagonale (Violet / Indigo)
+const diagGeo = new THREE.CapsuleGeometry(0.35, 1.95, 32, 64);
+const diagMat = new THREE.MeshPhysicalMaterial({
+  ...matProps,
+  color: new THREE.Color('#6d28d9'),
+  emissive: new THREE.Color('#312e81'),
+  emissiveIntensity: 0.3,
+});
+const diagMesh = new THREE.Mesh(diagGeo, diagMat);
+diagMesh.position.set(0.0, 0.02, 0.18);
+diagMesh.rotation.z = 0.72; // angle diagonal ~41 deg
+diagMesh.rotation.y = -0.15;
+pivot.add(diagMesh);
+
+// Liseré néon le long du pli avant
+const neonCurve = new THREE.CatmullRomCurve3([
+  new THREE.Vector3(-0.55, 0.75, 0.38),
+  new THREE.Vector3(-0.25, 0.38, 0.42),
+  new THREE.Vector3(0.02, 0.02, 0.44),
+  new THREE.Vector3(0.30, -0.36, 0.42),
+  new THREE.Vector3(0.55, -0.72, 0.38),
+]);
+const neonGeo = new THREE.TubeGeometry(neonCurve, 64, 0.032, 16, false);
+const neonMat = new THREE.MeshBasicMaterial({ color: new THREE.Color('#ffffff') });
+const neonMesh = new THREE.Mesh(neonGeo, neonMat);
+pivot.add(neonMesh);
+
+// Bloom cyan autour du liseré
+const bloomGeo = new THREE.TubeGeometry(neonCurve, 64, 0.075, 16, false);
+const bloomMat = new THREE.MeshBasicMaterial({
+  color: new THREE.Color('#00e5ff'),
+  transparent: true,
+  opacity: 0.7,
+  blending: THREE.AdditiveBlending,
+});
+pivot.add(new THREE.Mesh(bloomGeo, bloomMat));
+
+renderer.render(scene, camera);
+</script>
+</body>
+</html>
+

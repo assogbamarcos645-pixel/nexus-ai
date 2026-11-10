@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<body style="margin:0; background:transparent;">
+  <canvas id="c"></canvas>
+  <script>
+    const img = new Image();
+    img.src = '/mockup.jpg';
+    img.onload = () => {
+      const c = document.getElementById('c');
+      const ctx = c.getContext('2d');
+      // Logo dans la maquette 1024x688
+      // Cadre englobant exact du N et de son reflet au sol :
+      // x: 395 à 665 (largeur 270)
+      // y: 100 à 370 (hauteur 270)
+      const sx = 395, sy = 100, sw = 270, sh = 270;
+      const scale = 2; // Rendu Retina 2x (540x540)
+      c.width = sw * scale;
+      c.height = sh * scale;
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, c.width, c.height);
+
+      const imgData = ctx.getImageData(0, 0, c.width, c.height);
+      const d = imgData.data;
+
+      // Détourage intelligent basé sur la couleur du fond
+      for (let i = 0; i < d.length; i += 4) {
+        const r = d[i];
+        const g = d[i + 1];
+        const b = d[i + 2];
+
+        // Fond typique du mockup : r: 242-255, g: 242-255, b: 248-255
+        const minVal = Math.min(r, g, b);
+        const maxVal = Math.max(r, g, b);
+        const diff = maxVal - minVal;
+
+        // Si c'est le fond quasi-blanc / lavande très pâle sans saturation
+        if (minVal > 220 && diff < 22) {
+          const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+          if (lum > 248) {
+            d[i + 3] = 0;
+          } else if (lum > 230) {
+            const factor = (248 - lum) / 18;
+            d[i + 3] = Math.round(d[i + 3] * Math.pow(factor, 1.5));
+          }
+        }
+      }
+
+      ctx.putImageData(imgData, 0, 0);
+      window.isDone = true;
+    };
+  </script>
+</body>
+</html>
+

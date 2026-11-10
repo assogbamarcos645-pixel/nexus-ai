@@ -1,0 +1,686 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-nexus-50: #eff6ff;
+  --color-nexus-100: #dbeafe;
+  --color-nexus-200: #bfdbfe;
+  --color-nexus-300: #93c5fd;
+  --color-nexus-400: #60a5fa;
+  --color-nexus-500: #2563eb;
+  --color-nexus-600: #1d4ed8;
+  --color-nexus-700: #1e40af;
+  --color-nexus-800: #1e3a8a;
+  --color-nexus-900: #172554;
+  --color-nexus-950: #0b1536;
+
+  --color-surface-50: #f8fafc;
+  --color-surface-100: #f1f5f9;
+  --color-surface-800: #1e293b;
+  --color-surface-900: #0f172a;
+  --color-surface-950: #0b0f19;
+
+  --font-sans: 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Azeret Mono', 'Fira Code', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Animations du logo et de l'interface — Expressives, Accentuées & Palpables */
+  --animate-nexus-halo: nexus-halo 8s linear infinite;
+  --animate-nexus-shadow: nexus-shadow 2.5s ease-in-out infinite;
+  --animate-nexus-float: nexus-float 2.8s ease-in-out infinite;
+  --animate-nexus-pulse: nexus-pulse 1.3s ease-in-out infinite;
+  --animate-nexus-fade-up: nexus-fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-nexus-pop: nexus-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  --animate-nexus-message-in: nexus-message-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-nexus-dot: nexus-dot 1.1s ease-in-out infinite;
+  --animate-nexus-aurora: nexus-aurora 9s ease-in-out infinite alternate;
+
+  @keyframes nexus-halo {
+    from { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(180deg) scale(1.12); }
+    to { transform: rotate(360deg) scale(1); }
+  }
+  @keyframes nexus-shadow {
+    0%, 100% { transform: translateX(-50%) scaleX(1); opacity: 0.95; }
+    50% { transform: translateX(-50%) scaleX(0.78); opacity: 0.5; }
+  }
+  @keyframes nexus-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-9px); }
+  }
+  @keyframes nexus-pulse {
+    0%, 100% { filter: drop-shadow(0 0 0 rgba(37, 99, 235, 0)); transform: scale(1); }
+    50% { filter: drop-shadow(0 0 14px rgba(37, 99, 235, 0.8)); transform: scale(1.08); }
+  }
+  @keyframes nexus-fade-up {
+    0% {
+      opacity: 0;
+      transform: translateY(36px) scale(0.94);
+    }
+    65% {
+      transform: translateY(-4px) scale(1.01);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  @keyframes nexus-pop {
+    0% { transform: scale(0.75); opacity: 0; }
+    65% { transform: scale(1.08); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes nexus-message-in {
+    0% {
+      opacity: 0;
+      transform: translateY(32px) scale(0.94);
+    }
+    65% {
+      transform: translateY(-4px) scale(1.015);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  @keyframes nexus-dot {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.3; }
+    40% { transform: translateY(-6px); opacity: 1; }
+  }
+  @keyframes nexus-aurora {
+    0% {
+      transform: translate3d(-6%, -5%, 0) scale(0.95);
+    }
+    50% {
+      transform: translate3d(8%, 6%, 0) scale(1.24);
+    }
+    100% {
+      transform: translate3d(-5%, 9%, 0) scale(1.08);
+    }
+  }
+}
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    height: 100%;
+    height: 100dvh;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'ss01';
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
+  html.light {
+    color-scheme: light;
+  }
+
+  body {
+    background-color: #0b0f19;
+    color: #f1f5f9;
+    font-family: var(--font-sans);
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  html.light body {
+    background-color: #f8fafc;
+    color: #0f172a;
+  }
+
+  #root {
+    height: 100%;
+    height: 100dvh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-nexus-halo,
+    .animate-nexus-aurora {
+      animation: none !important;
+    }
+  }
+}
+
+/*
+ * Compatibilité mode clair pour les modules historiquement conçus en sombre
+ * (NEXUS LAB, Explorer / Centre de Contrôle, modales d'authentification et mémoire).
+ * Ces règles sont strictement limitées au conteneur `.legacy-theme` afin de ne
+ * pas interférer avec la nouvelle interface, qui utilise les variantes `dark:`.
+ */
+@layer utilities {
+  html.light .legacy-theme {
+    --color-surface-950: #ffffff;
+    --color-surface-900: #f4f5fa;
+    --color-surface-800: #e6e9f5;
+  }
+
+  html.light .legacy-theme .text-white {
+    color: #0f172a;
+  }
+
+  html.light .legacy-theme [class*="bg-nexus-"].text-white,
+  html.light .legacy-theme [class*="bg-nexus-"] .text-white,
+  html.light .legacy-theme [class*="bg-gradient-"].text-white,
+  html.light .legacy-theme [class*="bg-gradient-"] .text-white,
+  html.light .legacy-theme [class*="bg-red-"].text-white,
+  html.light .legacy-theme [class*="bg-red-"] .text-white,
+  html.light .legacy-theme [class*="bg-emerald-"].text-white,
+  html.light .legacy-theme [class*="bg-emerald-"] .text-white,
+  html.light .legacy-theme [class*="bg-cyan-"].text-white,
+  html.light .legacy-theme [class*="bg-cyan-"] .text-white {
+    color: #ffffff !important;
+  }
+
+  html.light .legacy-theme .text-white\/90 { color: rgba(15, 23, 42, 0.9); }
+  html.light .legacy-theme .text-white\/85 { color: rgba(15, 23, 42, 0.85); }
+  html.light .legacy-theme .text-white\/80 { color: rgba(15, 23, 42, 0.8); }
+  html.light .legacy-theme .text-white\/75 { color: rgba(15, 23, 42, 0.75); }
+  html.light .legacy-theme .text-white\/70 { color: rgba(15, 23, 42, 0.7); }
+  html.light .legacy-theme .text-white\/65 { color: rgba(15, 23, 42, 0.65); }
+  html.light .legacy-theme .text-white\/60 { color: rgba(15, 23, 42, 0.6); }
+  html.light .legacy-theme .text-white\/50 { color: rgba(15, 23, 42, 0.5); }
+  html.light .legacy-theme .text-white\/40 { color: rgba(15, 23, 42, 0.45); }
+  html.light .legacy-theme .text-white\/30 { color: rgba(15, 23, 42, 0.38); }
+  html.light .legacy-theme .text-white\/25 { color: rgba(15, 23, 42, 0.35); }
+  html.light .legacy-theme .text-white\/20 { color: rgba(15, 23, 42, 0.3); }
+  html.light .legacy-theme .text-white\/10 { color: rgba(15, 23, 42, 0.2); }
+
+  html.light .legacy-theme [class*="placeholder:text-white/"]::placeholder {
+    color: rgba(15, 23, 42, 0.4) !important;
+  }
+
+  html.light .legacy-theme [class*="border-white/"] {
+    border-color: rgba(15, 23, 42, 0.09);
+  }
+
+  html.light .legacy-theme [class*="bg-white/4"] { background-color: rgba(15, 23, 42, 0.03); }
+  html.light .legacy-theme [class*="bg-white/5"] { background-color: rgba(15, 23, 42, 0.04); }
+  html.light .legacy-theme [class*="bg-white/6"] { background-color: rgba(15, 23, 42, 0.05); }
+  html.light .legacy-theme [class*="bg-white/8"] { background-color: rgba(15, 23, 42, 0.06); }
+  html.light .legacy-theme [class*="bg-white/10"] { background-color: rgba(15, 23, 42, 0.07); }
+  html.light .legacy-theme [class*="hover:bg-white/5"]:hover { background-color: rgba(15, 23, 42, 0.05); }
+  html.light .legacy-theme [class*="hover:bg-white/10"]:hover { background-color: rgba(15, 23, 42, 0.08); }
+
+  html.light .legacy-theme .glass {
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  }
+}
+
+@layer utilities {
+  /* ==========================================================================
+     Liquid Glass UI System — Standard Haute Horlogerie & VisionOS Optics
+     ========================================================================== */
+  .liquid-glass {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.78) 0%,
+      rgba(248, 250, 252, 0.52) 100%
+    );
+    -webkit-backdrop-filter: blur(28px) saturate(190%) contrast(102%);
+    backdrop-filter: blur(28px) saturate(190%) contrast(102%);
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    box-shadow:
+      0 12px 36px -12px rgba(15, 23, 42, 0.07),
+      inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.95),
+      inset 0 -1px 2px 0 rgba(0, 0, 0, 0.03);
+  }
+
+  html.dark .liquid-glass,
+  .dark .liquid-glass {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.04) 0%,
+      rgba(14, 20, 36, 0.42) 45%,
+      rgba(8, 12, 22, 0.56) 100%
+    );
+    -webkit-backdrop-filter: blur(28px) saturate(190%) contrast(102%);
+    backdrop-filter: blur(28px) saturate(190%) contrast(102%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow:
+      0 24px 48px -18px rgba(0, 0, 0, 0.6),
+      0 0 1px 1px rgba(255, 255, 255, 0.04),
+      inset 0 1px 1.2px 0 rgba(255, 255, 255, 0.2),
+      inset 0 0 20px 0 rgba(56, 189, 248, 0.02),
+      inset 0 -1px 2px 0 rgba(0, 0, 0, 0.4);
+  }
+
+  /* Liquid Glass Interactive Cards (Finition Joaillerie / Reflet Amorti) */
+  .liquid-glass-card {
+    position: relative;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                background 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .liquid-glass-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(56, 189, 248, 0.38) !important;
+    box-shadow:
+      0 26px 54px -16px rgba(2, 6, 23, 0.65),
+      0 0 0 1px rgba(56, 189, 248, 0.22),
+      inset 0 1px 1.8px 0 rgba(255, 255, 255, 0.28),
+      inset 0 0 24px 0 rgba(56, 189, 248, 0.04);
+  }
+
+  html.light .liquid-glass-card:hover {
+    border-color: rgba(37, 99, 235, 0.35) !important;
+    box-shadow:
+      0 18px 40px -12px rgba(37, 99, 235, 0.12),
+      inset 0 1px 1.8px 0 rgba(255, 255, 255, 0.98);
+  }
+
+  /* Liquid Glass Pill & Capsule (Profil Horloger) */
+  .liquid-glass-pill {
+    background: rgba(255, 255, 255, 0.72);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.65);
+    box-shadow:
+      0 4px 16px rgba(15, 23, 42, 0.05),
+      inset 0 1px 1.2px rgba(255, 255, 255, 0.95);
+  }
+
+  html.dark .liquid-glass-pill,
+  .dark .liquid-glass-pill {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.05) 0%,
+      rgba(15, 23, 42, 0.52) 100%
+    );
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.11);
+    box-shadow:
+      0 6px 20px rgba(0, 0, 0, 0.45),
+      inset 0 1px 1.2px rgba(255, 255, 255, 0.18),
+      inset 0 0 10px rgba(56, 189, 248, 0.04);
+  }
+
+  .glass {
+    background: rgba(255, 255, 255, 0.04);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .glass-hover {
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+
+  .glass-hover:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .nexus-gradient-text {
+    background: linear-gradient(100deg, #38bdf8 0%, #2563eb 55%, #1d4ed8 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .glow-cobalt {
+    box-shadow: 0 0 20px rgba(37, 99, 235, 0.35), 0 0 60px rgba(37, 99, 235, 0.15);
+  }
+
+  /* Bordure dégradée animée pour la barre de saisie au focus */
+  .nexus-ring {
+    position: relative;
+    isolation: isolate;
+  }
+  .nexus-ring::before {
+    content: '';
+    position: absolute;
+    inset: -1.5px;
+    border-radius: inherit;
+    padding: 1.5px;
+    background: linear-gradient(120deg, #38bdf8, #2563eb, #0284c7, #38bdf8);
+    background-size: 300% 300%;
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+    pointer-events: none;
+  }
+  .nexus-ring:focus-within::before {
+    opacity: 1;
+    animation: nexus-ring-move 4s linear infinite;
+  }
+  @keyframes nexus-ring-move {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 300% 50%; }
+  }
+
+  /* Custom scrollbar fallback for WebKit */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgba(59, 130, 246, 0.25);
+    border-radius: 9999px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: rgba(59, 130, 246, 0.45);
+  }
+
+  @supports (scrollbar-width: thin) {
+    .scrollbar-thin {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(59, 130, 246, 0.25) transparent;
+    }
+  }
+
+  /* Cartes et panneaux au look premium SaaS */
+  .premium-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  html.dark .premium-card {
+    background: rgba(14, 16, 26, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.5), 0 2px 8px -1px rgba(0, 0, 0, 0.3);
+  }
+
+  .premium-card:hover {
+    border-color: rgba(99, 102, 241, 0.35);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 30px -4px rgba(99, 102, 241, 0.12), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
+  }
+
+  html.dark .premium-card:hover {
+    border-color: rgba(139, 92, 246, 0.35);
+    box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.7), 0 0 20px rgba(139, 92, 246, 0.15);
+  }
+
+  /* Optimisation de performance extrême pour les conversations denses */
+  .virtual-message {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 90px;
+  }
+
+  .gpu-layer {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+
+  /* Grille Cybernétique Studio NEXUS */
+  .nexus-ambient-grid {
+    background-size: 40px 40px;
+    background-image: 
+      linear-gradient(to right, rgba(99, 102, 241, 0.035) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(99, 102, 241, 0.035) 1px, transparent 1px);
+  }
+
+  html.dark .nexus-ambient-grid {
+    background-image: 
+      linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  }
+}
+
+::selection {
+  background-color: #2563eb;
+  color: #ffffff;
+}
+
+/* Rendu Markdown haute fidélité dans le chat (Style Ingénierie logicielle) */
+.markdown-content {
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+}
+
+.markdown-content p {
+  margin-bottom: 0.65rem;
+  line-height: 1.65;
+}
+.markdown-content p:last-child {
+  margin-bottom: 0;
+}
+.markdown-content strong,
+.markdown-content b {
+  font-weight: 650;
+  color: inherit;
+}
+.markdown-content em,
+.markdown-content i {
+  font-style: italic;
+}
+.markdown-content ul {
+  list-style-type: disc;
+  padding-left: 1.35rem;
+  margin-top: 0.45rem;
+  margin-bottom: 0.65rem;
+  space-y: 0.25rem;
+}
+.markdown-content ol {
+  list-style-type: decimal;
+  padding-left: 1.35rem;
+  margin-top: 0.45rem;
+  margin-bottom: 0.65rem;
+  space-y: 0.25rem;
+}
+.markdown-content li {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+  line-height: 1.55;
+}
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4 {
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  margin-top: 1rem;
+  margin-bottom: 0.45rem;
+  color: inherit;
+}
+.markdown-content h1 { font-size: 1.35rem; }
+.markdown-content h2 { font-size: 1.2rem; }
+.markdown-content h3 { font-size: 1.05rem; }
+.markdown-content h4 { font-size: 0.95rem; }
+
+.markdown-content h1:first-child,
+.markdown-content h2:first-child,
+.markdown-content h3:first-child,
+.markdown-content h4:first-child {
+  margin-top: 0;
+}
+.markdown-content pre {
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+  padding: 0.9rem 1.15rem;
+  border-radius: 0.85rem;
+  background-color: #0c101d;
+  color: #f1f5f9;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+.markdown-content code:not(pre code) {
+  font-family: var(--font-mono);
+  font-size: 0.84em;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.4rem;
+  background-color: rgba(37, 99, 235, 0.1);
+  color: #2563eb;
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
+html.dark .markdown-content code:not(pre code) {
+  background-color: rgba(37, 99, 235, 0.15);
+  color: #93c5fd;
+  border-color: rgba(59, 130, 246, 0.25);
+}
+.markdown-content blockquote {
+  border-left: 3px solid #2563eb;
+  padding: 0.4rem 0 0.4rem 0.85rem;
+  margin: 0.65rem 0;
+  background: rgba(37, 99, 235, 0.05);
+  border-radius: 0 0.5rem 0.5rem 0;
+  font-style: italic;
+  opacity: 0.92;
+}
+html.dark .markdown-content blockquote {
+  background: rgba(37, 99, 235, 0.08);
+}
+.markdown-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.75rem 0;
+  font-size: 0.85rem;
+}
+.markdown-content th,
+.markdown-content td {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  text-align: left;
+}
+html.dark .markdown-content th,
+html.dark .markdown-content td {
+  border-color: rgba(148, 163, 184, 0.15);
+}
+.markdown-content th {
+  background-color: rgba(37, 99, 235, 0.08);
+  font-weight: 600;
+}
+.markdown-content hr {
+  border: 0;
+  height: 1px;
+  background: rgba(148, 163, 184, 0.25);
+  margin: 1.25rem 0;
+}
+html.dark .markdown-content hr {
+  background: rgba(148, 163, 184, 0.15);
+}
+.markdown-content a {
+  color: #2563eb;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.15s ease;
+}
+.markdown-content a:hover {
+  color: #1d4ed8;
+}
+html.dark .markdown-content a {
+  color: #38bdf8;
+}
+html.dark .markdown-content a:hover {
+  color: #93c5fd;
+}
+html.dark .markdown-content a:hover {
+  color: #a5b4fc;
+}
+
+/* Micro-interactions & animations tactiles haute performance, accentuées et palpables */
+.btn-tactile {
+  transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.16s ease, background-color 0.15s ease, filter 0.12s ease, opacity 0.15s ease;
+  will-change: transform, box-shadow;
+}
+.btn-tactile:hover:not(:disabled) {
+  transform: translateY(-2.5px) scale(1.035);
+  box-shadow: 0 10px 24px -4px rgba(37, 99, 235, 0.45);
+}
+.btn-tactile:active:not(:disabled) {
+  transform: translateY(2px) scale(0.91);
+  filter: brightness(0.9);
+  transition-duration: 0.07s;
+}
+
+.card-interactive {
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.22s ease, background-color 0.22s ease;
+  will-change: transform, box-shadow;
+}
+.card-interactive:hover {
+  transform: translateY(-10px) scale(1.03);
+  box-shadow: 0 28px 56px -12px rgba(37, 99, 235, 0.5), 0 0 28px rgba(56, 189, 248, 0.4), 0 0 0 1.5px rgba(56, 189, 248, 0.7);
+}
+.card-interactive:active {
+  transform: translateY(-2px) scale(0.965);
+  transition-duration: 0.08s;
+}
+
+.animate-message-fade-in {
+  animation: nexus-message-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Effet de balayage lumineux franc et éclatant pour actions prioritaires */
+.shimmer-sweep {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer-sweep::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.45) 50%, transparent 100%);
+  transform: skewX(-25deg);
+  animation: nexus-sweep 2.6s infinite ease-in-out;
+  pointer-events: none;
+}
+@keyframes nexus-sweep {
+  0%, 35% { left: -150%; }
+  100% { left: 250%; }
+}
+
+/* Pulsation dynamique du bouton d'envoi lorsqu'un message est prêt */
+.animate-send-ready {
+  animation: nexus-send-ready 1.8s infinite ease-in-out;
+}
+@keyframes nexus-send-ready {
+  0%, 100% {
+    box-shadow: 0 0 16px rgba(37, 99, 235, 0.7), 0 0 35px rgba(56, 189, 248, 0.45);
+    transform: scale(1.05);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(37, 99, 235, 0.95), 0 0 55px rgba(56, 189, 248, 0.75);
+    transform: scale(1.12);
+  }
+}
+
+

@@ -1,0 +1,264 @@
+#!/usr/bin/env python3
+"""
+scripts/generate_quantum_x.py
+
+Générateur de précision géométrique et vectorielle du tout nouvel emblème
+« The Quantum X » de NEXUS AI — ÉDITION PURE LUMIÈRE (ZÉRO NOIR) :
+- Zéro couleur noire (#000, #020617, #0b0f19, #020408 complètement éliminés)
+- Calibration colorimétrique 100% pure lumière sur la charte NEXUS :
+    - Bleu Cobalt NEXUS Lumineux (#2563eb / #1d4ed8 / #3b82f6)
+    - Cyan Électrique & Laser Photonique (#00f0ff / #38bdf8)
+    - Platine & Chrome Spéculaire Pur (#ffffff / #f8fafc / #e2e8f0 / #bfdbfe)
+    - Écrin en Verre Liquide (Liquid Glass) teinté Cobalt / Azur translucide
+- Ombres portées remplacées par des halos de lueur photonique Cobalt & Cyan
+"""
+
+import os
+
+SVG_CONTENT = '''<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Dégradé Boîtier Liquid Glass Lumineux (Zéro Noir : Dégradé Azur Translucide) -->
+    <linearGradient id="wafer-body" x1="10" y1="10" x2="90" y2="90" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.16" />
+      <stop offset="45%" stop-color="#2563eb" stop-opacity="0.12" />
+      <stop offset="100%" stop-color="#1d4ed8" stop-opacity="0.22" />
+    </linearGradient>
+
+    <!-- Biseau d'Arête CNC Spéculaire : Chrome Lumineux & Reflet Cyan -->
+    <linearGradient id="wafer-bevel" x1="5" y1="5" x2="95" y2="95" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9" />
+      <stop offset="35%" stop-color="#38bdf8" stop-opacity="0.75" />
+      <stop offset="70%" stop-color="#2563eb" stop-opacity="0.5" />
+      <stop offset="100%" stop-color="#60a5fa" stop-opacity="0.3" />
+    </linearGradient>
+
+    <!-- Chrome & Platine Pur (Lames du X : Éclat Métallique Pur, Zéro Ombre Sombre) -->
+    <linearGradient id="platinum-blade" x1="0" y1="0" x2="1" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="25%" stop-color="#f0f9ff" />
+      <stop offset="60%" stop-color="#bae6fd" />
+      <stop offset="100%" stop-color="#60a5fa" />
+    </linearGradient>
+
+    <!-- Biseau Spéculaire Haute Définition pour les Arêtes du X -->
+    <linearGradient id="blade-edge" x1="0" y1="0" x2="1" y2="0" gradientUnits="objectBoundingBox">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="40%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#2563eb" />
+    </linearGradient>
+
+    <!-- Lit Réfléchissant sous les Lames (Bleu Cobalt Royal Lumineux au lieu de noir) -->
+    <linearGradient id="bed-cobalt" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0%" stop-color="#1d4ed8" stop-opacity="0.65" />
+      <stop offset="100%" stop-color="#1e40af" stop-opacity="0.85" />
+    </linearGradient>
+
+    <!-- Faisceaux Laser Éblouissants (Cyan Photonique #00f0ff vers Cobalt #2563eb) -->
+    <linearGradient id="nexus-laser-nw-se" x1="24" y1="22" x2="76" y2="78" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#00f0ff" />
+      <stop offset="30%" stop-color="#38bdf8" />
+      <stop offset="70%" stop-color="#2563eb" />
+      <stop offset="100%" stop-color="#1d4ed8" />
+    </linearGradient>
+
+    <linearGradient id="nexus-laser-ne-sw" x1="76" y1="22" x2="24" y2="78" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="35%" stop-color="#00f0ff" />
+      <stop offset="70%" stop-color="#2563eb" />
+      <stop offset="100%" stop-color="#3b82f6" />
+    </linearGradient>
+
+    <!-- Cœur Photonique de Singularité Radiale (Centre 50, 50) -->
+    <radialGradient id="singularity-glow" cx="50" cy="50" r="16" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="25%" stop-color="#00f0ff" stop-opacity="0.95" />
+      <stop offset="55%" stop-color="#38bdf8" stop-opacity="0.75" />
+      <stop offset="80%" stop-color="#2563eb" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#1d4ed8" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Filtre Lueur Photonique Cobalt/Cyan (Remplace l'occlusion sombre) -->
+    <filter id="photon-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3.5" flood-color="#2563eb" flood-opacity="0.45" />
+    </filter>
+
+    <!-- Filtre Lueur Laser Cohérente Hyper-Lumineuse -->
+    <filter id="quantum-glow" x="-45%" y="-45%" width="190%" height="190%">
+      <feGaussianBlur stdDeviation="2.2" result="blur1" />
+      <feGaussianBlur stdDeviation="6" result="blur2" />
+      <feMerge>
+        <feMergeNode in="blur2" />
+        <feMergeNode in="blur1" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <!-- Aura de Lévitation Lumineuse (Zéro Noir : Glow Cobalt 0.35) -->
+    <filter id="chassis-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#2563eb" flood-opacity="0.35" />
+    </filter>
+  </defs>
+
+  <!-- 1. Châssis Squircle en Verre Liquide Lumineux (Liquid Glass) -->
+  <g filter="url(#chassis-glow)">
+    <!-- Base translucide brillante -->
+    <rect
+      x="5"
+      y="5"
+      width="90"
+      height="90"
+      rx="22"
+      fill="url(#wafer-body)"
+    />
+    <!-- Chanfrein périmétrique chromé biseauté à 45° -->
+    <rect
+      x="5"
+      y="5"
+      width="90"
+      height="90"
+      rx="22"
+      stroke="url(#wafer-bevel)"
+      stroke-width="1.6"
+    />
+    <!-- Réticule optique interne en Cyan Lumineux (#38bdf8) -->
+    <line x1="16" y1="5" x2="16" y2="95" stroke="#38bdf8" stroke-width="0.6" stroke-opacity="0.25" />
+    <line x1="84" y1="5" x2="84" y2="95" stroke="#38bdf8" stroke-width="0.6" stroke-opacity="0.25" />
+    <line x1="5" y1="16" x2="95" y2="16" stroke="#38bdf8" stroke-width="0.6" stroke-opacity="0.25" />
+    <line x1="5" y1="84" x2="95" y2="84" stroke="#38bdf8" stroke-width="0.6" stroke-opacity="0.25" />
+  </g>
+
+  <!-- 2. Les Deux Lames Diagonales du « X » en Chrome Spéculaire & Cobalt -->
+  <g filter="url(#photon-glow)">
+    <!-- Lit réfléchissant Diagonale 1 (NW -> SE) -->
+    <polygon
+      points="23,20 32,20 77,80 68,80"
+      fill="url(#bed-cobalt)"
+    />
+    <!-- Lame en Chrome & Platine Pur 1 -->
+    <polygon
+      points="23.5,20.5 31.5,20.5 76.5,79.5 68.5,79.5"
+      fill="url(#platinum-blade)"
+      stroke="url(#blade-edge)"
+      stroke-width="0.8"
+    />
+
+    <!-- Lit réfléchissant Diagonale 2 (NE -> SW) -->
+    <polygon
+      points="77,20 68,20 23,80 32,80"
+      fill="url(#bed-cobalt)"
+    />
+    <!-- Lame en Chrome & Platine Pur 2 -->
+    <polygon
+      points="76.5,20.5 68.5,20.5 23.5,79.5 31.5,79.5"
+      fill="url(#platinum-blade)"
+      stroke="url(#blade-edge)"
+      stroke-width="0.8"
+    />
+  </g>
+
+  <!-- 3. Guides d'Onde Laser Photoniques (Faisceaux Lumineux Purs) -->
+  <g filter="url(#quantum-glow)">
+    <!-- Faisceau laser Diagonale 1 (NW -> SE) -->
+    <line
+      x1="27.5"
+      y1="20"
+      x2="72.5"
+      y2="80"
+      stroke="url(#nexus-laser-nw-se)"
+      stroke-width="2.8"
+      stroke-linecap="round"
+    />
+    <!-- Cœur photonique blanc pur incandescent -->
+    <line
+      x1="27.5"
+      y1="20"
+      x2="72.5"
+      y2="80"
+      stroke="#ffffff"
+      stroke-width="1.1"
+      stroke-linecap="round"
+      stroke-opacity="1"
+    />
+
+    <!-- Faisceau laser Diagonale 2 (NE -> SW) -->
+    <line
+      x1="72.5"
+      y1="20"
+      x2="27.5"
+      y2="80"
+      stroke="url(#nexus-laser-ne-sw)"
+      stroke-width="2.8"
+      stroke-linecap="round"
+    />
+    <!-- Cœur photonique blanc pur incandescent -->
+    <line
+      x1="72.5"
+      y1="20"
+      x2="27.5"
+      y2="80"
+      stroke="#ffffff"
+      stroke-width="1.1"
+      stroke-linecap="round"
+      stroke-opacity="1"
+    />
+  </g>
+
+  <!-- 4. L'Aperture de Singularité Centrale : L'Intersection du Nexus (50, 50) -->
+  <g filter="url(#quantum-glow)">
+    <!-- Halo radial d'énergie quantique pure -->
+    <circle cx="50" cy="50" r="16" fill="url(#singularity-glow)" />
+
+    <!-- Bague de collimation optique en chrome poli -->
+    <circle cx="50" cy="50" r="7.5" fill="#1d4ed8" stroke="#ffffff" stroke-width="1.2" />
+    <circle cx="50" cy="50" r="5" fill="url(#nexus-laser-nw-se)" />
+
+    <!-- Point laser focal de singularité quantique blanche -->
+    <circle cx="50" cy="50" r="2.5" fill="#ffffff" />
+    <circle cx="50" cy="50" r="1.2" fill="#00f0ff" />
+  </g>
+
+  <!-- 5. Plots de Contact Électro-optique aux 4 Extrémités du X -->
+  <g stroke-linecap="round" stroke-width="1.4">
+    <!-- Nord-Ouest -->
+    <line x1="25" y1="23" x2="30" y2="23" stroke="#00f0ff" />
+    <!-- Nord-Est -->
+    <line x1="70" y1="23" x2="75" y2="23" stroke="#38bdf8" />
+    <!-- Sud-Ouest -->
+    <line x1="25" y1="77" x2="30" y2="77" stroke="#38bdf8" />
+    <!-- Sud-Est -->
+    <line x1="70" y1="77" x2="75" y2="77" stroke="#2563eb" />
+  </g>
+
+  <!-- 6. Repères Lithographiques ASML en Cyan Vif (#00f0ff & #38bdf8) -->
+  <g stroke="#00f0ff" stroke-width="0.9" stroke-linecap="round" stroke-opacity="0.8">
+    <!-- Coin Haut-Gauche -->
+    <line x1="12" y1="14" x2="16" y2="14" />
+    <line x1="14" y1="12" x2="14" y2="16" />
+    <!-- Coin Haut-Droit -->
+    <line x1="84" y1="14" x2="88" y2="14" />
+    <line x1="86" y1="12" x2="86" y2="16" />
+    <!-- Coin Bas-Gauche -->
+    <line x1="12" y1="86" x2="16" y2="86" />
+    <line x1="14" y1="84" x2="14" y2="88" />
+    <!-- Coin Bas-Droit -->
+    <line x1="84" y1="86" x2="88" y2="86" />
+    <line x1="86" y1="84" x2="86" y2="88" />
+  </g>
+
+  <!-- Micro-inscription industrielle lumineuse -->
+  <text x="50" y="91.5" text-anchor="middle" font-family="monospace" font-size="3.2" font-weight="700" fill="#38bdf8" letter-spacing="0.8">
+    NEXUS-X // QUANTUM-CORE
+  </text>
+</svg>'''
+
+def main():
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    preview_path = os.path.join(base_dir, "scripts", "monogram_preview.svg")
+    
+    with open(preview_path, "w", encoding="utf-8") as f:
+        f.write(SVG_CONTENT)
+    
+    print(f"[OK] Monogramme « The Quantum X » (ZÉRO NOIR) généré avec succès dans : {preview_path}")
+
+if __name__ == "__main__":
+    main()

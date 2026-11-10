@@ -1,0 +1,12 @@
+# robots.txt pour NEXUS AI
+User-agent: *
+Allow: /
+
+# Exclusion des routes privées, flux d'API et liens d'authentification sensibles
+Disallow: /api/
+Disallow: /*?*access_token=
+Disallow: /*?*refresh_token=
+Disallow: /*?*type=recovery
+Disallow: /*?*error_description=
+
+Sitemap: https://nexus-ai.app/sitemap.xml

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="fr" class="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <title>NEXUS AI — Plateforme d'Intelligence Artificielle Multi-Agents & Espace de Développement</title>
+    <meta
+      name="description"
+      content="NEXUS AI est une plateforme professionnelle combinant hub conversationnel multi-agents, espace de développement de code (IDE) et centre de contrôle des modèles d'IA."
+    />
+    <meta name="theme-color" content="#f8f9ff" />
+    <meta name="color-scheme" content="light" />
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <link rel="canonical" href="https://nexus-ai.app/" />
+
+    <!-- Script anti-scintillement de thème -->
+    <script>
+      (function() {
+        try {
+          var stored = localStorage.getItem('nexus_theme_preference_v1') || 'light';
+          if (stored === 'dark') {
+            document.documentElement.classList.remove('light');
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.classList.add('light');
+          }
+        } catch (e) {}
+      })();
+    </script>
+
+    <!-- Favicon & PWA Icons -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=quantum-x-3" />
+    <link rel="apple-touch-icon" href="/favicon.svg?v=quantum-x-3" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <!-- Open Graph (Facebook, LinkedIn, Discord) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://nexus-ai.app/" />
+    <meta property="og:title" content="NEXUS AI — Intelligence Artificielle Multi-Agents & IDE" />
+    <meta
+      property="og:description"
+      content="Hub conversationnel multi-agents, environnement de développement assisté par IA et gouvernance des fournisseurs de modèles (Gemini, OpenAI, Claude, Mistral, Ollama)."
+    />
+    <meta property="og:image" content="/og-image.png" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:site_name" content="NEXUS AI" />
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="NEXUS AI — Intelligence Artificielle Multi-Agents & IDE" />
+    <meta
+      name="twitter:description"
+      content="Hub conversationnel multi-agents, espace de code et centre de contrôle des modèles d'IA."
+    />
+    <meta name="twitter:image" content="/og-image.png" />
+
+    <!-- Google Fonts: Space Grotesk & Azeret Mono (Cyber-Ingénierie & Brutalisme Chic) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-[#0b0f19] text-slate-100 antialiased selection:bg-blue-600 selection:text-white overflow-hidden h-full h-[100dvh] w-full">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
