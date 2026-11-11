@@ -449,336 +449,6 @@ EXPERTISE TECHNIQUE (Génie Logiciel) :
   }
 }
 
-function generateNaturalDemoResponse(
-  message: string,
-  agentId?: string,
-  images?: string[],
-  conversationHistory?: Array<{ role: string; content: string }>,
-): string {
-  const cleanSnippet = message.trim();
-  const lower = cleanSnippet.toLowerCase();
-
-  // Détection vision multimodale ou conversion de maquette / capture d'écran
-  if (
-    (Array.isArray(images) && images.length > 0) ||
-    lower.includes('maquette') ||
-    lower.includes('capture') ||
-    lower.includes('screenshot') ||
-    lower.includes('mockup') ||
-    lower.includes('convertis')
-  ) {
-    return `### Analyse Visuelle et Conversion UI
-
-Analyse de la maquette effectuée. Restitution architecturale et code pour l'intégration directe dans NEXUS LAB :
-
-#### Spécifications Clés :
-- Mise en page : Dashboard modulaire responsive avec en-tête translucide et cartes KPI.
-- Palette Visuelle : Thème sombre Cosmic (#070714), bordures opalescentes et accents Cyan (#06b6d4) / Indigo (#6366f1).
-- Composants :
-  - Barre de navigation avec marque, liens et bouton d'action.
-  - Grille de cartes métriques avec indicateurs dynamiques.
-  - Section de contenu principal modulaire.
-
----
-
-### Code Source du Projet
-
-\`\`\`html
-<!DOCTYPE html>
-<html lang="fr" class="dark">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Interface Maquette — NEXUS LAB</title>
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body class="bg-[#070714] text-slate-100 min-h-screen font-sans antialiased selection:bg-cyan-500/30">
-  <!-- Barre de navigation -->
-  <header class="w-full border-b border-white/10 bg-slate-900/60 backdrop-blur-xl sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center font-bold text-white shadow-[0_0_15px_rgba(6,182,212,0.4)]">
-          NX
-        </div>
-        <span class="font-bold tracking-wide text-white">NEXUS <span class="text-cyan-400">STUDIO</span></span>
-      </div>
-      <nav class="hidden md:flex items-center gap-6 text-sm text-slate-300">
-        <a href="#overview" class="hover:text-cyan-400 transition-colors">Aperçu</a>
-        <a href="#analytics" class="hover:text-cyan-400 transition-colors">Métriques</a>
-        <a href="#settings" class="hover:text-cyan-400 transition-colors">Paramètres</a>
-      </nav>
-      <button type="button" class="px-4 py-2 rounded-xl text-xs font-semibold bg-gradient-to-r from-cyan-500 to-indigo-600 hover:opacity-95 text-white shadow-[0_0_12px_rgba(6,182,212,0.3)] transition-all cursor-pointer">
-        Explorer
-      </button>
-    </div>
-  </header>
-
-  <!-- Tableau de bord principal -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-    <div class="mb-8">
-      <h1 class="text-2xl sm:text-3xl font-bold text-white mb-2">Tableau de Bord</h1>
-      <p class="text-sm text-slate-400">Restitution instantanée et responsive à partir de votre capture visuelle.</p>
-    </div>
-
-    <!-- Grille de cartes KPI -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-      <div class="p-6 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-cyan-500/30 transition-all shadow-sm">
-        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Disponibilité Système</span>
-        <div class="text-3xl font-extrabold text-white mt-2">99.98%</div>
-        <div class="text-xs text-emerald-400 mt-2 font-medium flex items-center gap-1">+1.2% ce mois</div>
-      </div>
-      <div class="p-6 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-cyan-500/30 transition-all shadow-sm">
-        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Débit Inférence</span>
-        <div class="text-3xl font-extrabold text-cyan-400 mt-2">12,450 req/s</div>
-        <div class="text-xs text-slate-400 mt-2">Latence moyenne : 16ms</div>
-      </div>
-      <div class="p-6 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-cyan-500/30 transition-all shadow-sm">
-        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Moteur Multimodal</span>
-        <div class="text-3xl font-extrabold text-indigo-400 mt-2">Gemini 2.5</div>
-        <div class="text-xs text-emerald-400 mt-2 font-medium flex items-center gap-1">Actif</div>
-      </div>
-    </div>
-  </main>
-  <script src="app.js"></script>
-</body>
-</html>
-\`\`\`
-
-\`\`\`css
-/* Styles personnalisés pour le projet */
-body {
-  margin: 0;
-  background-color: #070714;
-}
-\`\`\`
-
-\`\`\`javascript
-// Initialisation interactive
-console.log('[NEXUS LAB] Projet maquette initialisé avec succès.');
-\`\`\`
-
-Note : Le projet peut être ouvert et édité directement dans NEXUS LAB.`;
-  }
-
-  // 2. Détection de reprise de contexte / historique de conversation
-  const isRecall =
-    lower.includes('tu disais quoi') ||
-    lower.includes('tu disais') ||
-    lower.includes('de quoi on parlait') ||
-    lower.includes('de quoi tu parlais') ||
-    lower.includes('on en était où') ||
-    lower.includes('on en etait ou') ||
-    lower.includes('on parlait de quoi') ||
-    lower.includes('tu te rappelles') ||
-    lower.includes('tu te souviens') ||
-    lower.includes('rappelle-moi') ||
-    lower.includes('c’était quoi le sujet') ||
-    lower.includes("c'etait quoi le sujet") ||
-    lower === 'quoi ?' ||
-    lower === 'quoi?';
-
-  if (isRecall) {
-    if (Array.isArray(conversationHistory) && conversationHistory.length > 0) {
-      const previousTurns = conversationHistory.filter(
-        (m) => m.content && m.content.trim() && m.content.trim() !== cleanSnippet,
-      );
-      const lastAssistant = [...previousTurns].reverse().find((m) => m.role === 'assistant');
-      const lastUser = [...previousTurns].reverse().find((m) => m.role === 'user');
-
-      if (lastAssistant && lastAssistant.content) {
-        const cleanContent = lastAssistant.content
-          .replace(/[#*`_>]/g, '')
-          .split('\n')
-          .map((s) => s.trim())
-          .filter(Boolean)[0] || '';
-        const shortSnippet = cleanContent.length > 110 ? cleanContent.slice(0, 107) + '...' : cleanContent;
-        return `On parlait de ceci juste avant :\n> « ${shortSnippet} »\n\nTu veux qu'on poursuive sur ce point ou qu'on aborde un autre sujet ?`;
-      }
-      if (lastUser && lastUser.content) {
-        const shortUser = lastUser.content.length > 100 ? lastUser.content.slice(0, 97) + '...' : lastUser.content;
-        return `Tu m'avais demandé : « ${shortUser} ».\n\nSouhaites-tu que l'on développe cela ensemble ?`;
-      }
-    }
-    return `On vient tout juste de commencer notre échange ! Dis-moi sur quel sujet ou projet tu souhaites qu'on travaille.`;
-  }
-
-  // 3. Détection de demande d'identité / présentation
-  const isIdentity =
-    lower.includes('qui es-tu') ||
-    lower.includes('qui es tu') ||
-    lower.includes("qui t'es") ||
-    lower.includes('tu es qui') ||
-    lower.includes('présente-toi') ||
-    lower.includes('presente-toi') ||
-    lower.includes('que sais-tu faire') ||
-    lower.includes('tu peux faire quoi');
-
-  if (isIdentity) {
-    return `Je suis l'assistant IA de **NEXUS AI**.
-
-Voici ce sur quoi je peux t'accompagner :
-- **Développement & Code :** Écrire, concevoir et débugger des composants React, TypeScript, Node.js ou Tailwind CSS.
-- **NEXUS LAB :** Prototyper et tester des projets web en direct avec prévisualisation locale.
-- **Vision & Maquettes :** Transformer des maquettes et captures d'écran en interfaces web modernes.
-- **Assistance & Résolution :** Répondre à tes questions techniques, optimiser ton code ou structurer tes idées.
-
-Sur quoi souhaites-tu avancer ?`;
-  }
-
-  // 4. Détection des salutations
-  const isGreeting =
-    /^(cc|coucou|salut|bonjour|bonsoir|hello|hi|hey|yo|slt|bjr|bsr|wesh)[\s!.?]*$/i.test(lower) ||
-    lower.startsWith('salut') ||
-    lower.startsWith('bonjour') ||
-    lower.startsWith('bonsoir') ||
-    lower.startsWith('coucou') ||
-    lower.startsWith('hello') ||
-    lower.startsWith('hey ') ||
-    lower.startsWith('yo ');
-
-  if (isGreeting) {
-    if (agentId === 'coder') {
-      return `Salut ! Prêt à coder. Quel composant, fonction ou projet souhaites-tu qu'on développe ?`;
-    }
-    return `Bonjour ! Comment puis-je t'aider aujourd'hui ? Tu as un projet ou une question en particulier ?`;
-  }
-
-  // 5. Détection des questions sur la forme / humeur
-  const isWellbeing =
-    lower.includes('comment vas-tu') ||
-    lower.includes('comment tu vas') ||
-    lower.includes('comment allez-vous') ||
-    lower.includes('comment ça va') ||
-    lower.includes('comment ca va') ||
-    lower === 'ça va' ||
-    lower === 'ca va' ||
-    lower === 'ça va ?' ||
-    lower === 'ca va ?' ||
-    lower.startsWith('ça va ') ||
-    lower.startsWith('ca va ') ||
-    lower.includes('tu vas bien') ||
-    lower.includes('la forme') ||
-    lower.includes('quoi de neuf');
-
-  if (isWellbeing) {
-    return `Ça va très bien, merci ! Et toi, la forme ? Qu'est-ce qu'on construit de beau aujourd'hui ?`;
-  }
-
-  // 6. Détection des remerciements et politesses
-  const isThanks =
-    lower.includes('merci') ||
-    lower === 'super' ||
-    lower.startsWith('super !') ||
-    lower.startsWith('super,') ||
-    lower === 'top' ||
-    lower.startsWith('top !') ||
-    lower === 'génial' ||
-    lower === 'parfait' ||
-    lower === 'impeccable' ||
-    lower.includes('bonne journée') ||
-    lower.includes('bonne soirée') ||
-    lower.includes('au revoir') ||
-    lower.includes('à bientôt') ||
-    lower.includes('a bientot');
-
-  if (isThanks) {
-    return `Avec grand plaisir ! N'hésite pas si tu as d'autres questions ou si tu souhaites aller plus loin.`;
-  }
-
-  // 7. Si la demande concerne explicitement du code ou du développement
-  if (
-    agentId === 'coder' ||
-    lower.includes('écris une fonction') ||
-    lower.includes('code en') ||
-    lower.includes('programme') ||
-    lower.includes('script python') ||
-    lower.includes('composant react') ||
-    lower.includes('refactorise')
-  ) {
-    return `Voici une implémentation soignée, modulaire et typée pour répondre à ton besoin :
-
-\`\`\`typescript
-export interface TaskConfig<T> {
-  id: string;
-  payload: T;
-  retries?: number;
-  timeoutMs?: number;
-}
-
-export async function processTask<T>(
-  config: TaskConfig<T>,
-  handler: (data: T) => Promise<boolean>
-): Promise<{ success: boolean; durationMs: number }> {
-  const start = performance.now();
-  const maxRetries = config.retries ?? 3;
-
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      const result = await handler(config.payload);
-      if (result) {
-        return {
-          success: true,
-          durationMs: Math.round(performance.now() - start),
-        };
-      }
-    } catch (err) {
-      if (attempt === maxRetries) throw err;
-      await new Promise((r) => setTimeout(r, attempt * 200));
-    }
-  }
-
-  return { success: false, durationMs: Math.round(performance.now() - start) };
-}
-\`\`\`
-
-Points clés de l'implémentation :
-- Typage générique strict préservant l'intégrité des types.
-- Politique de retry exponentielle avec isolation des erreurs réseau.
-- Mesure précise du temps d'exécution sans surcoût mémoire.
-
-Souhaitez-vous que nous l'adaptions à un cas d'usage particulier ou que nous y ajoutions des fonctionnalités ?`;
-  }
-
-  if (agentId === 'writer' || lower.includes('rédige') || lower.includes('document') || lower.includes('synthèse')) {
-    return `### Spécification et Synthèse
-
-Avec plaisir ! Voici une synthèse structurée et claire :
-
-#### 1. Contexte et Objectifs
-- Définition du périmètre et identification des attentes clés.
-- Établissement des principes directeurs et des priorités.
-
-#### 2. Démarche et Recommandations
-- Clarté et lisibilité pour l'ensemble des parties prenantes.
-- Approche progressive et modulaire garantissant la flexibilité.
-
-#### 3. Prochaines Étapes
-Mise en œuvre des axes prioritaires et validation collaborative des résultats.
-
-Souhaites-tu que nous développions une section en particulier ?`;
-  }
-
-  // 9. Questions directes (qui se terminent par '?' ou mots interrogatifs)
-  if (
-    cleanSnippet.endsWith('?') ||
-    lower.startsWith('pourquoi') ||
-    lower.startsWith('comment') ||
-    lower.startsWith("qu'est-ce") ||
-    lower.startsWith('quest-ce') ||
-    lower.startsWith("c'est quoi") ||
-    lower.startsWith('est-ce que') ||
-    lower.startsWith('quelle') ||
-    lower.startsWith('quel')
-  ) {
-    const topic = cleanSnippet.replace(/\?+$/, '').trim();
-    return `C'est une excellente question sur **${topic}**.\n\nEn pratique, l'approche dépend des objectifs et des contraintes du projet. Tu souhaites une explication conceptuelle ou qu'on passe directement à un exemple de code concret ?`;
-  }
-
-  // 10. Discussion naturelle et directe (remplace l'ancien texte artificiel)
-  return `Bien reçu ! Peux-tu me préciser ce que tu souhaites faire ou explorer à ce sujet ? Je suis là pour t'accompagner.`;
-}
-
         // ── 3. POST /api/chat ───────────────────────────────────────────────
         if (req.method === 'POST' && url.startsWith('/api/chat')) {
           const body = await parseRequestBody(req);
@@ -803,53 +473,27 @@ Souhaites-tu que nous développions une section en particulier ?`;
             });
           }
 
-          // Si démo ou aucun secret configuré, génère une réponse simulée ultra-rapide et naturelle
-          if (providerId === 'demo') {
-            const reply = generateNaturalDemoResponse(message, agentId, images, conversationHistory);
-
-            if (isStream) {
-              initSseResponse(res);
-              const tokens = reply.match(/(\s+|\S+)/g) || [reply];
-              let idx = 0;
-              const interval = setInterval(() => {
-                if (req.destroyed || res.writableEnded) {
-                  clearInterval(interval);
-                  return;
-                }
-                if (idx < tokens.length) {
-                  const piece = tokens.slice(idx, idx + 2).join('');
-                  sendSseChunk(res, piece);
-                  idx += 2;
-                } else {
-                  clearInterval(interval);
-                  endSse(res);
-                }
-              }, 12);
-              req.on('close', () => clearInterval(interval));
-              return;
-            }
-
-            return sendJson(res, 200, {
-              content: reply,
-              tokens: {
-                promptTokens: Math.max(1, Math.round(message.length / 4)),
-                completionTokens: 42,
-                totalTokens: Math.max(1, Math.round(message.length / 4)) + 42,
-              },
-            });
+          // Détermination du fournisseur d'IA opérationnel
+          let targetProvider = providerId;
+          if (targetProvider === 'demo') {
+            if (process.env.MISTRAL_API_KEY) targetProvider = 'mistral';
+            else if (process.env.GROQ_API_KEY) targetProvider = 'groq';
+            else if (process.env.GEMINI_API_KEY) targetProvider = 'gemini';
+            else if (process.env.OPENAI_API_KEY) targetProvider = 'openai';
+            else if (process.env.ANTHROPIC_API_KEY) targetProvider = 'anthropic';
+            else targetProvider = 'ollama';
           }
 
-          // Si un fournisseur réel est sélectionné mais sans clé dans le proxy
           let envKey = '';
-          if (providerId === 'openai') envKey = process.env.OPENAI_API_KEY || '';
-          if (providerId === 'gemini') envKey = process.env.GEMINI_API_KEY || '';
-          if (providerId === 'anthropic') envKey = process.env.ANTHROPIC_API_KEY || '';
-          if (providerId === 'mistral') envKey = process.env.MISTRAL_API_KEY || '';
-          if (providerId === 'groq') envKey = process.env.GROQ_API_KEY || '';
+          if (targetProvider === 'openai') envKey = process.env.OPENAI_API_KEY || '';
+          if (targetProvider === 'gemini') envKey = process.env.GEMINI_API_KEY || '';
+          if (targetProvider === 'anthropic') envKey = process.env.ANTHROPIC_API_KEY || '';
+          if (targetProvider === 'mistral') envKey = process.env.MISTRAL_API_KEY || '';
+          if (targetProvider === 'groq') envKey = process.env.GROQ_API_KEY || '';
 
-          if (!envKey && providerId !== 'ollama') {
+          if (!envKey && targetProvider !== 'ollama') {
             return sendJson(res, 400, {
-              message: `La clé secrète pour ${providerId} n'est pas définie dans l'environnement serveur (${providerId.toUpperCase()}_API_KEY). Activez le Mode Démonstration dans le Centre de Contrôle.`,
+              message: `Modèle non disponible : aucune clé API configurée pour ${targetProvider} (${targetProvider.toUpperCase()}_API_KEY). Veuillez configurer votre clé d'API.`,
             });
           }
 
@@ -875,7 +519,7 @@ Souhaites-tu que nous développions une section en particulier ?`;
 
               const geminiContents: { role: string; parts: { text: string }[] }[] = [];
               if (Array.isArray(conversationHistory) && conversationHistory.length > 0) {
-                for (const turn of conversationHistory.slice(-8)) {
+                for (const turn of conversationHistory) {
                   if (turn.content && (turn.role === 'user' || turn.role === 'assistant')) {
                     geminiContents.push({
                       role: turn.role === 'assistant' ? 'model' : 'user',
@@ -945,26 +589,8 @@ Souhaites-tu que nous développions une section en particulier ?`;
                   const errJson = (await streamRes.json().catch(() => ({}))) as any;
                   initSseResponse(res);
                   const reason = errJson.error?.message || `Erreur HTTP ${streamRes.status}`;
-                  const fallbackNotice = `> *Note : Le modèle ${geminiModel} est temporairement indisponible (${reason}). Bascule automatique sur le moteur de secours.*\n\n`;
-                  sendSseChunk(res, fallbackNotice);
-                  const reply = generateNaturalDemoResponse(message, agentId, images, conversationHistory);
-                  const tokens = reply.match(/(\s+|\S+)/g) || [reply];
-                  let idx = 0;
-                  const interval = setInterval(() => {
-                    if (req.destroyed || res.writableEnded) {
-                      clearInterval(interval);
-                      return;
-                    }
-                    if (idx < tokens.length) {
-                      const piece = tokens.slice(idx, idx + 2).join('');
-                      sendSseChunk(res, piece);
-                      idx += 2;
-                    } else {
-                      clearInterval(interval);
-                      endSse(res);
-                    }
-                  }, 12);
-                  req.on('close', () => clearInterval(interval));
+                  sendSseChunk(res, `[Erreur API Google Gemini (${streamRes.status}) : ${reason}]`);
+                  endSse(res);
                   return;
                 }
 
@@ -1040,14 +666,8 @@ Souhaites-tu que nous développions une section en particulier ?`;
               if (!geminiRes.ok) {
                 const errJson = (await geminiRes.json().catch(() => ({}))) as any;
                 const reason = errJson.error?.message || `Erreur HTTP ${geminiRes.status}`;
-                const fallbackReply = `> *Note : Le modèle ${geminiModel} est temporairement saturé (${reason}). Bascule automatique sur le moteur de secours.*\n\n` + generateNaturalDemoResponse(message, agentId, images, conversationHistory);
-                return sendJson(res, 200, {
-                  content: fallbackReply,
-                  tokens: {
-                    promptTokens: Math.max(1, Math.round(message.length / 4)),
-                    completionTokens: Math.max(1, Math.round(fallbackReply.length / 4)),
-                    totalTokens: Math.max(1, Math.round((message.length + fallbackReply.length) / 4)),
-                  },
+                return sendJson(res, geminiRes.status, {
+                  message: `Erreur API Google Gemini (HTTP ${geminiRes.status}) : ${reason}`,
                 });
               }
 
@@ -1066,8 +686,8 @@ Souhaites-tu que nous développions une section en particulier ?`;
               });
             }
 
-            // 2. OpenAI API (avec support streaming SSE, OPENAI_BASE_URL et failover automatique sur Google Gemini)
-            if (providerId === 'openai') {
+            // 2. OpenAI API (avec support streaming SSE, OPENAI_BASE_URL)
+            if (targetProvider === 'openai') {
               const isOpenAIReasoning = modelId?.startsWith('o1');
               const systemPrompt = getAgentSystemPrompt(agentId);
               const openaiBaseUrl = (process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1').replace(/\/+$/, '');
@@ -1077,7 +697,6 @@ Souhaites-tu que nous développions une section en particulier ?`;
                     ...(Array.isArray(conversationHistory)
                       ? conversationHistory
                           .filter((t: any) => t.content && (t.role === 'user' || t.role === 'assistant'))
-                          .slice(-8)
                           .map((t: any) => ({ role: t.role, content: String(t.content) }))
                       : []),
                     { role: 'user', content: `${systemPrompt}\n\n${message}` },
@@ -1087,175 +706,10 @@ Souhaites-tu que nous développions une section en particulier ?`;
                     ...(Array.isArray(conversationHistory)
                       ? conversationHistory
                           .filter((t: any) => t.content && (t.role === 'user' || t.role === 'assistant'))
-                          .slice(-8)
                           .map((t: any) => ({ role: t.role, content: String(t.content) }))
                       : []),
                     { role: 'user', content: message },
                   ];
-
-              // Helper de secours transparent vers Google Gemini si OpenAI est saturé ou quota épuisé
-              const fallbackToGemini = async (reasonNotice: string) => {
-                const geminiKey = process.env.GEMINI_API_KEY;
-                if (!geminiKey) {
-                  if (isStream) {
-                    initSseResponse(res);
-                    sendSseChunk(res, reasonNotice);
-                    const reply = generateNaturalDemoResponse(message, agentId, images, conversationHistory);
-                    const tokens = reply.match(/(\s+|\S+)/g) || [reply];
-                    let idx = 0;
-                    const interval = setInterval(() => {
-                      if (req.destroyed || res.writableEnded) {
-                        clearInterval(interval);
-                        return;
-                      }
-                      if (idx < tokens.length) {
-                        const piece = tokens.slice(idx, idx + 2).join('');
-                        sendSseChunk(res, piece);
-                        idx += 2;
-                      } else {
-                        clearInterval(interval);
-                        endSse(res);
-                      }
-                    }, 12);
-                    req.on('close', () => clearInterval(interval));
-                    return;
-                  }
-                  const demoReply = reasonNotice + generateNaturalDemoResponse(message, agentId, images, conversationHistory);
-                  return sendJson(res, 200, {
-                    content: demoReply,
-                    tokens: {
-                      promptTokens: Math.max(1, Math.round(message.length / 4)),
-                      completionTokens: Math.max(1, Math.round(demoReply.length / 4)),
-                      totalTokens: Math.max(1, Math.round((message.length + demoReply.length) / 4)),
-                    },
-                  });
-                }
-
-                // Exécution Gemini en repli transparent
-                const geminiContents: { role: string; parts: { text: string }[] }[] = [];
-                if (Array.isArray(conversationHistory) && conversationHistory.length > 0) {
-                  for (const turn of conversationHistory.slice(-8)) {
-                    if (turn.content && (turn.role === 'user' || turn.role === 'assistant')) {
-                      geminiContents.push({
-                        role: turn.role === 'assistant' ? 'model' : 'user',
-                        parts: [{ text: String(turn.content) }],
-                      });
-                    }
-                  }
-                }
-                const userParts: Array<{ text?: string; inlineData?: { mimeType: string; data: string } }> = [
-                { text: message },
-              ];
-              if (Array.isArray(images) && images.length > 0) {
-                for (const img of images) {
-                  if (typeof img === 'string') {
-                    const match = img.match(/^data:([^;]+);base64,(.+)$/);
-                    if (match) {
-                      userParts.push({
-                        inlineData: {
-                          mimeType: match[1],
-                          data: match[2],
-                        },
-                      });
-                    }
-                  }
-                }
-              }
-              geminiContents.push({ role: 'user', parts: userParts as any });
-
-                if (isStream) {
-                  initSseResponse(res);
-                  sendSseChunk(res, reasonNotice);
-                  try {
-                    const geminiStreamRes = await fetch(
-                      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:streamGenerateContent?alt=sse&key=${geminiKey}`,
-                      {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                          systemInstruction: { parts: [{ text: systemPrompt }] },
-                          contents: geminiContents,
-                          generationConfig: { maxOutputTokens: safeMaxTokens, temperature: safeTemp },
-                        }),
-                        signal: controller.signal,
-                      },
-                    );
-                    if (geminiStreamRes.ok && geminiStreamRes.body) {
-                      const reader = geminiStreamRes.body.getReader();
-                      const decoder = new TextDecoder();
-                      let buffer = '';
-                      while (true) {
-                        const { value, done } = await reader.read();
-                        if (done) break;
-                        buffer += decoder.decode(value, { stream: true });
-                        const lines = buffer.split('\n');
-                        buffer = lines.pop() || '';
-                        for (const line of lines) {
-                          const trimmed = line.trim();
-                          if (trimmed.startsWith('data: ')) {
-                            try {
-                              const payload = JSON.parse(trimmed.slice(6));
-                              const textChunk = payload.candidates?.[0]?.content?.parts?.[0]?.text;
-                              if (textChunk) sendSseChunk(res, textChunk);
-                            } catch {
-                              // ignore
-                            }
-                          }
-                        }
-                      }
-                      endSse(res);
-                      return;
-                    }
-                  } catch {
-                    // ignore
-                  }
-                  const reply = generateNaturalDemoResponse(message, agentId, images, conversationHistory);
-                  sendSseChunk(res, reply);
-                  endSse(res);
-                  return;
-                }
-
-                // Non-streaming Gemini fallback
-                try {
-                  const gRes = await fetch(
-                    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${geminiKey}`,
-                    {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        systemInstruction: { parts: [{ text: systemPrompt }] },
-                        contents: geminiContents,
-                        generationConfig: { maxOutputTokens: safeMaxTokens, temperature: safeTemp },
-                      }),
-                      signal: controller.signal,
-                    },
-                  );
-                  if (gRes.ok) {
-                    const data = (await gRes.json()) as any;
-                    const reply = reasonNotice + (data.candidates?.[0]?.content?.parts?.[0]?.text || '');
-                    return sendJson(res, 200, {
-                      content: reply,
-                      tokens: {
-                        promptTokens: data.usageMetadata?.promptTokenCount || Math.max(1, Math.round(message.length / 4)),
-                        completionTokens: data.usageMetadata?.candidatesTokenCount || Math.max(1, Math.round(reply.length / 4)),
-                        totalTokens: (data.usageMetadata?.promptTokenCount || 0) + (data.usageMetadata?.candidatesTokenCount || 0),
-                      },
-                    });
-                  }
-                } catch {
-                  // ignore
-                }
-
-                const demoReply = reasonNotice + generateNaturalDemoResponse(message, agentId, images, conversationHistory);
-                return sendJson(res, 200, {
-                  content: demoReply,
-                  tokens: {
-                    promptTokens: Math.max(1, Math.round(message.length / 4)),
-                    completionTokens: Math.max(1, Math.round(demoReply.length / 4)),
-                    totalTokens: Math.max(1, Math.round((message.length + demoReply.length) / 4)),
-                  },
-                });
-              };
 
               // Mode Streaming OpenAI
               if (isStream) {
@@ -1277,19 +731,22 @@ Souhaites-tu que nous développions une section en particulier ?`;
                     }),
                     signal: controller.signal,
                   });
-                } catch {
-                  return fallbackToGemini('> *Note : Impossible de joindre OpenAI. Bascule automatique sur Google Gemini.*\n\n');
+                } catch (fetchErr: any) {
+                  initSseResponse(res);
+                  sendSseChunk(res, `[Erreur de connexion OpenAI : ${fetchErr.message}]`);
+                  endSse(res);
+                  return;
                 }
 
                 clearTimeout(timeout);
 
                 if (!openaiStreamRes.ok) {
                   const errJson = (await openaiStreamRes.json().catch(() => ({}))) as any;
-                  const isQuota = openaiStreamRes.status === 429 || errJson.error?.code === 'insufficient_quota';
-                  const notice = isQuota
-                    ? `> Note : Vos crédits OpenAI sont épuisés (HTTP 429). Bascule automatique sur Google Gemini.\n\n`
-                    : `> Note : Erreur OpenAI (${openaiStreamRes.status}). Bascule automatique sur Google Gemini.\n\n`;
-                  return fallbackToGemini(notice);
+                  const reason = errJson.error?.message || `Erreur HTTP ${openaiStreamRes.status}`;
+                  initSseResponse(res);
+                  sendSseChunk(res, `[Erreur API OpenAI (${openaiStreamRes.status}) : ${reason}]`);
+                  endSse(res);
+                  return;
                 }
 
                 if (openaiStreamRes.body) {
@@ -1347,18 +804,19 @@ Souhaites-tu que nous développions une section en particulier ?`;
                   }),
                   signal: controller.signal,
                 });
-              } catch {
-                return fallbackToGemini('> Note : Impossible de joindre OpenAI. Bascule automatique sur Google Gemini.\n\n');
+              } catch (fetchErr: any) {
+                return sendJson(res, 502, {
+                  message: `Erreur de connexion OpenAI : ${fetchErr.message}`,
+                });
               }
               clearTimeout(timeout);
 
               if (!openaiRes.ok) {
                 const errJson = (await openaiRes.json().catch(() => ({}))) as any;
-                const isQuota = openaiRes.status === 429 || errJson.error?.code === 'insufficient_quota';
-                const notice = isQuota
-                  ? `> Note : Vos crédits OpenAI sont épuisés (HTTP 429). Bascule automatique sur Google Gemini.\n\n`
-                  : `> Note : Erreur OpenAI (${openaiRes.status}). Bascule automatique sur Google Gemini.\n\n`;
-                return fallbackToGemini(notice);
+                const reason = errJson.error?.message || `Erreur HTTP ${openaiRes.status}`;
+                return sendJson(res, openaiRes.status, {
+                  message: `Erreur API OpenAI (HTTP ${openaiRes.status}) : ${reason}`,
+                });
               }
 
               const data = (await openaiRes.json()) as any;
@@ -1374,7 +832,7 @@ Souhaites-tu que nous développions une section en particulier ?`;
             }
 
             // 3. Groq Cloud API (Inférence LPU ultra-rapide avec streaming SSE, français strict et historique)
-            if (providerId === 'groq') {
+            if (targetProvider === 'groq') {
               const systemPrompt = `${getAgentSystemPrompt(agentId)}\n\nDIRECTIVE IMPÉRATIVE DE LANGUE :\nTu dois t'exprimer et répondre EXCLUSIVEMENT en français soigné, naturel et professionnel, peu importe la question posée, sauf si l'utilisateur formule explicitement sa demande dans une autre langue.`;
               const groqModel = modelId || 'openai/gpt-oss-120b';
               const messages = [
@@ -1382,7 +840,6 @@ Souhaites-tu que nous développions une section en particulier ?`;
                 ...(Array.isArray(conversationHistory)
                   ? conversationHistory
                       .filter((t: any) => t.content && (t.role === 'user' || t.role === 'assistant'))
-                      .slice(-8)
                       .map((t: any) => ({ role: t.role, content: String(t.content) }))
                   : []),
                 { role: 'user', content: message },
@@ -1492,7 +949,7 @@ Souhaites-tu que nous développions une section en particulier ?`;
             }
 
             // 4. Mistral AI API (avec support streaming SSE, Codestral et contexte complet)
-            if (providerId === 'mistral') {
+            if (targetProvider === 'mistral') {
               const systemPrompt = getAgentSystemPrompt(agentId);
               const mistralModel = modelId || 'codestral-latest';
               const messages = [
@@ -1500,7 +957,6 @@ Souhaites-tu que nous développions une section en particulier ?`;
                 ...(Array.isArray(conversationHistory)
                   ? conversationHistory
                       .filter((t: any) => t.content && (t.role === 'user' || t.role === 'assistant'))
-                      .slice(-8)
                       .map((t: any) => ({ role: t.role, content: String(t.content) }))
                   : []),
                 { role: 'user', content: message },
@@ -1609,7 +1065,7 @@ Souhaites-tu que nous développions une section en particulier ?`;
             }
 
             // 5. Anthropic Claude API
-            if (providerId === 'anthropic') {
+            if (targetProvider === 'anthropic') {
               const anthropicModel =
                 modelId === 'claude-3-7-sonnet'
                   ? 'claude-3-7-sonnet-20250219'
@@ -1630,6 +1086,15 @@ Souhaites-tu que nous développions une section en particulier ?`;
                   ? 'Tu es Analyst, un expert en analyse de données et synthèse stratégique. Réponds en français.'
                   : 'Tu es NEXUS, une intelligence artificielle avancée. Réponds avec pertinence, clarté et concision en français.';
 
+              const messages = [
+                ...(Array.isArray(conversationHistory)
+                  ? conversationHistory
+                      .filter((t: any) => t.content && (t.role === 'user' || t.role === 'assistant'))
+                      .map((t: any) => ({ role: t.role, content: String(t.content) }))
+                  : []),
+                { role: 'user', content: message },
+              ];
+
               const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
                 method: 'POST',
                 headers: {
@@ -1641,7 +1106,7 @@ Souhaites-tu que nous développions une section en particulier ?`;
                   model: anthropicModel,
                   max_tokens: safeMaxTokens,
                   system: systemPrompt,
-                  messages: [{ role: 'user', content: message }],
+                  messages,
                 }),
                 signal: controller.signal,
               });
@@ -1667,7 +1132,7 @@ Souhaites-tu que nous développions une section en particulier ?`;
             }
 
             // 6. Ollama Local API
-            if (providerId === 'ollama') {
+            if (targetProvider === 'ollama') {
               let targetModel = modelId || 'qwen2.5-coder:7b';
               try {
                 const tagsRes = await fetch('http://127.0.0.1:11434/api/tags');
@@ -1700,15 +1165,22 @@ Souhaites-tu que nous développions une section en particulier ?`;
                   ? 'Tu es Analyst, un expert en analyse de données et synthèse stratégique. Réponds en français.'
                   : 'Tu es NEXUS, une intelligence artificielle avancée. Réponds avec pertinence, clarté et concision en français.';
 
+              const messages = [
+                { role: 'system', content: systemPrompt },
+                ...(Array.isArray(conversationHistory)
+                  ? conversationHistory
+                      .filter((t: any) => t.content && (t.role === 'user' || t.role === 'assistant'))
+                      .map((t: any) => ({ role: t.role, content: String(t.content) }))
+                  : []),
+                { role: 'user', content: message },
+              ];
+
               const ollamaRes = await fetch('http://127.0.0.1:11434/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   model: targetModel,
-                  messages: [
-                    { role: 'system', content: systemPrompt },
-                    { role: 'user', content: message },
-                  ],
+                  messages,
                   stream: false,
                   options: {
                     num_predict: safeMaxTokens,
@@ -1739,24 +1211,18 @@ Souhaites-tu que nous développions une section en particulier ?`;
             }
 
             clearTimeout(timeout);
-            return sendJson(res, 400, { message: `Fournisseur d'IA non supporté : ${providerId}` });
+            return sendJson(res, 400, { message: `Fournisseur d'IA non supporté : ${targetProvider}` });
           } catch (callErr: unknown) {
             const errorMsg = callErr instanceof Error ? callErr.message : String(callErr);
-            console.warn(`[NEXUS PROXY] Erreur réseau (${errorMsg}), bascule de secours sur le moteur local.`);
-            const fallbackReply = `> *Note : Échec de communication avec l'API distante (${errorMsg}). Bascule automatique sur le moteur local.*\n\n` + generateNaturalDemoResponse(message, agentId, images, conversationHistory);
+            console.warn(`[NEXUS PROXY] Erreur appel modèle IA (${errorMsg}).`);
             if (isStream) {
               initSseResponse(res);
-              sendSseChunk(res, fallbackReply);
+              sendSseChunk(res, `[Erreur de communication avec le modèle IA : ${errorMsg}]`);
               endSse(res);
               return;
             }
-            return sendJson(res, 200, {
-              content: fallbackReply,
-              tokens: {
-                promptTokens: Math.max(1, Math.round(message.length / 4)),
-                completionTokens: 42,
-                totalTokens: Math.max(1, Math.round(message.length / 4)) + 42,
-              },
+            return sendJson(res, 502, {
+              message: `Erreur de communication avec le modèle IA : ${errorMsg}`,
             });
           }
         }
