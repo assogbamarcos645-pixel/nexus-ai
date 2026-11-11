@@ -507,7 +507,7 @@ EXPERTISE TECHNIQUE (Génie Logiciel) :
             });
 
             // 1. Google Gemini API (avec streaming natif SSE et historique conversationnel)
-            if (providerId === 'gemini') {
+            if (targetProvider === 'gemini') {
               let geminiModel = modelId || 'gemini-2.5-flash';
               if (
                 geminiModel === 'gemini-3.8-flash' ||
