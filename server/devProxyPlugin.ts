@@ -49,6 +49,17 @@ function loadLocalEnvFallback() {
 loadLocalEnvFallback();
 
 function parseRequestBody(req: IncomingMessage): Promise<any> {
+  if ((req as any).body) {
+    if (typeof (req as any).body === 'object') {
+      return Promise.resolve((req as any).body);
+    }
+    try {
+      return Promise.resolve(JSON.parse((req as any).body));
+    } catch {
+      return Promise.resolve({});
+    }
+  }
+
   return new Promise((resolve) => {
     let body = '';
     req.on('data', (chunk) => {
@@ -123,24 +134,37 @@ function checkRateLimit(req: IncomingMessage, res: ServerResponse): boolean {
   return false;
 }
 
-export function nexusDevProxyPlugin(): Plugin {
-  const middleware = async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
-        const url = req.url || '';
+/**
+ * Gestionnaire principal des requêtes API NEXUS AI.
+ * Utilisable directement comme middleware Vite OU comme Serverless Function Vercel / Node.js.
+ */
+export async function handleApiRequest(req: IncomingMessage, res: ServerResponse): Promise<boolean | void> {
+  const rawUrl = req.url || '';
+  const url = rawUrl.startsWith('/api/') ? rawUrl : `/api${rawUrl.startsWith('/') ? '' : '/'}${rawUrl}`;
 
-        // Seules les routes d'API sont gérées par ce middleware
-        if (!url.startsWith('/api/')) {
-          return next();
-        }
+  // Seules les routes d'API sont gérées
+  if (!url.startsWith('/api/')) {
+    return false;
+  }
 
-        // En-têtes de sécurité défensifs pour l'ensemble des routes API
-        res.setHeader('X-Content-Type-Options', 'nosniff');
-        res.setHeader('X-Frame-Options', 'DENY');
-        res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  // En-têtes de sécurité défensifs & CORS pour compatibilité navigateur et production Vercel
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-client-info, apikey');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
 
-        // Limitation de débit sur l'API
-        if (checkRateLimit(req, res)) {
-          return;
-        }
+  if (req.method === 'OPTIONS') {
+    res.statusCode = 204;
+    res.end();
+    return true;
+  }
+
+  // Limitation de débit sur l'API
+  if (checkRateLimit(req, res)) {
+    return true;
+  }
 
         // ── 1. GET /api/ai/status ───────────────────────────────────────────
         if (req.method === 'GET' && url.startsWith('/api/ai/status')) {
@@ -1227,8 +1251,16 @@ EXPERTISE TECHNIQUE (Génie Logiciel) :
           }
         }
 
-        next();
-      };
+  return false;
+}
+
+export function nexusDevProxyPlugin(): Plugin {
+  const middleware = async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
+    const handled = await handleApiRequest(req, res);
+    if (handled === false && !res.writableEnded) {
+      next();
+    }
+  };
 
   return {
     name: 'nexus-dev-proxy',
