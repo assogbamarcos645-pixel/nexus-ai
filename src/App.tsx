@@ -220,7 +220,7 @@ function AppContent() {
         <EmailConfirmationToast />
 
         {/* Corps dynamique : Chat, Projets (Lab) ou Explorer (Control Center) */}
-        <main className="flex-1 flex flex-col overflow-hidden relative z-10 pb-[58px] md:pb-0">
+        <main className="flex-1 flex flex-col overflow-hidden relative z-10 pb-[calc(56px+env(safe-area-inset-bottom,0px))] md:pb-0">
           {activeView === 'chat' ? (
             <ChatWindow
               conversation={activeConversation}

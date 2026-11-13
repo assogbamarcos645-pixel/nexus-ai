@@ -126,7 +126,7 @@ export function AppHeader({
 
   return (
     <>
-      <header className="h-14 sm:h-16 px-2.5 sm:px-6 md:px-8 flex items-center justify-between z-20 shrink-0 select-none border-b border-slate-200/60 dark:border-white/10 liquid-glass shadow-[0_4px_24px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-colors">
+      <header className="h-[calc(3.5rem+env(safe-area-inset-top,0px))] sm:h-16 pt-[env(safe-area-inset-top,0px)] px-3 sm:px-6 md:px-8 flex items-center justify-between z-20 shrink-0 select-none border-b border-slate-200/60 dark:border-white/10 liquid-glass shadow-[0_4px_24px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-colors">
         <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
           {onToggleMobileSidebar && (
             <button

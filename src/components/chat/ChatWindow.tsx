@@ -121,7 +121,7 @@ export function ChatWindow({
           </div>
 
           {/* Barre de saisie fixée en bas (Style Deep Slate & Cobalt) */}
-          <div className="shrink-0 w-full bg-gradient-to-t from-[#f8fafc]/95 via-[#f8fafc]/70 to-transparent dark:from-[#0b0f19]/95 dark:via-[#0b0f19]/70 dark:to-transparent backdrop-blur-[2px] pt-1 pb-safe">
+          <div className="shrink-0 w-full bg-gradient-to-t from-[#f8fafc]/95 via-[#f8fafc]/70 to-transparent dark:from-[#0b0f19]/95 dark:via-[#0b0f19]/70 dark:to-transparent backdrop-blur-[2px] pt-1 pb-1 md:pb-safe">
             <ChatInput
               value={input}
               onChange={onInputChange}

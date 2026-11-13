@@ -66,7 +66,7 @@ function MobileBottomNavComponent({
         'liquid-glass border-t border-slate-200/80 dark:border-white/10',
         'bg-[#f8fafc]/90 dark:bg-[#0b0f19]/90 backdrop-blur-xl',
         'shadow-[0_-4px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_-8px_32px_rgba(0,0,0,0.5)]',
-        'pb-[max(env(safe-area-inset-bottom,0px),8px)] pt-1.5 px-3',
+        'pb-[max(env(safe-area-inset-bottom,0px),10px)] pt-1.5 px-3',
       )}
     >
       <div className="flex items-center justify-around max-w-md mx-auto">
@@ -79,8 +79,8 @@ function MobileBottomNavComponent({
               onClick={item.onClick}
               aria-current={item.isActive ? 'page' : undefined}
               className={cn(
-                'flex flex-col items-center justify-center py-1 px-3 rounded-2xl transition-all duration-200 cursor-pointer min-w-[64px]',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 active:scale-92',
+                'flex flex-col items-center justify-center py-1 px-3 rounded-2xl transition-all duration-150 cursor-pointer min-w-[64px] select-none',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 active:scale-90',
                 item.isActive
                   ? 'text-blue-600 dark:text-sky-400 font-semibold'
                   : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 font-medium',

@@ -4,8 +4,8 @@
   "description": "Plateforme d'intelligence artificielle multi-agents et espace de développement intégré.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#070712",
-  "theme_color": "#7c0df4",
+  "background_color": "#0b0f19",
+  "theme_color": "#2563eb",
   "icons": [
     {
       "src": "/favicon.svg",
