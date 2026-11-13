@@ -97,7 +97,6 @@ function initSseResponse(res: ServerResponse) {
   res.statusCode = 200;
   res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
   res.setHeader('Cache-Control', 'no-cache, no-transform');
-  res.setHeader('Connection', 'keep-alive');
   res.setHeader('X-Accel-Buffering', 'no');
   res.flushHeaders?.();
 }
@@ -114,24 +113,32 @@ function endSse(res: ServerResponse) {
 // Simple in‑memory rate limiter (120 req/min per IP for /api routes)
 const rateLimitMap = new Map<string, { count: number; reset: number }>();
 function checkRateLimit(req: IncomingMessage, res: ServerResponse): boolean {
-  const ip = req.socket.remoteAddress || '127.0.0.1';
-  const now = Date.now();
-  const LIMIT = 120;
-  const WINDOW_MS = 60_000;
-  let entry = rateLimitMap.get(ip);
-  if (!entry || now > entry.reset) {
-    entry = { count: 1, reset: now + WINDOW_MS };
-    rateLimitMap.set(ip, entry);
-  } else {
-    entry.count++;
+  try {
+    const forwarded = req.headers?.['x-forwarded-for'];
+    const ip =
+      (typeof forwarded === 'string' ? forwarded.split(',')[0].trim() : null) ||
+      req.socket?.remoteAddress ||
+      '127.0.0.1';
+    const now = Date.now();
+    const LIMIT = 120;
+    const WINDOW_MS = 60_000;
+    let entry = rateLimitMap.get(ip);
+    if (!entry || now > entry.reset) {
+      entry = { count: 1, reset: now + WINDOW_MS };
+      rateLimitMap.set(ip, entry);
+    } else {
+      entry.count++;
+    }
+    if (entry.count > LIMIT) {
+      res.statusCode = 429;
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      res.end(JSON.stringify({ error: 'Too many requests, please try again later.' }));
+      return true;
+    }
+    return false;
+  } catch {
+    return false;
   }
-  if (entry.count > LIMIT) {
-    res.statusCode = 429;
-    res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    res.end(JSON.stringify({ error: 'Too many requests, please try again later.' }));
-    return true;
-  }
-  return false;
 }
 
 /**
@@ -139,32 +146,33 @@ function checkRateLimit(req: IncomingMessage, res: ServerResponse): boolean {
  * Utilisable directement comme middleware Vite OU comme Serverless Function Vercel / Node.js.
  */
 export async function handleApiRequest(req: IncomingMessage, res: ServerResponse): Promise<boolean | void> {
-  const rawUrl = req.url || '';
-  const url = rawUrl.startsWith('/api/') ? rawUrl : `/api${rawUrl.startsWith('/') ? '' : '/'}${rawUrl}`;
+  try {
+    const rawUrl = req.url || '';
+    const url = rawUrl.startsWith('/api/') ? rawUrl : `/api${rawUrl.startsWith('/') ? '' : '/'}${rawUrl}`;
 
-  // Seules les routes d'API sont gérées
-  if (!url.startsWith('/api/')) {
-    return false;
-  }
+    // Seules les routes d'API sont gérées
+    if (!url.startsWith('/api/')) {
+      return false;
+    }
 
-  // En-têtes de sécurité défensifs & CORS pour compatibilité navigateur et production Vercel
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-client-info, apikey');
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    // En-têtes de sécurité défensifs & CORS pour compatibilité navigateur et production Vercel
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-client-info, apikey');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
 
-  if (req.method === 'OPTIONS') {
-    res.statusCode = 204;
-    res.end();
-    return true;
-  }
+    if (req.method === 'OPTIONS') {
+      res.statusCode = 204;
+      res.end();
+      return true;
+    }
 
-  // Limitation de débit sur l'API
-  if (checkRateLimit(req, res)) {
-    return true;
-  }
+    // Limitation de débit sur l'API
+    if (checkRateLimit(req, res)) {
+      return true;
+    }
 
         // ── 1. GET /api/ai/status ───────────────────────────────────────────
         if (req.method === 'GET' && url.startsWith('/api/ai/status')) {
@@ -505,7 +513,30 @@ EXPERTISE TECHNIQUE (Génie Logiciel) :
             else if (process.env.GEMINI_API_KEY) targetProvider = 'gemini';
             else if (process.env.OPENAI_API_KEY) targetProvider = 'openai';
             else if (process.env.ANTHROPIC_API_KEY) targetProvider = 'anthropic';
-            else targetProvider = 'ollama';
+            else targetProvider = 'demo';
+          }
+
+          // A. Réponse pour le mode démonstration (ou secours quand aucune clé n'est fournie)
+          if (targetProvider === 'demo') {
+            const isCoder = agentId === 'coder';
+            const demoReply = isCoder
+              ? `// [CodeX • Mode Démonstration]\n// Clés API réelles non encore détectées sur Vercel.\n// Veuillez renseigner vos variables d'environnement (ex: MISTRAL_API_KEY, GEMINI_API_KEY).\nconsole.log("NEXUS AI prêt !");`
+              : `Bonjour ! Je suis l'assistant NEXUS AI (Mode Démonstration).\n\nVotre application est bien en ligne sur Vercel. Pour dialoguer avec les vrais modèles d'IA (Mistral, Gemini Flash, GPT-4o, Claude ou Groq), renseignez vos clés d'API dans votre tableau de bord Vercel (ex: MISTRAL_API_KEY).\n\nMessage reçu : "${message}".`;
+
+            if (isStream) {
+              initSseResponse(res);
+              sendSseChunk(res, demoReply);
+              endSse(res);
+              return;
+            }
+            return sendJson(res, 200, {
+              content: demoReply,
+              tokens: {
+                promptTokens: Math.max(1, Math.round(message.length / 4)),
+                completionTokens: Math.max(1, Math.round(demoReply.length / 4)),
+                totalTokens: Math.max(1, Math.round((message.length + demoReply.length) / 4)),
+              },
+            });
           }
 
           let envKey = '';
@@ -517,7 +548,7 @@ EXPERTISE TECHNIQUE (Génie Logiciel) :
 
           if (!envKey && targetProvider !== 'ollama') {
             return sendJson(res, 400, {
-              message: `Modèle non disponible : aucune clé API configurée pour ${targetProvider} (${targetProvider.toUpperCase()}_API_KEY). Veuillez configurer votre clé d'API.`,
+              message: `Modèle non disponible : aucune clé API configurée pour ${targetProvider} (${targetProvider.toUpperCase()}_API_KEY) dans vos variables d'environnement Vercel.`,
             });
           }
 
@@ -525,7 +556,7 @@ EXPERTISE TECHNIQUE (Génie Logiciel) :
           try {
             const controller = new AbortController();
             const timeout = setTimeout(() => controller.abort(), 60_000);
-            req.on('close', () => {
+            req.on?.('close', () => {
               clearTimeout(timeout);
               controller.abort();
             });
@@ -1251,7 +1282,15 @@ EXPERTISE TECHNIQUE (Génie Logiciel) :
           }
         }
 
-  return false;
+    return false;
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    console.error('[API INTERNAL ERROR]', err);
+    if (!res.writableEnded) {
+      sendJson(res, 500, { message: `Erreur interne serveur proxy : ${errorMsg}` });
+    }
+    return true;
+  }
 }
 
 export function nexusDevProxyPlugin(): Plugin {
