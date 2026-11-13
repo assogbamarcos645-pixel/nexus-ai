@@ -7,6 +7,7 @@ import { useChatEngine } from '@/hooks/useChatEngine';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { ChatWindow } from '@/components/chat/ChatWindow';
 import { AppHeader, type ActiveAppView } from '@/components/navigation/AppHeader';
+import { MobileBottomNav } from '@/components/navigation/MobileBottomNav';
 import { AuthProvider } from '@/context/AuthContext';
 import { SyncProvider } from '@/context/SyncContext';
 import { I18nProvider } from '@/i18n/I18nContext';
@@ -151,7 +152,7 @@ function AppContent() {
   return (
     <div
       id="app-root"
-      className="flex h-[100dvh] min-h-screen w-full overflow-hidden nexus-ambient-grid bg-[#f8fafc] dark:bg-[#0b0f19] dark:bg-gradient-to-br dark:from-[#070a12] dark:via-[#0b0f19] dark:to-[#070a12]"
+      className="flex h-[100dvh] max-h-[100dvh] w-full overflow-hidden nexus-ambient-grid bg-[#f8fafc] dark:bg-[#0b0f19] dark:bg-gradient-to-br dark:from-[#070a12] dark:via-[#0b0f19] dark:to-[#070a12]"
     >
       {/* Barre latérale gauche fixe sur toute la hauteur */}
       <Sidebar
@@ -219,7 +220,7 @@ function AppContent() {
         <EmailConfirmationToast />
 
         {/* Corps dynamique : Chat, Projets (Lab) ou Explorer (Control Center) */}
-        <main className="flex-1 flex flex-col overflow-hidden relative z-10">
+        <main className="flex-1 flex flex-col overflow-hidden relative z-10 pb-[58px] md:pb-0">
           {activeView === 'chat' ? (
             <ChatWindow
               conversation={activeConversation}
@@ -247,6 +248,13 @@ function AppContent() {
             </Suspense>
           )}
         </main>
+
+        {/* Barre de navigation inférieure mobile (accès rapide à 1 pouce) */}
+        <MobileBottomNav
+          activeView={activeView}
+          onNavigateView={setActiveView}
+          onToggleMobileSidebar={() => setIsMobileSidebarOpen((prev) => !prev)}
+        />
       </div>
     </div>
   );

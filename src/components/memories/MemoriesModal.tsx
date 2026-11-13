@@ -151,12 +151,15 @@ export function MemoriesModal({ isOpen, onClose, onOpenAuth }: MemoriesModalProp
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
       role="dialog"
       aria-modal="true"
       aria-labelledby="memories-modal-title"
     >
-      <div className="relative w-full max-w-2xl rounded-2xl bg-surface-950 border border-nexus-500/30 shadow-[0_0_50px_rgba(124,13,244,0.35)] overflow-hidden flex flex-col max-h-[92dvh]">
+      <div className="relative w-full max-w-2xl rounded-t-3xl sm:rounded-2xl bg-surface-950 border-t sm:border border-nexus-500/30 shadow-[0_0_50px_rgba(124,13,244,0.35)] overflow-hidden flex flex-col max-h-[92dvh] pb-safe">
+        {/* Poignée tactile mobile style iOS */}
+        <div className="sm:hidden w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 shrink-0" aria-hidden="true" />
+
         {/* En-tête */}
         <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-white/8 bg-surface-900/90 flex items-center justify-between gap-4 shrink-0">
           <div className="flex items-center gap-3 min-w-0 flex-1">

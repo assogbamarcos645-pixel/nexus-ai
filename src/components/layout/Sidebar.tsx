@@ -129,7 +129,7 @@ export function Sidebar({
     <>
       {isOpenOnMobile && (
         <div
-          className="fixed inset-0 bg-slate-900/30 dark:bg-black/60 backdrop-blur-sm z-30 lg:hidden"
+          className="fixed inset-0 bg-slate-900/40 dark:bg-black/70 backdrop-blur-sm z-40 lg:hidden"
           onClick={onCloseMobile}
           aria-hidden="true"
         />
@@ -139,7 +139,7 @@ export function Sidebar({
         id="sidebar"
         aria-label={fr ? 'Navigation principale' : 'Main navigation'}
         className={cn(
-          'flex flex-col shrink-0 h-full select-none z-40 transition-[width,transform] duration-300 ease-out pt-safe pb-safe',
+          'flex flex-col shrink-0 h-full select-none z-50 transition-[width,transform] duration-300 ease-out pt-safe pb-safe',
           'liquid-glass border-r border-slate-200/60 dark:border-white/10',
           'fixed inset-y-0 left-0 lg:static',
           isRail ? 'lg:w-[76px]' : 'w-[272px] max-w-[85vw]',

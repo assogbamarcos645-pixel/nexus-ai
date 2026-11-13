@@ -125,8 +125,8 @@ function WelcomeScreenComponent({ onSuggestionClick, children }: WelcomeScreenPr
         </div>
       )}
 
-      {/* 4 Cartes d'actions rapides professionnelles (Grille compacte et réactive) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3.5 w-full max-w-4xl px-1 sm:px-2">
+      {/* 4 Cartes d'actions rapides professionnelles (Grille 2x2 compacte sur mobile, 4 cols sur desktop) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3.5 w-full max-w-4xl px-1 sm:px-2">
         {QUICK_ACTIONS.map((action, index) => {
           const IconComponent = action.icon;
           const label = fr ? action.labelFr : action.labelEn;
@@ -147,16 +147,16 @@ function WelcomeScreenComponent({ onSuggestionClick, children }: WelcomeScreenPr
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500',
               )}
             >
-              <div className="flex items-center justify-between w-full mb-1.5 sm:mb-2.5">
-                <div className={cn('w-7.5 h-7.5 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center border shadow-xs transition-all duration-300 group-hover:scale-125 group-hover:-rotate-12', action.badgeBg)}>
-                  <IconComponent size={15} className={action.iconColor} />
+              <div className="flex items-center justify-between w-full mb-1 sm:mb-2.5">
+                <div className={cn('w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center border shadow-xs transition-all duration-300 group-hover:scale-125 group-hover:-rotate-12 shrink-0', action.badgeBg)}>
+                  <IconComponent size={14} className={cn(action.iconColor, 'sm:w-[15px] sm:h-[15px]')} />
                 </div>
-                <ArrowUpRight size={14} className="text-slate-400 group-hover:text-sky-400 dark:text-slate-500 dark:group-hover:text-sky-300 transition-all duration-300 opacity-60 group-hover:opacity-100 group-hover:translate-x-1 group-hover:-translate-y-1 group-hover:scale-125" />
+                <ArrowUpRight size={13} className="text-slate-400 group-hover:text-sky-400 dark:text-slate-500 dark:group-hover:text-sky-300 transition-all duration-300 opacity-60 group-hover:opacity-100 group-hover:translate-x-1 group-hover:-translate-y-1 group-hover:scale-125 shrink-0" />
               </div>
-              <span className="text-[12.5px] sm:text-[13.5px] font-semibold text-slate-900 dark:text-white tracking-tight mb-0.5 sm:mb-1">
+              <span className="text-[11.5px] sm:text-[13.5px] font-semibold text-slate-900 dark:text-white tracking-tight mb-0.5 sm:mb-1 line-clamp-1">
                 {label}
               </span>
-              <span className="text-[10.5px] sm:text-[11.5px] text-slate-500 dark:text-slate-400 leading-snug line-clamp-2">
+              <span className="text-[9.5px] sm:text-[11.5px] text-slate-500 dark:text-slate-400 leading-snug line-clamp-2">
                 {desc}
               </span>
             </button>

@@ -334,7 +334,7 @@ export function ChatInput({
             onClick={() => fileInputRef.current?.click()}
             title={language === 'fr' ? 'Joindre un fichier texte ou code' : 'Attach a text or code file'}
             aria-label={language === 'fr' ? 'Joindre un fichier' : 'Attach file'}
-            className="btn-tactile p-1 sm:p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
+            className="btn-tactile p-1.5 sm:p-1.5 min-w-[32px] min-h-[32px] flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
           >
             <Paperclip size={15} />
           </button>
@@ -344,7 +344,7 @@ export function ChatInput({
             onClick={handleImageAction}
             title={language === 'fr' ? 'Créer ou décrire une image' : 'Create or describe an image'}
             aria-label={language === 'fr' ? 'Outil image' : 'Image tool'}
-            className="btn-tactile p-1 sm:p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
+            className="btn-tactile p-1.5 sm:p-1.5 min-w-[32px] min-h-[32px] flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
           >
             <ImageIcon size={15} />
           </button>
@@ -352,7 +352,7 @@ export function ChatInput({
           <div className="h-3.5 w-px bg-slate-200 dark:bg-slate-800 mx-0.5 sm:mx-1" aria-hidden="true" />
         </div>
 
-        {/* Zone de saisie centrale compacte */}
+        {/* Zone de saisie centrale compacte — 16px sur mobile pour empêcher le zoom automatique Safari iOS */}
         <textarea
           id="chat-input"
           ref={textareaRef}
@@ -366,7 +366,7 @@ export function ChatInput({
           disabled={isLoading}
           aria-label={activePlaceholder}
           className={cn(
-            'flex-1 min-w-0 resize-none bg-transparent text-[13.5px] sm:text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500',
+            'flex-1 min-w-0 resize-none bg-transparent text-[16px] sm:text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500',
             'outline-none scrollbar-thin leading-snug py-0.5',
             'min-h-[26px] max-h-[130px]',
             'disabled:opacity-50',
@@ -453,7 +453,7 @@ export function ChatInput({
               id="btn-stop"
               onClick={onStop}
               aria-label={t('chat.stop')}
-              className="btn-tactile flex items-center justify-center w-7.5 h-7.5 sm:w-8 sm:h-8 rounded-full bg-red-500 hover:bg-red-600 text-white shadow-xs cursor-pointer shrink-0"
+              className="btn-tactile flex items-center justify-center w-8 h-8 rounded-full bg-red-500 hover:bg-red-600 text-white shadow-xs cursor-pointer shrink-0"
             >
               <Square size={12} fill="currentColor" />
             </button>
@@ -465,7 +465,7 @@ export function ChatInput({
               disabled={!value.trim()}
               aria-label={t('chat.send')}
               className={cn(
-                'btn-tactile flex items-center justify-center w-7.5 h-7.5 sm:w-8 sm:h-8 rounded-full text-white shrink-0 cursor-pointer transition-all duration-150',
+                'btn-tactile flex items-center justify-center w-8 h-8 rounded-full text-white shrink-0 cursor-pointer transition-all duration-150',
                 value.trim()
                   ? 'bg-blue-600 hover:bg-blue-500 active:bg-blue-700 shadow-xs active:scale-95'
                   : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 opacity-40 cursor-not-allowed shadow-none',
