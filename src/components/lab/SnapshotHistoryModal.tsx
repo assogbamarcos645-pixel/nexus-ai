@@ -112,14 +112,25 @@ export function SnapshotHistoryModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200 cursor-pointer"
       role="dialog"
       aria-modal="true"
       aria-labelledby="history-modal-title"
+      onClick={onClose}
     >
-      <div className="relative w-full max-w-2xl flex flex-col rounded-t-3xl sm:rounded-2xl liquid-glass border-t sm:border border-slate-200/80 dark:border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.3)] dark:shadow-[0_0_50px_rgba(124,13,244,0.35)] overflow-hidden legacy-theme text-slate-900 dark:text-white max-h-[92dvh] pb-safe">
-        {/* Poignée tactile mobile style iOS */}
-        <div className="sm:hidden w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 shrink-0" aria-hidden="true" />
+      <div
+        className="relative w-full max-w-2xl flex flex-col rounded-t-3xl sm:rounded-2xl liquid-glass border-t sm:border border-slate-200/80 dark:border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.3)] dark:shadow-[0_0_50px_rgba(124,13,244,0.35)] overflow-hidden legacy-theme text-slate-900 dark:text-white max-h-[92dvh] pb-safe cursor-default"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Poignée tactile mobile style iOS (tap pour fermer) */}
+        <button
+          type="button"
+          onClick={onClose}
+          className="sm:hidden w-full flex justify-center pt-2.5 pb-1 bg-transparent cursor-pointer shrink-0"
+          aria-label="Fermer"
+        >
+          <div className="w-12 h-1 bg-white/20 rounded-full" />
+        </button>
 
         {/* En-tête */}
         <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-200/80 dark:border-white/10 liquid-glass flex items-center justify-between gap-3 sm:gap-4 shrink-0">

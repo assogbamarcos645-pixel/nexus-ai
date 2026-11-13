@@ -8,7 +8,7 @@
  */
 
 import { useState, useMemo, useEffect } from 'react';
-import { Sparkles, Send, Copy, Check, Eye, HelpCircle, Cpu } from 'lucide-react';
+import { Sparkles, Send, Copy, Check, Eye, HelpCircle, Cpu, X } from 'lucide-react';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import type { LabFile, DevProposal } from '@/types/lab';
@@ -139,30 +139,41 @@ export function NexusDevDrawer({
 
       <aside
         id="nexus-dev-drawer"
-        className="fixed inset-y-0 right-0 z-50 w-full sm:w-[480px] bg-white/98 dark:bg-[#0b0e1a]/98 backdrop-blur-2xl border-l border-slate-200/90 dark:border-white/10 shadow-[0_0_60px_rgba(0,0,0,0.3)] dark:shadow-[0_0_60px_rgba(0,0,0,0.85)] flex flex-col animate-in slide-in-from-right duration-200 legacy-theme text-slate-900 dark:text-white pt-[env(safe-area-inset-top,0px)]"
+        className="fixed inset-y-0 right-0 z-50 w-full sm:w-[480px] bg-white/98 dark:bg-[#0b0e1a]/98 backdrop-blur-2xl border-l border-slate-200/90 dark:border-white/10 shadow-[0_0_60px_rgba(0,0,0,0.3)] dark:shadow-[0_0_60px_rgba(0,0,0,0.85)] flex flex-col overflow-hidden animate-in slide-in-from-right duration-200 legacy-theme text-slate-900 dark:text-white pt-[max(env(safe-area-inset-top,0px),0.5rem)]"
         role="complementary"
         aria-label="Assistant IA NEXUS DEV"
       >
+        {/* Poignée tactile mobile style iOS (tap pour fermer) */}
+        <button
+          type="button"
+          onClick={onClose}
+          className="sm:hidden w-full flex justify-center pt-2 pb-1 bg-transparent cursor-pointer shrink-0"
+          aria-label="Fermer le volet"
+          title="Fermer"
+        >
+          <div className="w-12 h-1 bg-slate-300 dark:bg-white/30 rounded-full" />
+        </button>
+
         {/* En-tête */}
-        <div className="px-4 sm:px-5 py-3.5 sm:py-4 border-b border-slate-200/80 dark:border-white/10 bg-slate-100/70 dark:bg-black/40 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2.5 min-w-0">
+        <div className="px-4 sm:px-5 py-3 sm:py-3.5 border-b border-slate-200/80 dark:border-white/10 bg-slate-100/70 dark:bg-black/40 flex items-center justify-between gap-3 shrink-0">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1 overflow-hidden pr-2">
             <div className="p-2 rounded-xl bg-gradient-to-br from-nexus-500 via-indigo-600 to-cyan-500 text-white shadow-[0_0_14px_rgba(6,182,212,0.5)] shrink-0">
               <Sparkles size={16} />
             </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5 flex-nowrap">
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">
                   Assistant IA
                 </h3>
-                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-500/15 dark:bg-cyan-400/20 text-cyan-700 dark:text-cyan-300 border border-cyan-500/30 font-medium shrink-0">
+                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-cyan-500/15 dark:bg-cyan-400/20 text-cyan-700 dark:text-cyan-300 border border-cyan-500/30 font-medium shrink-0">
                   NEXUS DEV
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 text-[10px] text-cyan-600 dark:text-cyan-300 font-mono mt-0.5">
+              <div className="flex items-center gap-1.5 text-[10px] text-cyan-600 dark:text-cyan-300 font-mono mt-0.5 truncate">
                 <Cpu size={11} className="text-cyan-500 dark:text-cyan-400 shrink-0" />
                 <span className="truncate">{activeProvider?.name || 'Moteur IA'}</span>
                 <span className="text-slate-400 dark:text-white/30">•</span>
-                <span className="text-slate-500 dark:text-white/60 truncate max-w-[140px]">
+                <span className="text-slate-500 dark:text-white/60 truncate max-w-[120px]">
                   {activeModel?.name || aiConfig.activeModelId}
                 </span>
               </div>
@@ -177,6 +188,7 @@ export function NexusDevDrawer({
             }}
             label="Fermer"
             title="Fermer l'assistant (Échap)"
+            className="shrink-0"
           />
         </div>
 
@@ -331,7 +343,7 @@ export function NexusDevDrawer({
       </div>
 
       {/* Formulaire de saisie en bas de volet — Avec padding safe-area et police 16px anti-zoom */}
-      <div className="p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:pb-4 border-t border-slate-200/80 dark:border-white/10 bg-slate-50/95 dark:bg-[#070913]/95 backdrop-blur-xl shrink-0">
+      <div className="p-3 sm:p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:pb-4 border-t border-slate-200/80 dark:border-white/10 bg-slate-50/95 dark:bg-[#070913]/95 backdrop-blur-xl shrink-0 flex flex-col gap-2">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -357,6 +369,16 @@ export function NexusDevDrawer({
             <Send size={13} />
           </button>
         </form>
+
+        {/* Bouton Fermer mobile au niveau du pouce */}
+        <button
+          type="button"
+          onClick={onClose}
+          className="sm:hidden w-full py-2 px-3 rounded-xl bg-slate-200/90 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/15 text-slate-800 dark:text-white font-semibold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+        >
+          <X size={14} />
+          <span>Fermer l'Assistant IA</span>
+        </button>
       </div>
     </aside>
   </>

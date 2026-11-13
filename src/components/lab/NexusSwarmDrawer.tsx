@@ -172,8 +172,19 @@ export function NexusSwarmDrawer({
       <div
         id="nexus-swarm-drawer"
         aria-label="Swarm Multi-Agents"
-        className="fixed inset-y-0 right-0 z-50 w-full sm:w-[620px] lg:w-[740px] bg-white/95 dark:bg-[#070714]/95 border-l border-slate-200/90 dark:border-white/10 shadow-2xl backdrop-blur-2xl flex flex-col overflow-hidden animate-in slide-in-from-right duration-300 pt-[env(safe-area-inset-top,0px)]"
+        className="fixed inset-y-0 right-0 z-50 w-full sm:w-[620px] lg:w-[740px] bg-white/95 dark:bg-[#070714]/95 border-l border-slate-200/90 dark:border-white/10 shadow-2xl backdrop-blur-2xl flex flex-col overflow-hidden animate-in slide-in-from-right duration-300 pt-[max(env(safe-area-inset-top,0px),0.5rem)]"
       >
+        {/* Poignée tactile mobile style iOS (tap pour fermer) */}
+        <button
+          type="button"
+          onClick={onClose}
+          className="sm:hidden w-full flex justify-center pt-2 pb-1 bg-transparent cursor-pointer shrink-0"
+          aria-label="Fermer le volet"
+          title="Fermer"
+        >
+          <div className="w-12 h-1 bg-slate-300 dark:bg-white/30 rounded-full" />
+        </button>
+
       {/* 1. Barre d'en-tête du Swarm */}
       <header className="h-14 px-5 border-b border-slate-200/80 dark:border-white/10 bg-slate-100/60 dark:bg-[#06060f] flex items-center justify-between gap-4 shrink-0 select-none">
         <div className="flex items-center gap-3 min-w-0 flex-1">

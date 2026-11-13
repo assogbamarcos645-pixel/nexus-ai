@@ -195,14 +195,25 @@ export function AuthModal({ isOpen, initialMode = 'sign-in', onClose }: AuthModa
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 cursor-pointer"
       role="dialog"
       aria-modal="true"
       aria-labelledby="auth-modal-title"
+      onClick={handleClose}
     >
-      <div className="relative w-full max-w-md max-h-[92dvh] sm:max-h-[90dvh] flex flex-col rounded-t-3xl sm:rounded-2xl bg-surface-950 border-t sm:border border-nexus-500/30 shadow-[0_0_50px_rgba(124,13,244,0.35)] overflow-hidden pb-safe">
-        {/* Poignée tactile mobile style iOS */}
-        <div className="sm:hidden w-10 h-1 bg-white/20 rounded-full mx-auto mt-2 mb-1 shrink-0" aria-hidden="true" />
+      <div
+        className="relative w-full max-w-md max-h-[92dvh] sm:max-h-[90dvh] flex flex-col rounded-t-3xl sm:rounded-2xl bg-surface-950 border-t sm:border border-nexus-500/30 shadow-[0_0_50px_rgba(124,13,244,0.35)] overflow-hidden pb-safe cursor-default"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Poignée tactile mobile style iOS (tap pour fermer) */}
+        <button
+          type="button"
+          onClick={handleClose}
+          className="sm:hidden w-full flex justify-center pt-2.5 pb-1 bg-transparent cursor-pointer shrink-0"
+          aria-label="Fermer"
+        >
+          <div className="w-12 h-1 bg-white/20 rounded-full" />
+        </button>
 
         {/* En-tête */}
         <div className="px-6 py-5 border-b border-white/8 bg-surface-900/90 flex items-center justify-between gap-4 shrink-0">

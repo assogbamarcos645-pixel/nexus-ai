@@ -33,6 +33,7 @@ import {
 import { cn } from '@/utils/cn';
 import type { LabProject, LabFile, LabTab, LabLayoutMode } from '@/types/lab';
 import { useTranslation } from '@/hooks/useTranslation';
+import { ModalCloseButton } from '@/components/ui/ModalCloseButton';
 
 interface LabToolbarProps {
   projects: LabProject[];
@@ -442,26 +443,33 @@ export function LabToolbar({
       {/* Feuille d'actions mobile (Action Sheet style iOS/Android) */}
       {isMobileMenuOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-150"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-150 cursor-pointer"
           onClick={() => setIsMobileMenuOpen(false)}
         >
           <div
-            className="w-full max-w-md bg-white dark:bg-surface-950 rounded-t-3xl sm:rounded-2xl border-t sm:border border-slate-200 dark:border-white/10 shadow-2xl p-4 flex flex-col gap-2 pb-safe animate-in slide-in-from-bottom duration-200"
+            className="w-full max-w-md bg-white dark:bg-surface-950 rounded-t-3xl sm:rounded-2xl border-t sm:border border-slate-200 dark:border-white/10 shadow-2xl p-4 flex flex-col gap-2 pb-safe animate-in slide-in-from-bottom duration-200 cursor-default"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="w-10 h-1 bg-slate-300 dark:bg-white/20 rounded-full mx-auto mb-2 shrink-0" aria-hidden="true" />
+            {/* Poignée tactile mobile style iOS (tap pour fermer) */}
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="w-full flex justify-center pt-1 pb-2 bg-transparent cursor-pointer shrink-0"
+              aria-label="Fermer"
+            >
+              <div className="w-12 h-1 bg-slate-300 dark:bg-white/20 rounded-full" />
+            </button>
 
-            <div className="flex items-center justify-between pb-2 border-b border-slate-200/80 dark:border-white/10">
-              <span className="text-xs font-semibold text-slate-800 dark:text-white uppercase tracking-wider">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-200/80 dark:border-white/10 gap-3">
+              <span className="text-xs font-semibold text-slate-800 dark:text-white uppercase tracking-wider truncate">
                 Actions du Projet • {activeProject?.name || 'Lab'}
               </span>
-              <button
-                type="button"
+              <ModalCloseButton
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white cursor-pointer"
-              >
-                <X size={16} />
-              </button>
+                label="Fermer"
+                title="Fermer le menu (Échap)"
+                compact
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-2 pt-1">
@@ -557,6 +565,16 @@ export function LabToolbar({
                 <span>Réinitialiser les Projets Démo</span>
               </button>
             </div>
+
+            {/* Bouton Annuler / Fermer style iOS en bas de feuille */}
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="w-full mt-2 py-3 rounded-2xl bg-slate-200/90 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/15 text-slate-900 dark:text-white text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+            >
+              <X size={15} />
+              <span>Fermer le menu</span>
+            </button>
           </div>
         </div>
       )}

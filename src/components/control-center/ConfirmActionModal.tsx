@@ -32,8 +32,14 @@ export function ConfirmActionModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-150">
-      <div className="relative w-full max-w-md rounded-2xl bg-surface-900 border border-white/10 shadow-[0_0_50px_rgba(124,13,244,0.3)] p-6 space-y-4">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-150 cursor-pointer"
+      onClick={onCancel}
+    >
+      <div
+        className="relative w-full max-w-md rounded-2xl bg-surface-900 border border-white/10 shadow-[0_0_50px_rgba(124,13,244,0.3)] p-6 space-y-4 cursor-default"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Fermeture */}
         <ModalCloseButton
           onClick={onCancel}
