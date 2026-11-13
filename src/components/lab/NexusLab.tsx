@@ -329,7 +329,7 @@ export function NexusLab() {
               <div
                 className={`h-full min-w-0 flex flex-col ${
                   isMobile
-                    ? activeTab === 'editor'
+                    ? (activeTab === 'editor' || activeTab === 'assistant')
                       ? 'flex flex-1 w-full'
                       : 'hidden'
                     : layoutMode === 'preview-only'

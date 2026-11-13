@@ -20,7 +20,6 @@ import {
   Layers,
   Code2,
   Play,
-  Bot,
   Columns,
   SquareCode,
   Smartphone,
@@ -335,7 +334,7 @@ export function LabToolbar({
             id="btn-toolbar-nexus-dev"
             onClick={onToggleDevAssistant}
             className={cn(
-              'flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-semibold text-white transition-all cursor-pointer shrink-0',
+              'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-white transition-all cursor-pointer shrink-0',
               isDevAssistantOpen
                 ? 'bg-nexus-700 border border-cyan-400 ring-2 ring-cyan-400/40 shadow-[0_0_18px_rgba(6,182,212,0.5)]'
                 : 'bg-gradient-to-r from-nexus-600 to-cyan-600 hover:from-nexus-500 hover:to-cyan-500 shadow-[0_0_12px_rgba(6,182,212,0.35)]',
@@ -343,8 +342,8 @@ export function LabToolbar({
             title={isDevAssistantOpen ? "Fermer l'assistant IA NEXUS DEV" : "Ouvrir l'assistant IA NEXUS DEV"}
           >
             <Sparkles size={13} className="text-cyan-200" />
-            <span className="hidden lg:inline">NEXUS DEV</span>
-            <span className="hidden sm:inline lg:hidden">DEV</span>
+            <span className="inline lg:hidden font-medium text-[11px]">Assistant IA</span>
+            <span className="hidden lg:inline">Assistant IA NEXUS DEV</span>
           </button>
 
           {/* Bouton Multi-Agents Swarm (Équipe Autonome) */}
@@ -422,13 +421,20 @@ export function LabToolbar({
         </button>
         <button
           type="button"
-          onClick={() => onChangeTab('assistant')}
+          onClick={() => {
+            onChangeTab('assistant');
+            if (!isDevAssistantOpen) {
+              onToggleDevAssistant();
+            }
+          }}
           className={cn(
-            'flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg transition-all cursor-pointer text-xs',
-            activeTab === 'assistant' ? 'bg-nexus-600 text-white font-medium shadow-xs' : 'text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white',
+            'flex-1 flex items-center justify-center gap-1.5 py-1.5 px-1.5 rounded-lg transition-all cursor-pointer text-xs min-w-0 font-medium',
+            activeTab === 'assistant' || isDevAssistantOpen
+              ? 'bg-gradient-to-r from-nexus-600 to-cyan-600 text-white shadow-xs ring-1 ring-cyan-400/40 font-semibold'
+              : 'text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white',
           )}
         >
-          <Bot size={13} className="shrink-0" />
+          <Sparkles size={13} className={cn('shrink-0', activeTab === 'assistant' || isDevAssistantOpen ? 'text-cyan-200 animate-pulse' : 'text-cyan-500 dark:text-cyan-400')} />
           <span className="truncate">{t('lab.assistant')}</span>
         </button>
       </div>

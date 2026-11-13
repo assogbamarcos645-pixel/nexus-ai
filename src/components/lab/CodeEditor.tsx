@@ -137,7 +137,7 @@ export function CodeEditor({
   isSaving,
   onChange,
   onSave,
-  onAskDev: _onAskDev,
+  onAskDev,
   showPreview: _showPreview,
   onTogglePreview: _onTogglePreview,
   allFiles,
@@ -534,6 +534,21 @@ export function CodeEditor({
 
         {/* Actions rapides de l'éditeur */}
         <div className="flex items-center gap-1 shrink-0">
+          {/* Action Assistant IA */}
+          {onAskDev && (
+            <button
+              type="button"
+              id="btn-editor-open-dev"
+              onClick={onAskDev}
+              disabled={!file}
+              className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold text-white bg-gradient-to-r from-nexus-600 to-cyan-600 hover:from-nexus-500 hover:to-cyan-500 shadow-[0_0_10px_rgba(124,13,244,0.3)] transition-all cursor-pointer border border-cyan-400/30 disabled:opacity-40 shrink-0"
+              title="Ouvrir l'Assistant IA NEXUS DEV"
+            >
+              <Sparkles size={12} className="text-cyan-200" />
+              <span className="hidden sm:inline">Assistant IA</span>
+            </button>
+          )}
+
           {/* Action Copilot Inline (Ctrl+K) */}
           <button
             type="button"

@@ -131,7 +131,7 @@ export function NexusDevDrawer({
       {/* Arrière-plan sombre cliquable pour fermer le volet d'un simple clic à l'extérieur */}
       <div
         id="nexus-dev-backdrop"
-        className="absolute inset-0 bg-black/60 backdrop-blur-xs z-30 transition-opacity cursor-pointer animate-fade-in"
+        className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 transition-opacity cursor-pointer animate-fade-in"
         onClick={onClose}
         aria-hidden="true"
         title="Cliquer pour fermer l'assistant"
@@ -139,34 +139,33 @@ export function NexusDevDrawer({
 
       <aside
         id="nexus-dev-drawer"
-        className="fixed sm:absolute inset-y-0 right-0 z-50 w-full sm:w-[480px] liquid-glass border-l border-slate-200/80 dark:border-white/10 shadow-[0_0_60px_rgba(0,0,0,0.3)] dark:shadow-[0_0_60px_rgba(0,0,0,0.85)] flex flex-col animate-in slide-in-from-right duration-200 legacy-theme text-slate-900 dark:text-white pt-[env(safe-area-inset-top,0px)]"
+        className="fixed inset-y-0 right-0 z-50 w-full sm:w-[480px] bg-white/98 dark:bg-[#0b0e1a]/98 backdrop-blur-2xl border-l border-slate-200/90 dark:border-white/10 shadow-[0_0_60px_rgba(0,0,0,0.3)] dark:shadow-[0_0_60px_rgba(0,0,0,0.85)] flex flex-col animate-in slide-in-from-right duration-200 legacy-theme text-slate-900 dark:text-white pt-[env(safe-area-inset-top,0px)]"
         role="complementary"
-        aria-label="Assistant NEXUS DEV"
+        aria-label="Assistant IA NEXUS DEV"
       >
         {/* En-tête */}
-        <div className="px-5 py-4 border-b border-slate-200/80 dark:border-white/10 liquid-glass flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded-lg bg-gradient-to-br from-nexus-500 to-cyan-500 text-white shadow-[0_0_12px_rgba(124,13,244,0.5)]">
+        <div className="px-4 sm:px-5 py-3.5 sm:py-4 border-b border-slate-200/80 dark:border-white/10 bg-slate-100/70 dark:bg-black/40 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="p-2 rounded-xl bg-gradient-to-br from-nexus-500 via-indigo-600 to-cyan-500 text-white shadow-[0_0_14px_rgba(6,182,212,0.5)] shrink-0">
               <Sparkles size={16} />
             </div>
-            <div>
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                <span>NEXUS DEV</span>
-                <span className="text-[10px] px-1.5 py-0.2 rounded bg-cyan-500/15 dark:bg-cyan-400/20 text-cyan-700 dark:text-cyan-300 font-mono font-medium">
-                  Copilote
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">
+                  Assistant IA
+                </h3>
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-500/15 dark:bg-cyan-400/20 text-cyan-700 dark:text-cyan-300 border border-cyan-500/30 font-medium shrink-0">
+                  NEXUS DEV
                 </span>
-              </h3>
+              </div>
               <div className="flex items-center gap-1.5 text-[10px] text-cyan-600 dark:text-cyan-300 font-mono mt-0.5">
-                <Cpu size={11} className="text-cyan-500 dark:text-cyan-400" />
-                <span>{activeProvider?.name || 'Moteur IA'}</span>
+                <Cpu size={11} className="text-cyan-500 dark:text-cyan-400 shrink-0" />
+                <span className="truncate">{activeProvider?.name || 'Moteur IA'}</span>
                 <span className="text-slate-400 dark:text-white/30">•</span>
                 <span className="text-slate-500 dark:text-white/60 truncate max-w-[140px]">
                   {activeModel?.name || aiConfig.activeModelId}
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-white/50 truncate max-w-[260px] mt-0.5">
-                {file ? `Fichier : ${file.name}` : 'Aucun fichier sélectionné'}
-              </p>
             </div>
           </div>
 
@@ -182,7 +181,36 @@ export function NexusDevDrawer({
         </div>
 
       {/* Contenu principal défilable */}
-      <div className="flex-1 overflow-y-auto scrollbar-thin p-5 space-y-5">
+      <div className="flex-1 overflow-y-auto scrollbar-thin p-4 sm:p-5 space-y-4 sm:space-y-5">
+        {/* Badge fichier actif ou avertissement */}
+        {file ? (
+          <div className="px-3.5 py-2.5 rounded-xl bg-cyan-500/10 dark:bg-cyan-500/15 border border-cyan-500/25 flex items-center justify-between gap-2 text-xs">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shrink-0" />
+              <span className="text-slate-600 dark:text-white/70 truncate text-[11px]">Fichier :</span>
+              <span className="font-mono font-semibold text-cyan-700 dark:text-cyan-300 truncate text-xs">{file.name}</span>
+            </div>
+            <span className="text-[10px] font-mono text-slate-400 dark:text-white/40 uppercase shrink-0">{file.language}</span>
+          </div>
+        ) : (
+          <div className="px-3.5 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center gap-2 text-xs text-amber-700 dark:text-amber-300">
+            <HelpCircle size={14} className="shrink-0 text-amber-500" />
+            <span>Sélectionnez ou créez un fichier dans l'explorateur pour guider l'Assistant IA.</span>
+          </div>
+        )}
+
+        {/* Accueil explicatif si aucune proposition */}
+        {!currentProposal && !isLoading && !streamingText && (
+          <div className="p-4 rounded-2xl bg-slate-100/80 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 text-xs text-slate-700 dark:text-white/80 space-y-2">
+            <div className="flex items-center gap-2 text-nexus-600 dark:text-cyan-300 font-semibold text-xs">
+              <Sparkles size={14} />
+              <span>Votre Copilote de programmation IA</span>
+            </div>
+            <p className="text-[11px] leading-relaxed text-slate-600 dark:text-white/60">
+              Posez des questions en langage naturel sur votre code, demandez des optimisations, la détection d'erreurs, ou la génération de nouvelles fonctionnalités.
+            </p>
+          </div>
+        )}
         {/* Chips de suggestions rapides */}
         <div>
           <span className="text-[11px] font-semibold text-slate-500 dark:text-white/50 uppercase tracking-wider block mb-2">
@@ -303,7 +331,7 @@ export function NexusDevDrawer({
       </div>
 
       {/* Formulaire de saisie en bas de volet — Avec padding safe-area et police 16px anti-zoom */}
-      <div className="p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:pb-4 border-t border-slate-200/80 dark:border-white/10 liquid-glass shrink-0">
+      <div className="p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:pb-4 border-t border-slate-200/80 dark:border-white/10 bg-slate-50/95 dark:bg-[#070913]/95 backdrop-blur-xl shrink-0">
         <form
           onSubmit={(e) => {
             e.preventDefault();
