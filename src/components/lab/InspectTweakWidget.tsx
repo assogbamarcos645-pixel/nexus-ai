@@ -204,7 +204,7 @@ export function InspectTweakWidget({
                   }}
                   placeholder={`Décrivez la retouche pour cet élément <${tagLower}> (ex: bouton violet dégradé avec ombre portée)...`}
                   disabled={isLoading}
-                  className="w-full pl-3 pr-20 py-2 rounded-xl bg-black/60 border border-white/10 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 text-xs text-white placeholder-slate-500 transition-all"
+                  className="w-full pl-3 pr-20 py-2 rounded-xl bg-black/60 border border-white/10 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 text-[16px] sm:text-xs text-white placeholder-slate-500 transition-all"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-500 hidden sm:inline">
                   Entrée ↵

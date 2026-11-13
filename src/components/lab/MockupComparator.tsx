@@ -86,6 +86,13 @@ export function MockupComparator({
     updateSliderFromEvent(e.clientX);
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length > 0) {
+      setIsDragging(true);
+      updateSliderFromEvent(e.touches[0].clientX);
+    }
+  };
+
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDragging) return;
@@ -97,14 +104,27 @@ export function MockupComparator({
       setIsDragging(false);
     };
 
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isDragging || e.touches.length === 0) return;
+      updateSliderFromEvent(e.touches[0].clientX);
+    };
+
+    const handleTouchEnd = () => {
+      setIsDragging(false);
+    };
+
     if (isDragging) {
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('touchmove', handleTouchMove, { passive: true });
+      window.addEventListener('touchend', handleTouchEnd);
     }
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
     };
   }, [isDragging, updateSliderFromEvent]);
 
@@ -334,11 +354,12 @@ export function MockupComparator({
                   </div>
                 </div>
 
-                {/* Poignée séparatrice verticale déplaçable */}
+                {/* Poignée séparatrice verticale déplaçable — Tactile & Souris */}
                 <div
-                  className="absolute top-0 bottom-0 z-30 flex items-center justify-center cursor-ew-resize group"
+                  className="absolute top-0 bottom-0 z-30 flex items-center justify-center cursor-ew-resize group touch-none"
                   style={{ left: `${sliderPos}%`, transform: 'translateX(-50%)' }}
                   onMouseDown={handleMouseDown}
+                  onTouchStart={handleTouchStart}
                 >
                   {/* Ligne verticale */}
                   <div className="w-0.5 h-full bg-gradient-to-b from-cyan-400 via-white to-purple-500 shadow-[0_0_12px_rgba(255,255,255,0.8)]" />

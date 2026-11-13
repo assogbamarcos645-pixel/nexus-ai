@@ -7,6 +7,7 @@
  * et les raccourcis d'exécution/sauvegarde sans aucun chevauchement.
  */
 
+import { useState } from 'react';
 import {
   FolderPlus,
   FilePlus,
@@ -20,8 +21,6 @@ import {
   Code2,
   Play,
   Bot,
-  Eye,
-  EyeOff,
   Columns,
   SquareCode,
   Smartphone,
@@ -29,6 +28,8 @@ import {
   Cloud,
   History,
   FolderGit2,
+  MoreHorizontal,
+  X,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import type { LabProject, LabFile, LabTab, LabLayoutMode } from '@/types/lab';
@@ -93,6 +94,7 @@ export function LabToolbar({
   onChangeTab,
 }: LabToolbarProps) {
   const { t } = useTranslation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
     <header
@@ -109,7 +111,7 @@ export function LabToolbar({
               id="btn-toolbar-toggle-explorer"
               onClick={onToggleExplorer}
               className={cn(
-                'flex items-center justify-center p-1.5 rounded-lg border transition-all cursor-pointer text-xs shrink-0',
+                'hidden md:flex items-center justify-center p-1.5 rounded-lg border transition-all cursor-pointer text-xs shrink-0',
                 showExplorer
                   ? 'bg-nexus-500/15 dark:bg-nexus-500/20 text-nexus-700 dark:text-nexus-300 border-nexus-500/30'
                   : 'bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-white/60 border-slate-200 dark:border-white/10 hover:text-slate-900 dark:hover:text-white',
@@ -122,7 +124,7 @@ export function LabToolbar({
           )}
 
           {/* Sélecteur de projet actif */}
-          <div className="relative min-w-0 max-w-[130px] sm:max-w-[160px] md:max-w-[180px]">
+          <div className="relative min-w-0 max-w-[140px] sm:max-w-[170px] md:max-w-[180px]">
             <select
               id="select-active-project"
               value={activeProject?.id || ''}
@@ -240,14 +242,14 @@ export function LabToolbar({
             <span>Fichier</span>
           </button>
 
-          {/* Bouton Sauvegarder */}
+          {/* Bouton Sauvegarder (avec dot indicateur tactile) */}
           <button
             type="button"
             id="btn-toolbar-save"
             onClick={onSave}
             disabled={!hasUnsavedChanges || isSaving}
             className={cn(
-              'flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer shrink-0',
+              'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer shrink-0',
               hasUnsavedChanges
                 ? 'bg-nexus-600 text-white hover:bg-nexus-500 shadow-[0_0_12px_rgba(124,13,244,0.4)]'
                 : 'bg-slate-100 dark:bg-white/4 text-slate-400 dark:text-white/30 border border-slate-200 dark:border-white/6 cursor-not-allowed',
@@ -256,6 +258,9 @@ export function LabToolbar({
           >
             <Save size={13} />
             <span className="hidden lg:inline">{isSaving ? '...' : 'Enregistrer'}</span>
+            {hasUnsavedChanges && (
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse lg:hidden" />
+            )}
           </button>
 
           {/* Bouton Exporter ZIP */}
@@ -291,7 +296,7 @@ export function LabToolbar({
               type="button"
               id="btn-toolbar-history"
               onClick={onOpenHistory}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white bg-slate-100/80 dark:bg-white/5 hover:bg-slate-200/80 dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/8 transition-all cursor-pointer shrink-0"
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white bg-slate-100/80 dark:bg-white/5 hover:bg-slate-200/80 dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/8 transition-all cursor-pointer shrink-0"
               title="Historique des versions et instantanés (Rollback)"
             >
               <History size={13} className="text-amber-500 dark:text-amber-400" />
@@ -323,24 +328,6 @@ export function LabToolbar({
           >
             <RotateCcw size={13} />
           </button>
-
-          {/* Bouton Toggle Aperçu pour petits écrans */}
-          {onTogglePreview && (
-            <button
-              type="button"
-              id="btn-toolbar-toggle-preview"
-              onClick={onTogglePreview}
-              className={cn(
-                'flex md:hidden items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer shrink-0',
-                showPreview
-                  ? 'bg-nexus-500/15 dark:bg-nexus-500/20 text-nexus-700 dark:text-nexus-300 border-nexus-500/30'
-                  : 'bg-slate-100/80 dark:bg-white/5 text-slate-600 dark:text-white/60 border-slate-200/80 dark:border-white/8',
-              )}
-              title={showPreview ? t('lab.hidePreview') : t('lab.showPreview')}
-            >
-              {showPreview ? <EyeOff size={13} /> : <Eye size={13} />}
-            </button>
-          )}
 
           {/* Bouton Assistant IA NEXUS DEV */}
           <button
@@ -378,6 +365,18 @@ export function LabToolbar({
               <span className="hidden sm:inline">Swarm</span>
             </button>
           )}
+
+          {/* Bouton Plus d'actions (...) sur Mobile */}
+          <button
+            type="button"
+            id="btn-toolbar-more-mobile"
+            onClick={() => setIsMobileMenuOpen((v) => !v)}
+            className="flex sm:hidden items-center justify-center p-1.5 rounded-lg text-slate-600 hover:text-slate-900 dark:text-white/70 dark:hover:text-white bg-slate-100/80 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 transition-colors cursor-pointer shrink-0"
+            title="Toutes les options du projet"
+            aria-label="Menu du projet"
+          >
+            <MoreHorizontal size={14} />
+          </button>
         </div>
       </div>
 
@@ -433,6 +432,128 @@ export function LabToolbar({
           <span className="truncate">{t('lab.assistant')}</span>
         </button>
       </div>
+
+      {/* Feuille d'actions mobile (Action Sheet style iOS/Android) */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-150"
+          onClick={() => setIsMobileMenuOpen(false)}
+        >
+          <div
+            className="w-full max-w-md bg-white dark:bg-surface-950 rounded-t-3xl sm:rounded-2xl border-t sm:border border-slate-200 dark:border-white/10 shadow-2xl p-4 flex flex-col gap-2 pb-safe animate-in slide-in-from-bottom duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="w-10 h-1 bg-slate-300 dark:bg-white/20 rounded-full mx-auto mb-2 shrink-0" aria-hidden="true" />
+
+            <div className="flex items-center justify-between pb-2 border-b border-slate-200/80 dark:border-white/10">
+              <span className="text-xs font-semibold text-slate-800 dark:text-white uppercase tracking-wider">
+                Actions du Projet • {activeProject?.name || 'Lab'}
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  onNewProjectClick();
+                }}
+                className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-800 dark:text-white text-xs font-medium cursor-pointer transition-colors"
+              >
+                <FolderPlus size={16} className="text-nexus-500" />
+                <span>Nouveau Projet</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  onNewFileClick();
+                }}
+                className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-800 dark:text-white text-xs font-medium cursor-pointer transition-colors"
+              >
+                <FilePlus size={16} className="text-cyan-500" />
+                <span>Nouveau Fichier</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  onSave();
+                }}
+                disabled={!hasUnsavedChanges || isSaving}
+                className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-800 dark:text-white text-xs font-medium cursor-pointer transition-colors disabled:opacity-40"
+              >
+                <Save size={16} className="text-nexus-600" />
+                <span>{isSaving ? 'Enregistrement...' : 'Enregistrer'}</span>
+              </button>
+
+              {onOpenHistory && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    onOpenHistory();
+                  }}
+                  className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-800 dark:text-white text-xs font-medium cursor-pointer transition-colors"
+                >
+                  <History size={16} className="text-amber-500" />
+                  <span>Historique {snapshotCount > 0 ? `(${snapshotCount})` : ''}</span>
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  onExportZip();
+                }}
+                disabled={isExporting}
+                className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-800 dark:text-white text-xs font-medium cursor-pointer transition-colors"
+              >
+                <Download size={16} className="text-emerald-500" />
+                <span>Exporter ZIP</span>
+              </button>
+
+              {onOpenGitHubExport && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    onOpenGitHubExport();
+                  }}
+                  className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-800 dark:text-white text-xs font-medium cursor-pointer transition-colors"
+                >
+                  <FolderGit2 size={16} className="text-purple-500" />
+                  <span>Export GitHub</span>
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  if (window.confirm('Réinitialiser tous les projets démo à leur état initial ?')) {
+                    onResetDemo();
+                  }
+                }}
+                className="col-span-2 flex items-center justify-center gap-2 p-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 text-xs font-medium cursor-pointer transition-colors"
+              >
+                <RotateCcw size={15} />
+                <span>Réinitialiser les Projets Démo</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }

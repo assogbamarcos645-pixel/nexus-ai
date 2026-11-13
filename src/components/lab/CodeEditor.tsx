@@ -684,7 +684,7 @@ export function CodeEditor({
             <textarea
               value={content}
               onChange={(e) => onChange(e.target.value)}
-              className="flex-1 w-full bg-white dark:bg-black/40 text-slate-900 dark:text-white font-mono text-xs p-3 rounded-lg border border-slate-300 dark:border-white/10 outline-none resize-none leading-relaxed"
+              className="flex-1 w-full bg-white dark:bg-black/40 text-slate-900 dark:text-white font-mono text-[16px] sm:text-xs p-3 rounded-lg border border-slate-300 dark:border-white/10 outline-none resize-none leading-relaxed"
               spellCheck={false}
             />
           </div>

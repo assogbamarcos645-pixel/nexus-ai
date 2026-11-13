@@ -230,7 +230,7 @@ export function InlineCopilotWidget({
               onChange={(e) => setPrompt(e.target.value)}
               disabled={isLoading}
               placeholder="Décrivez votre modification... (ex: « Ajoute une barre de navigation Tailwind responsive »)"
-              className="w-full bg-black/40 border border-white/15 focus:border-cyan-400/80 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-white/35 outline-none transition-all focus:ring-2 focus:ring-cyan-500/20 pr-10 font-sans"
+              className="w-full bg-black/40 border border-white/15 focus:border-cyan-400/80 rounded-xl px-3.5 py-2.5 text-[16px] sm:text-xs text-white placeholder-white/35 outline-none transition-all focus:ring-2 focus:ring-cyan-500/20 pr-10 font-sans"
             />
             {prompt && !isLoading && (
               <button

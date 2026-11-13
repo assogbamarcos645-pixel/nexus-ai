@@ -101,7 +101,7 @@ export function FileExplorer({
           id="btn-add-file"
           onClick={onNewFileClick}
           title="Ajouter un fichier"
-          className="p-1.5 rounded-md hover:bg-slate-200/70 dark:hover:bg-white/10 text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
+          className="p-2 sm:p-1.5 min-w-[32px] min-h-[32px] flex items-center justify-center rounded-lg hover:bg-slate-200/70 dark:hover:bg-white/10 text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
         >
           <Plus size={15} />
         </button>
@@ -126,7 +126,7 @@ export function FileExplorer({
               onClick={() => onSelectFile(file.id)}
               onKeyDown={(e) => e.key === 'Enter' && onSelectFile(file.id)}
               className={cn(
-                'group flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs cursor-pointer transition-all duration-150',
+                'group flex items-center justify-between px-3 py-2 sm:py-1.5 rounded-lg text-xs cursor-pointer transition-all duration-150 select-none active:scale-[0.99]',
                 isActive
                   ? 'bg-nexus-600/15 dark:bg-nexus-600/25 text-nexus-700 dark:text-white border border-nexus-500/35 shadow-[0_0_10px_rgba(124,13,244,0.15)] font-medium'
                   : 'text-slate-700 dark:text-white/70 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/5 border border-transparent',
@@ -134,7 +134,7 @@ export function FileExplorer({
             >
               <div className="flex items-center gap-2 min-w-0">
                 {getFileIcon(file.path)}
-                <span className="truncate font-mono text-[11px]" title={file.path}>
+                <span className="truncate font-mono text-xs sm:text-[11px]" title={file.path}>
                   {file.path}
                 </span>
               </div>
@@ -156,9 +156,9 @@ export function FileExplorer({
                         onDeleteFile(file.id);
                       }
                     }}
-                    className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-500/20 hover:text-red-600 dark:hover:text-red-400 text-slate-400 dark:text-white/40 transition-all cursor-pointer"
+                    className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-1.5 rounded hover:bg-red-500/20 hover:text-red-600 dark:hover:text-red-400 text-slate-400 dark:text-white/40 transition-all cursor-pointer"
                   >
-                    <Trash2 size={12} />
+                    <Trash2 size={13} />
                   </button>
                 )}
               </div>

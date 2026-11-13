@@ -172,7 +172,7 @@ export function NexusSwarmDrawer({
       <div
         id="nexus-swarm-drawer"
         aria-label="Swarm Multi-Agents"
-        className="fixed inset-y-0 right-0 z-50 w-full sm:w-[620px] lg:w-[740px] bg-white/95 dark:bg-[#070714]/95 border-l border-slate-200/90 dark:border-white/10 shadow-2xl backdrop-blur-2xl flex flex-col overflow-hidden animate-in slide-in-from-right duration-300"
+        className="fixed inset-y-0 right-0 z-50 w-full sm:w-[620px] lg:w-[740px] bg-white/95 dark:bg-[#070714]/95 border-l border-slate-200/90 dark:border-white/10 shadow-2xl backdrop-blur-2xl flex flex-col overflow-hidden animate-in slide-in-from-right duration-300 pt-[env(safe-area-inset-top,0px)]"
       >
       {/* 1. Barre d'en-tête du Swarm */}
       <header className="h-14 px-5 border-b border-slate-200/80 dark:border-white/10 bg-slate-100/60 dark:bg-[#06060f] flex items-center justify-between gap-4 shrink-0 select-none">
@@ -496,8 +496,8 @@ export function NexusSwarmDrawer({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* 4. Barre de saisie de mission & Contrôles */}
-      <footer className="p-4 border-t border-slate-200/80 dark:border-white/10 bg-slate-50 dark:bg-[#06060f] shrink-0 space-y-2">
+      {/* 4. Barre de saisie de mission & Contrôles — Safe area & anti-zoom 16px */}
+      <footer className="p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:pb-4 border-t border-slate-200/80 dark:border-white/10 bg-slate-50 dark:bg-[#06060f] shrink-0 space-y-2">
         <div className="flex items-center gap-2">
           <input
             type="text"
@@ -512,7 +512,7 @@ export function NexusSwarmDrawer({
             }}
             disabled={isRunning}
             placeholder="Ex : Créer un formulaire d'abonnement accessible avec validation..."
-            className="flex-1 px-3.5 py-2 rounded-xl text-xs bg-white dark:bg-white/5 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-nexus-500/50"
+            className="flex-1 px-3.5 py-2 rounded-xl text-[16px] sm:text-xs bg-white dark:bg-white/5 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-nexus-500/50"
           />
 
           {isRunning ? (

@@ -256,12 +256,12 @@ export function NexusLab() {
               <p className="text-sm text-slate-600 dark:text-white/60 max-w-md mx-auto mb-8 leading-relaxed">
                 Votre espace de développement est totalement vide et prêt. Écrivez votre code de zéro ou décrivez votre idée pour vibe-coder avec l’IA.
               </p>
-              <div className="flex flex-wrap items-center justify-center gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full max-w-md px-2">
                 <button
                   type="button"
                   id="btn-lab-create-blank"
                   onClick={() => createProject('blank', 'Mon Projet')}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-[0_0_20px_rgba(99,102,241,0.4)] transition-all cursor-pointer"
+                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-[0_0_20px_rgba(99,102,241,0.4)] transition-all cursor-pointer"
                 >
                   <Plus size={15} />
                   <span>Créer un projet vierge</span>
@@ -273,7 +273,7 @@ export function NexusLab() {
                     createProject('blank', 'Nouveau Projet');
                     setIsDevAssistantOpen(true);
                   }}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-cyan-700 dark:text-cyan-300 text-xs font-semibold shadow-sm transition-all cursor-pointer"
+                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-cyan-700 dark:text-cyan-300 text-xs font-semibold shadow-sm transition-all cursor-pointer"
                 >
                   <Sparkles size={15} className="text-cyan-600 dark:text-cyan-400" />
                   <span>Assistant NEXUS DEV</span>
@@ -282,16 +282,16 @@ export function NexusLab() {
                   type="button"
                   id="btn-lab-browse-templates"
                   onClick={() => setIsNewProjectModalOpen(true)}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white/90 text-xs font-semibold shadow-sm transition-all cursor-pointer"
+                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white/90 text-xs font-semibold shadow-sm transition-all cursor-pointer"
                 >
                   <FolderPlus size={15} className="text-nexus-500 dark:text-nexus-400" />
-                  <span>Modèles (React, Web, Node...)</span>
+                  <span>Modèles (React, Web...)</span>
                 </button>
                 <button
                   type="button"
                   id="btn-lab-load-demo"
                   onClick={resetDemoProjects}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-white/70 hover:text-emerald-500 dark:hover:text-emerald-400 text-xs font-semibold shadow-sm transition-all cursor-pointer"
+                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-white/70 hover:text-emerald-500 dark:hover:text-emerald-400 text-xs font-semibold shadow-sm transition-all cursor-pointer"
                 >
                   <Sparkles size={15} className="text-emerald-500 dark:text-emerald-400" />
                   <span>Charger les Démos</span>

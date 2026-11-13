@@ -28,6 +28,8 @@ import {
   Zap,
   MousePointerClick,
   SlidersHorizontal,
+  ChevronUp,
+  ChevronDown,
 } from 'lucide-react';
 import type { LabProject, LabFile, ConsoleMessage, InspectedElementInfo } from '@/types/lab';
 import { LAB_TEMPLATES } from '@/config/labTemplates';
@@ -35,6 +37,7 @@ import { bundleProjectForPreview } from '@/services/lab/runtimeService';
 import { InspectTweakWidget } from './InspectTweakWidget';
 import { MockupComparator } from './MockupComparator';
 import { executeInspectTweak } from '@/services/lab/inspectTweakService';
+import { cn } from '@/utils/cn';
 
 interface PreviewPanelProps {
   project: LabProject | null;
@@ -62,6 +65,7 @@ export function PreviewPanel({
   const [logs, setLogs] = useState<ConsoleMessage[]>([]);
   const [copiedCmd, setCopiedCmd] = useState<string | null>(null);
   const [deviceMode, setDeviceMode] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+  const [isConsoleOpen, setIsConsoleOpen] = useState(() => (typeof window !== 'undefined' ? window.innerWidth >= 768 : false));
 
   // États pour « Inspect & Tweak » (Mode Clic-to-Edit) et Curseur Comparatif Avant/Après
   const [isInspectMode, setIsInspectMode] = useState(false);
@@ -462,8 +466,8 @@ export function PreviewPanel({
               {previewIframe}
             </MockupComparator>
           ) : (
-            /* Mode d'aperçu standard avec simulation responsive */
-            <div className="flex-1 relative flex items-center justify-center p-2 sm:p-4 overflow-auto">
+            /* Mode d'aperçu standard avec simulation responsive — Full bleed sur mobile */
+            <div className="flex-1 relative flex items-center justify-center p-0 sm:p-4 overflow-auto">
               <div
                 className={`transition-all duration-300 h-full w-full bg-white dark:bg-[#070712] shadow-xl overflow-hidden relative ${
                   deviceMode === 'tablet'
@@ -492,41 +496,60 @@ export function PreviewPanel({
             </div>
           )}
 
-          {/* Mini-console de logs */}
-          <div className="h-28 border-t border-slate-200/80 dark:border-white/8 bg-slate-100/95 dark:bg-surface-950/95 flex flex-col shrink-0 font-mono text-[11px]">
-            <div className="px-3 py-1 bg-slate-200/70 dark:bg-surface-900 border-b border-slate-300/60 dark:border-white/6 flex items-center justify-between text-slate-500 dark:text-white/40 text-[10px]">
-              <span className="flex items-center gap-1.5">
-                <Terminal size={11} /> Console de prévisualisation (Vite Runtime)
+          {/* Mini-console de logs — Repliable sur mobile pour libérer l'espace visuel */}
+          <div
+            className={cn(
+              'border-t border-slate-200/80 dark:border-white/8 bg-slate-100/95 dark:bg-surface-950/95 flex flex-col shrink-0 font-mono text-[11px] transition-all duration-200',
+              isConsoleOpen ? 'h-28 sm:h-28' : 'h-7',
+            )}
+          >
+            <div
+              onClick={() => setIsConsoleOpen((v) => !v)}
+              className="px-3 py-1 bg-slate-200/70 dark:bg-surface-900 border-b border-slate-300/60 dark:border-white/6 flex items-center justify-between text-slate-500 dark:text-white/40 text-[10px] cursor-pointer select-none"
+            >
+              <span className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-white/70">
+                <Terminal size={11} className="text-cyan-500" />
+                <span>Console Vite Runtime</span>
+                {logs.length > 0 && (
+                  <span className="px-1 rounded-full bg-cyan-500/20 text-cyan-600 dark:text-cyan-300 font-mono text-[9px]">
+                    {logs.length}
+                  </span>
+                )}
               </span>
-              <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-medium">
-                HMR actif
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-medium hidden sm:inline">
+                  HMR actif
+                </span>
+                {isConsoleOpen ? <ChevronDown size={12} /> : <ChevronUp size={12} />}
+              </div>
             </div>
-            <div className="flex-1 overflow-y-auto scrollbar-thin p-2 space-y-1">
-              {logs.length === 0 ? (
-                <div className="text-slate-400 dark:text-white/30 italic text-[10px]">
-                  Prêt. Les sorties console.log() et les événements React apparaîtront ici.
-                </div>
-              ) : (
-                logs.map((log) => (
-                  <div key={log.id} className="flex items-start gap-2">
-                    <span className="text-white/30 text-[9px] shrink-0">{log.time}</span>
-                    <span
-                      className={
-                        log.type === 'error'
-                          ? 'text-red-400'
-                          : log.type === 'warn'
-                          ? 'text-amber-300'
-                          : 'text-cyan-200'
-                      }
-                    >
-                      [{log.type.toUpperCase()}]
-                    </span>
-                    <span className="text-slate-800 dark:text-slate-200 break-all">{log.message}</span>
+            {isConsoleOpen && (
+              <div className="flex-1 overflow-y-auto scrollbar-thin p-2 space-y-1">
+                {logs.length === 0 ? (
+                  <div className="text-slate-400 dark:text-white/30 italic text-[10px]">
+                    Prêt. Les sorties console.log() et les événements React apparaîtront ici.
                   </div>
-                ))
-              )}
-            </div>
+                ) : (
+                  logs.map((log) => (
+                    <div key={log.id} className="flex items-start gap-2">
+                      <span className="text-white/30 text-[9px] shrink-0">{log.time}</span>
+                      <span
+                        className={
+                          log.type === 'error'
+                            ? 'text-red-400'
+                            : log.type === 'warn'
+                            ? 'text-amber-300'
+                            : 'text-cyan-200'
+                        }
+                      >
+                        [{log.type.toUpperCase()}]
+                      </span>
+                      <span className="text-slate-800 dark:text-slate-200 break-all">{log.message}</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
           </div>
         </div>
       ) : (

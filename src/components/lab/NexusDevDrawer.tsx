@@ -139,7 +139,7 @@ export function NexusDevDrawer({
 
       <aside
         id="nexus-dev-drawer"
-        className="absolute inset-y-0 right-0 z-40 w-full sm:w-[480px] liquid-glass border-l border-slate-200/80 dark:border-white/10 shadow-[0_0_60px_rgba(0,0,0,0.3)] dark:shadow-[0_0_60px_rgba(0,0,0,0.85)] flex flex-col animate-in slide-in-from-right duration-200 legacy-theme text-slate-900 dark:text-white"
+        className="fixed sm:absolute inset-y-0 right-0 z-50 w-full sm:w-[480px] liquid-glass border-l border-slate-200/80 dark:border-white/10 shadow-[0_0_60px_rgba(0,0,0,0.3)] dark:shadow-[0_0_60px_rgba(0,0,0,0.85)] flex flex-col animate-in slide-in-from-right duration-200 legacy-theme text-slate-900 dark:text-white pt-[env(safe-area-inset-top,0px)]"
         role="complementary"
         aria-label="Assistant NEXUS DEV"
       >
@@ -302,8 +302,8 @@ export function NexusDevDrawer({
         )}
       </div>
 
-      {/* Formulaire de saisie en bas de volet */}
-      <div className="p-4 border-t border-slate-200/80 dark:border-white/10 liquid-glass shrink-0">
+      {/* Formulaire de saisie en bas de volet — Avec padding safe-area et police 16px anti-zoom */}
+      <div className="p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:pb-4 border-t border-slate-200/80 dark:border-white/10 liquid-glass shrink-0">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -318,7 +318,7 @@ export function NexusDevDrawer({
             onChange={(e) => setPrompt(e.target.value)}
             placeholder="Posez une question sur ce code..."
             disabled={isLoading || !file}
-            className="w-full pl-3 pr-10 py-2.5 rounded-xl bg-white/90 dark:bg-black/50 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:border-nexus-500 transition-colors disabled:opacity-40 shadow-xs"
+            className="w-full pl-3 pr-10 py-2.5 rounded-xl bg-white/90 dark:bg-black/50 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:border-nexus-500 transition-colors disabled:opacity-40 shadow-xs text-[16px] sm:text-xs"
           />
           <button
             type="submit"
