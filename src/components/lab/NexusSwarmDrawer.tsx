@@ -11,6 +11,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Play,
   Square,
@@ -25,6 +26,7 @@ import {
   ArrowRight,
   Sparkles,
   Plus,
+  X,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import type { LabFile, DevProposal } from '@/types/lab';
@@ -155,15 +157,17 @@ export function NexusSwarmDrawer({
   };
 
   if (!isOpen) return null;
+  if (typeof document === 'undefined') return null;
 
   const convergencePercent = sessionState?.convergencePercent ?? 0;
   const isConverged = sessionState?.status === 'converged';
 
-  return (
+  return createPortal(
     <>
       {/* Arrière-plan sombre cliquable pour fermer le volet sur mobile / tablette / bureau */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 transition-opacity cursor-pointer animate-fade-in"
+        id="nexus-swarm-backdrop"
+        className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[90] transition-opacity cursor-pointer animate-fade-in"
         onClick={onClose}
         aria-hidden="true"
         title="Fermer le Swarm"
@@ -172,7 +176,7 @@ export function NexusSwarmDrawer({
       <div
         id="nexus-swarm-drawer"
         aria-label="Swarm Multi-Agents"
-        className="fixed inset-y-0 right-0 z-50 w-full sm:w-[620px] lg:w-[740px] bg-white/95 dark:bg-[#070714]/95 border-l border-slate-200/90 dark:border-white/10 shadow-2xl backdrop-blur-2xl flex flex-col overflow-hidden animate-in slide-in-from-right duration-300 pt-[max(env(safe-area-inset-top,0px),0.5rem)]"
+        className="fixed inset-y-0 right-0 z-[100] w-full sm:w-[620px] lg:w-[740px] bg-white/95 dark:bg-[#070714]/95 border-l border-slate-200/90 dark:border-white/10 shadow-2xl backdrop-blur-2xl flex flex-col overflow-hidden animate-in slide-in-from-right duration-300 pt-[max(env(safe-area-inset-top,0px),0.5rem)]"
       >
         {/* Poignée tactile mobile style iOS (tap pour fermer) */}
         <button
@@ -186,12 +190,12 @@ export function NexusSwarmDrawer({
         </button>
 
       {/* 1. Barre d'en-tête du Swarm */}
-      <header className="h-14 px-5 border-b border-slate-200/80 dark:border-white/10 bg-slate-100/60 dark:bg-[#06060f] flex items-center justify-between gap-4 shrink-0 select-none">
-        <div className="flex items-center gap-3 min-w-0 flex-1">
+      <header className="h-14 px-4 sm:px-5 border-b border-slate-200/80 dark:border-white/10 bg-slate-100/60 dark:bg-[#06060f] flex items-center justify-between gap-3 shrink-0 select-none">
+        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1 overflow-hidden pr-2">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-nexus-600 via-indigo-600 to-cyan-500 flex items-center justify-center text-white font-bold shadow-md shrink-0">
             <Sparkles size={16} />
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <h1 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2 truncate">
               <span>Multi-Agents Swarm</span>
               <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-nexus-500/10 text-nexus-600 dark:text-nexus-400 border border-nexus-500/20 shrink-0">
@@ -205,9 +209,11 @@ export function NexusSwarmDrawer({
         </div>
 
         <ModalCloseButton
+          id="btn-close-swarm-header"
           onClick={onClose}
           label="Fermer"
           title="Fermer le Swarm (Échap)"
+          className="shrink-0"
         />
       </header>
 
@@ -565,8 +571,19 @@ export function NexusSwarmDrawer({
             </button>
           )}
         </div>
+
+        {/* Bouton de fermeture mobile au niveau du pouce */}
+        <button
+          type="button"
+          onClick={onClose}
+          className="sm:hidden w-full py-2 px-3 mt-2 rounded-xl bg-slate-200/90 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/15 text-slate-800 dark:text-white font-semibold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+        >
+          <X size={14} />
+          <span>Fermer le Swarm</span>
+        </button>
       </footer>
     </div>
-    </>
+    </>,
+    document.body
   );
 }

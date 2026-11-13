@@ -8,6 +8,7 @@
  */
 
 import { useState, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Sparkles, Send, Copy, Check, Eye, HelpCircle, Cpu, X } from 'lucide-react';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
@@ -90,6 +91,7 @@ export function NexusDevDrawer({
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
+  if (typeof document === 'undefined') return null;
 
   const handleSubmit = async (queryText?: string) => {
     const textToSend = (queryText ?? prompt).trim();
@@ -126,12 +128,12 @@ export function NexusDevDrawer({
     setTimeout(() => setCopied(false), 1500);
   };
 
-  return (
+  return createPortal(
     <>
       {/* Arrière-plan sombre cliquable pour fermer le volet d'un simple clic à l'extérieur */}
       <div
         id="nexus-dev-backdrop"
-        className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 transition-opacity cursor-pointer animate-fade-in"
+        className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[90] transition-opacity cursor-pointer animate-fade-in"
         onClick={onClose}
         aria-hidden="true"
         title="Cliquer pour fermer l'assistant"
@@ -139,7 +141,7 @@ export function NexusDevDrawer({
 
       <aside
         id="nexus-dev-drawer"
-        className="fixed inset-y-0 right-0 z-50 w-full sm:w-[480px] bg-white/98 dark:bg-[#0b0e1a]/98 backdrop-blur-2xl border-l border-slate-200/90 dark:border-white/10 shadow-[0_0_60px_rgba(0,0,0,0.3)] dark:shadow-[0_0_60px_rgba(0,0,0,0.85)] flex flex-col overflow-hidden animate-in slide-in-from-right duration-200 legacy-theme text-slate-900 dark:text-white pt-[max(env(safe-area-inset-top,0px),0.5rem)]"
+        className="fixed inset-y-0 right-0 z-[100] w-full sm:w-[480px] bg-white/98 dark:bg-[#0b0e1a]/98 backdrop-blur-2xl border-l border-slate-200/90 dark:border-white/10 shadow-[0_0_60px_rgba(0,0,0,0.3)] dark:shadow-[0_0_60px_rgba(0,0,0,0.85)] flex flex-col overflow-hidden animate-in slide-in-from-right duration-200 legacy-theme text-slate-900 dark:text-white pt-[max(env(safe-area-inset-top,0px),0.5rem)]"
         role="complementary"
         aria-label="Assistant IA NEXUS DEV"
       >
@@ -381,6 +383,7 @@ export function NexusDevDrawer({
         </button>
       </div>
     </aside>
-  </>
-  );
+  </>,
+  document.body
+);
 }

@@ -166,9 +166,9 @@ export function LabToolbar({
           )}
         </div>
 
-        {/* Zone 2 (Centre) : Sélecteur de Mode de Disposition (Split / Code Seul / Aperçu Seul) - COMPACT SANS DÉBORDEMENT */}
+        {/* Zone 2 (Centre) : Sélecteur de Mode de Disposition (Ultra-large 2XL uniquement) */}
         {onChangeLayoutMode && (
-          <div className="hidden md:flex items-center justify-self-center shrink-0 bg-slate-200/80 dark:bg-white/8 p-0.5 rounded-xl border border-slate-300/80 dark:border-white/10 shadow-xs z-10 mx-1">
+          <div className="hidden 2xl:flex items-center justify-self-center shrink-0 bg-slate-200/80 dark:bg-white/8 p-0.5 rounded-xl border border-slate-300/80 dark:border-white/10 shadow-xs z-10 mx-1">
             <button
               type="button"
               onClick={() => onChangeLayoutMode('code-only')}
@@ -380,65 +380,153 @@ export function LabToolbar({
         </div>
       </div>
 
-      {/* Barre d'onglets pour petits écrans tactiles */}
-      <div className="flex md:hidden items-center justify-around liquid-glass-pill p-1 text-xs gap-1">
+      {/* Barre d'onglets complète et réactive (Mobile, Tablette et PC) */}
+      <nav
+        aria-label="Barre d'onglets principale de navigation"
+        className="flex items-center justify-between md:justify-center md:gap-2 liquid-glass-pill p-1 text-xs gap-1 w-full max-w-2xl mx-auto shadow-xs overflow-x-auto scrollbar-none"
+      >
+        {/* Onglet Fichiers */}
         <button
           type="button"
-          onClick={() => onChangeTab('explorer')}
+          id="btn-tab-explorer"
+          onClick={() => {
+            onChangeTab('explorer');
+            if (onToggleExplorer && !showExplorer) {
+              onToggleExplorer();
+            }
+          }}
           className={cn(
-            'flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg transition-all cursor-pointer text-xs',
-            activeTab === 'explorer' ? 'bg-nexus-600 text-white font-medium shadow-xs' : 'text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white',
+            'flex-1 md:flex-initial flex items-center justify-center gap-1.5 py-1.5 px-2 md:px-3 rounded-lg transition-all cursor-pointer text-xs font-medium shrink-0',
+            activeTab === 'explorer' || showExplorer
+              ? 'bg-nexus-600 text-white font-semibold shadow-xs'
+              : 'text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/5',
           )}
+          title="Explorateur de fichiers"
         >
           <Layers size={13} className="shrink-0" />
           <span className="truncate">{t('lab.explorer')}</span>
         </button>
+
+        {/* Onglet Code */}
         <button
           type="button"
-          onClick={() => onChangeTab('editor')}
+          id="btn-tab-editor"
+          onClick={() => {
+            onChangeTab('editor');
+            if (onChangeLayoutMode) {
+              onChangeLayoutMode('code-only');
+            }
+          }}
           className={cn(
-            'flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg transition-all cursor-pointer text-xs',
-            activeTab === 'editor' ? 'bg-nexus-600 text-white font-medium shadow-xs' : 'text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white',
+            'flex-1 md:flex-initial flex items-center justify-center gap-1.5 py-1.5 px-2 md:px-3 rounded-lg transition-all cursor-pointer text-xs font-medium shrink-0',
+            (activeTab === 'editor' && layoutMode !== 'split') || layoutMode === 'code-only'
+              ? 'bg-nexus-600 text-white font-semibold shadow-xs'
+              : 'text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/5',
           )}
+          title="Éditeur de code"
         >
           <Code2 size={13} className="shrink-0" />
           <span className="truncate">{t('lab.editor')}</span>
         </button>
+
+        {/* Onglet Split (disponible sur écran large / tablette / PC) */}
+        {onChangeLayoutMode && (
+          <button
+            type="button"
+            id="btn-tab-split"
+            onClick={() => {
+              onChangeLayoutMode('split');
+              onChangeTab('editor');
+            }}
+            className={cn(
+              'hidden sm:flex items-center justify-center gap-1.5 py-1.5 px-2.5 md:px-3 rounded-lg transition-all cursor-pointer text-xs font-medium shrink-0',
+              layoutMode === 'split'
+                ? 'bg-nexus-600 text-white font-semibold shadow-xs'
+                : 'text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/5',
+            )}
+            title="Affichage côte-à-côte (Split)"
+          >
+            <Columns size={13} className="shrink-0" />
+            <span className="truncate">Split</span>
+          </button>
+        )}
+
+        {/* Onglet Aperçu */}
         <button
           type="button"
+          id="btn-tab-preview"
           onClick={() => {
             if (!showPreview && onTogglePreview) {
               onTogglePreview();
             }
+            if (onChangeLayoutMode) {
+              onChangeLayoutMode('preview-only');
+            }
             onChangeTab('preview');
           }}
           className={cn(
-            'flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg transition-all cursor-pointer text-xs',
-            activeTab === 'preview' ? 'bg-nexus-600 text-white font-medium shadow-xs' : 'text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white',
+            'flex-1 md:flex-initial flex items-center justify-center gap-1.5 py-1.5 px-2 md:px-3 rounded-lg transition-all cursor-pointer text-xs font-medium shrink-0',
+            layoutMode === 'preview-only' || activeTab === 'preview'
+              ? 'bg-nexus-600 text-white font-semibold shadow-xs'
+              : 'text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/5',
           )}
+          title="Aperçu interactif"
         >
           <Play size={13} className="shrink-0" />
           <span className="truncate">{t('lab.preview')}</span>
         </button>
+
+        {/* Onglet Assistant IA NEXUS DEV */}
         <button
           type="button"
+          id="btn-tab-assistant"
           onClick={() => {
             onChangeTab('assistant');
-            if (!isDevAssistantOpen) {
-              onToggleDevAssistant();
-            }
+            onToggleDevAssistant();
           }}
           className={cn(
-            'flex-1 flex items-center justify-center gap-1.5 py-1.5 px-1.5 rounded-lg transition-all cursor-pointer text-xs min-w-0 font-medium',
+            'flex-1 md:flex-initial flex items-center justify-center gap-1.5 py-1.5 px-2 md:px-3 rounded-lg transition-all cursor-pointer text-xs min-w-0 font-medium shrink-0',
             activeTab === 'assistant' || isDevAssistantOpen
               ? 'bg-gradient-to-r from-nexus-600 to-cyan-600 text-white shadow-xs ring-1 ring-cyan-400/40 font-semibold'
-              : 'text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white',
+              : 'text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/5',
           )}
+          title="Ouvrir l'Assistant IA NEXUS DEV"
         >
-          <Sparkles size={13} className={cn('shrink-0', activeTab === 'assistant' || isDevAssistantOpen ? 'text-cyan-200 animate-pulse' : 'text-cyan-500 dark:text-cyan-400')} />
+          <Sparkles
+            size={13}
+            className={cn(
+              'shrink-0',
+              activeTab === 'assistant' || isDevAssistantOpen ? 'text-cyan-200 animate-pulse' : 'text-cyan-500 dark:text-cyan-400',
+            )}
+          />
           <span className="truncate">{t('lab.assistant')}</span>
         </button>
-      </div>
+
+        {/* Onglet Multi-Agents Swarm (visible sur tablette et PC) */}
+        {onToggleSwarm && (
+          <button
+            type="button"
+            id="btn-tab-swarm"
+            onClick={onToggleSwarm}
+            className={cn(
+              'hidden sm:flex items-center justify-center gap-1.5 py-1.5 px-2.5 md:px-3 rounded-lg transition-all cursor-pointer text-xs font-medium shrink-0',
+              isSwarmOpen
+                ? 'bg-gradient-to-r from-nexus-600 via-indigo-600 to-cyan-600 text-white shadow-xs ring-1 ring-indigo-400/40 font-semibold'
+                : 'text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/5',
+            )}
+            title="Ouvrir le Multi-Agents Swarm"
+          >
+            <Users
+              size={13}
+              className={cn(
+                'shrink-0',
+                isSwarmOpen ? 'text-indigo-200 animate-pulse' : 'text-indigo-500 dark:text-indigo-400',
+              )}
+            />
+            <span className="truncate">Swarm</span>
+          </button>
+        )}
+      </nav>
 
       {/* Feuille d'actions mobile (Action Sheet style iOS/Android) */}
       {isMobileMenuOpen && (
