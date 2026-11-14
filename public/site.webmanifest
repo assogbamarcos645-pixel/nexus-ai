@@ -3,14 +3,30 @@
   "short_name": "NEXUS AI",
   "description": "Plateforme d'intelligence artificielle multi-agents et espace de développement intégré.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "any",
   "background_color": "#0b0f19",
   "theme_color": "#2563eb",
+  "categories": ["productivity", "developer", "utilities"],
   "icons": [
+    {
+      "src": "/nexus-logo-clean.png",
+      "sizes": "580x580",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/nexus-logo-clean.png",
+      "sizes": "580x580",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
     {
       "src": "/favicon.svg",
       "sizes": "any",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any"
     }
   ]
 }
