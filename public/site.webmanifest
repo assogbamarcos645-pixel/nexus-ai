@@ -6,8 +6,8 @@
   "scope": "/",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#0b0f19",
-  "theme_color": "#0b0f19",
+  "background_color": "#000000",
+  "theme_color": "#000000",
   "categories": ["productivity", "developer", "utilities"],
   "icons": [
     {
@@ -35,9 +35,9 @@
       "purpose": "maskable"
     },
     {
-      "src": "/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "/nexus-logo-clean.png",
+      "sizes": "580x580",
+      "type": "image/png",
       "purpose": "any"
     }
   ]

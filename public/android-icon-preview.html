@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aperçu Icône Adaptative Android — NEXUS AI</title>
+  <title>Aperçu Icônes Unifiées (Android & iOS) — NEXUS AI</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -32,13 +32,13 @@
       color: #94a3b8;
       margin-bottom: 2rem;
       text-align: center;
-      max-width: 500px;
+      max-width: 580px;
     }
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 1.5rem;
-      max-width: 840px;
+      max-width: 900px;
       width: 100%;
     }
     .card {
@@ -64,11 +64,10 @@
       display: block;
       object-fit: cover;
     }
-    .circle { border-radius: 50%; overflow: hidden; }
-    .squircle { border-radius: 28%; overflow: hidden; }
-    .rounded-square { border-radius: 20%; overflow: hidden; }
-    .teardrop { border-radius: 50% 50% 50% 0%; overflow: hidden; transform: rotate(-45deg); }
-    .teardrop img { transform: rotate(45deg); }
+    .ios-squircle { border-radius: 22.5%; overflow: hidden; }
+    .android-circle { border-radius: 50%; overflow: hidden; }
+    .android-squircle { border-radius: 28%; overflow: hidden; }
+    .android-rect { border-radius: 18%; overflow: hidden; }
 
     .badge-label {
       font-size: 0.8125rem;
@@ -83,66 +82,66 @@
     }
     .safezone-info {
       margin-top: 2.5rem;
-      background: rgba(14, 165, 233, 0.08);
-      border: 1px solid rgba(14, 165, 233, 0.2);
+      background: rgba(37, 99, 235, 0.1);
+      border: 1px solid rgba(37, 99, 235, 0.25);
       border-radius: 0.75rem;
       padding: 1rem 1.25rem;
       max-width: 640px;
       font-size: 0.8125rem;
-      color: #bae6fd;
+      color: #bfdbfe;
       line-height: 1.5;
     }
   </style>
 </head>
 <body>
-  <h1>Aperçu Simulateur Android PWA — <span>NEXUS AI</span></h1>
-  <p class="subtitle">Validation du masque adaptatif Android : l'emblème s'ajuste parfaitement sans être rogné ni placé dans une assiette blanche.</p>
+  <h1>Comparatif Visuel — <span>NEXUS AI</span></h1>
+  <p class="subtitle">L'icône Android utilise exactement le même logo « N » 3D sculptural que celui d'iOS, sur fond noir profond avec adaptation automatique selon les launchers.</p>
 
   <div class="grid">
     <div class="card">
-      <div class="icon-wrapper circle">
-        <img src="/icon-maskable-512x512.png" alt="Circle Mask (Google Pixel)">
+      <div class="icon-wrapper ios-squircle">
+        <img src="/apple-touch-icon.png" alt="iOS Apple Touch Icon">
       </div>
       <div>
-        <div class="badge-label">Google Pixel</div>
-        <div class="badge-sub">Masque Circulaire (Rayon 40%)</div>
+        <div class="badge-label">🍏 Apple iOS (iPhone)</div>
+        <div class="badge-sub">Squircle Apple Standard</div>
       </div>
     </div>
 
     <div class="card">
-      <div class="icon-wrapper squircle">
-        <img src="/icon-maskable-512x512.png" alt="Squircle Mask (Samsung One UI)">
+      <div class="icon-wrapper android-circle">
+        <img src="/icon-maskable-512x512.png" alt="Android Pixel Circle">
       </div>
       <div>
-        <div class="badge-label">Samsung One UI</div>
-        <div class="badge-sub">Masque Squircle Doux</div>
+        <div class="badge-label">🤖 Google Pixel</div>
+        <div class="badge-sub">Même logo N 3D en Cercle</div>
       </div>
     </div>
 
     <div class="card">
-      <div class="icon-wrapper rounded-square">
-        <img src="/icon-maskable-512x512.png" alt="Rounded Square (Xiaomi / OnePlus)">
+      <div class="icon-wrapper android-squircle">
+        <img src="/icon-maskable-512x512.png" alt="Samsung One UI">
       </div>
       <div>
-        <div class="badge-label">Xiaomi / OnePlus</div>
-        <div class="badge-sub">Carré Arrondi HyperOS</div>
+        <div class="badge-label">📱 Samsung One UI</div>
+        <div class="badge-sub">Même logo N 3D en Squircle</div>
       </div>
     </div>
 
     <div class="card">
-      <div class="icon-wrapper teardrop">
-        <img src="/icon-maskable-512x512.png" alt="Teardrop Mask">
+      <div class="icon-wrapper android-rect">
+        <img src="/icon-maskable-512x512.png" alt="Xiaomi / OnePlus">
       </div>
       <div>
-        <div class="badge-label">Android Teardrop</div>
-        <div class="badge-sub">Goutte d'Eau Stylisée</div>
+        <div class="badge-label">⚡ Xiaomi / OnePlus</div>
+        <div class="badge-sub">Même logo N 3D en Arrondi</div>
       </div>
     </div>
   </div>
 
   <div class="safezone-info">
-    <strong>✨ Règle W3C Maskable Icons & Android 14/15 :</strong><br>
-    Le fond est désormais 100% opaque en dégradé cyber-sombre (supprimant définitivement l'assiette blanche). L'emblème central est calibré à 64% de la largeur, garantissant qu'aucun détail ou lueur ne soit tronqué, quelle que soit la surcouche du constructeur.
+    <strong>✨ Rendu unifié 100% conforme :</strong><br>
+    Toutes les plateformes (iOS, Android, PWA Desktop) partagent désormais le même logo officiel « N » 3D. Le fond est plein et sans aucune transparence résiduelle, ce qui empêche Android d'ajouter une bordure ou une assiette blanche.
   </div>
 </body>
 </html>
