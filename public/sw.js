@@ -1,11 +1,15 @@
 // NEXUS AI — Service Worker PWA (Offline & Asset Cache)
-const CACHE_NAME = 'nexus-ai-v1';
+const CACHE_NAME = 'nexus-ai-v2';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/site.webmanifest',
   '/favicon.svg',
-  '/nexus-logo-clean.png'
+  '/icon-192x192.png',
+  '/icon-512x512.png',
+  '/icon-maskable-192x192.png',
+  '/icon-maskable-512x512.png',
+  '/apple-touch-icon.png'
 ];
 
 self.addEventListener('install', (event) => {

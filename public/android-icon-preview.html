@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aperçu Icône Adaptative Android — NEXUS AI</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0b0f19;
+      color: #f8fafc;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2.5rem 1rem;
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+    h1 span {
+      background: linear-gradient(90deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    p.subtitle {
+      font-size: 0.875rem;
+      color: #94a3b8;
+      margin-bottom: 2rem;
+      text-align: center;
+      max-width: 500px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.5rem;
+      max-width: 840px;
+      width: 100%;
+    }
+    .card {
+      background: rgba(30, 41, 59, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 1rem;
+      padding: 1.5rem 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      backdrop-filter: blur(12px);
+    }
+    .icon-wrapper {
+      width: 110px;
+      height: 110px;
+      position: relative;
+      box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.6), 0 0 16px rgba(37, 99, 235, 0.25);
+    }
+    .icon-wrapper img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+    .circle { border-radius: 50%; overflow: hidden; }
+    .squircle { border-radius: 28%; overflow: hidden; }
+    .rounded-square { border-radius: 20%; overflow: hidden; }
+    .teardrop { border-radius: 50% 50% 50% 0%; overflow: hidden; transform: rotate(-45deg); }
+    .teardrop img { transform: rotate(45deg); }
+
+    .badge-label {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: #e2e8f0;
+      text-align: center;
+    }
+    .badge-sub {
+      font-size: 0.72rem;
+      color: #64748b;
+      text-align: center;
+    }
+    .safezone-info {
+      margin-top: 2.5rem;
+      background: rgba(14, 165, 233, 0.08);
+      border: 1px solid rgba(14, 165, 233, 0.2);
+      border-radius: 0.75rem;
+      padding: 1rem 1.25rem;
+      max-width: 640px;
+      font-size: 0.8125rem;
+      color: #bae6fd;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <h1>Aperçu Simulateur Android PWA — <span>NEXUS AI</span></h1>
+  <p class="subtitle">Validation du masque adaptatif Android : l'emblème s'ajuste parfaitement sans être rogné ni placé dans une assiette blanche.</p>
+
+  <div class="grid">
+    <div class="card">
+      <div class="icon-wrapper circle">
+        <img src="/icon-maskable-512x512.png" alt="Circle Mask (Google Pixel)">
+      </div>
+      <div>
+        <div class="badge-label">Google Pixel</div>
+        <div class="badge-sub">Masque Circulaire (Rayon 40%)</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="icon-wrapper squircle">
+        <img src="/icon-maskable-512x512.png" alt="Squircle Mask (Samsung One UI)">
+      </div>
+      <div>
+        <div class="badge-label">Samsung One UI</div>
+        <div class="badge-sub">Masque Squircle Doux</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="icon-wrapper rounded-square">
+        <img src="/icon-maskable-512x512.png" alt="Rounded Square (Xiaomi / OnePlus)">
+      </div>
+      <div>
+        <div class="badge-label">Xiaomi / OnePlus</div>
+        <div class="badge-sub">Carré Arrondi HyperOS</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="icon-wrapper teardrop">
+        <img src="/icon-maskable-512x512.png" alt="Teardrop Mask">
+      </div>
+      <div>
+        <div class="badge-label">Android Teardrop</div>
+        <div class="badge-sub">Goutte d'Eau Stylisée</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="safezone-info">
+    <strong>✨ Règle W3C Maskable Icons & Android 14/15 :</strong><br>
+    Le fond est désormais 100% opaque en dégradé cyber-sombre (supprimant définitivement l'assiette blanche). L'emblème central est calibré à 64% de la largeur, garantissant qu'aucun détail ou lueur ne soit tronqué, quelle que soit la surcouche du constructeur.
+  </div>
+</body>
+</html>
