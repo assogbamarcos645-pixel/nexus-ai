@@ -1,10 +1,11 @@
 import { useState, useMemo, memo } from 'react';
-import { Copy, Check, Sparkles, ArrowRight } from 'lucide-react';
+import { Copy, Check, Sparkles, ArrowRight, FileText } from 'lucide-react';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { cn } from '@/utils/cn';
 import type { Message, Agent } from '@/types';
 import { hasExtractableProject, createAndOpenProjectFromMockup } from '@/services/lab/mockupConverterService';
+import { formatFileSize } from '@/services/documents/documentParserService';
 
 marked.setOptions({
   breaks: true,
@@ -86,6 +87,26 @@ function MessageBubbleComponent({ message }: MessageBubbleProps) {
                 <span className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded text-[10px] font-mono bg-black/60 text-white backdrop-blur-xs opacity-0 group-hover/img:opacity-100 transition-opacity pointer-events-none">
                   Agrandir ↗
                 </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {message.documents && message.documents.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-3">
+            {message.documents.map((doc) => (
+              <div
+                key={doc.id}
+                className={cn(
+                  'flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs font-medium border shadow-xs backdrop-blur-md',
+                  isUser
+                    ? 'bg-blue-700/60 border-blue-400/40 text-blue-50'
+                    : 'bg-slate-800/80 border-slate-700/60 text-slate-200',
+                )}
+              >
+                <FileText size={14} className={isUser ? 'text-blue-200' : 'text-cyan-400'} />
+                <span className="truncate max-w-[180px] font-mono">{doc.name}</span>
+                <span className="text-[10px] opacity-75 font-mono">({formatFileSize(doc.size)})</span>
               </div>
             ))}
           </div>

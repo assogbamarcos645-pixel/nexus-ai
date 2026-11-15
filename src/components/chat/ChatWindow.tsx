@@ -6,6 +6,7 @@ import { ChatInput } from './ChatInput';
 import { Spinner } from '@/components/ui';
 import { useTranslation } from '@/hooks/useTranslation';
 import type { Conversation, Agent } from '@/types';
+import type { AttachedDocument } from '@/types/documents';
 
 interface ChatWindowProps {
   conversation: Conversation | null;
@@ -23,6 +24,9 @@ interface ChatWindowProps {
   attachedImages?: string[];
   onAddImage?: (dataUrl: string) => void;
   onRemoveImage?: (index: number) => void;
+  attachedDocuments?: AttachedDocument[];
+  onAddDocument?: (doc: AttachedDocument) => void;
+  onRemoveDocument?: (id: string) => void;
 }
 
 export function ChatWindow({
@@ -40,6 +44,9 @@ export function ChatWindow({
   attachedImages,
   onAddImage,
   onRemoveImage,
+  attachedDocuments,
+  onAddDocument,
+  onRemoveDocument,
 }: ChatWindowProps) {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const activeAgentId = selectedAgentId ?? conversation?.agentId ?? 'general';
@@ -135,6 +142,9 @@ export function ChatWindow({
               attachedImages={attachedImages}
               onAddImage={onAddImage}
               onRemoveImage={onRemoveImage}
+              attachedDocuments={attachedDocuments}
+              onAddDocument={onAddDocument}
+              onRemoveDocument={onRemoveDocument}
             />
             <p className="text-[10px] sm:text-[11px] text-center text-slate-400 dark:text-white/30 pt-0.5 pb-1 select-none px-4">
               {language === 'fr'

@@ -22,8 +22,10 @@ export interface ExtractedCodeBundle {
  */
 export function hasExtractableProject(content: string): boolean {
   if (!content || typeof content !== 'string') return false;
-  const hasHtml = /```html[\s\S]*?```/i.test(content) || /<!DOCTYPE html>/i.test(content) || /<header|<main|<div/i.test(content);
-  return hasHtml;
+  // Détection de tout bloc de code (HTML, TS, TSX, JS, CSS, Python, etc.)
+  const hasCodeBlock = /```(?:html|typescript|ts|tsx|javascript|js|jsx|css|py|python|json|sql)[\s\S]*?```/i.test(content);
+  const hasRawHtml = /<!DOCTYPE html>/i.test(content) || /<header|<main|<div|<section/i.test(content);
+  return hasCodeBlock || hasRawHtml;
 }
 
 /**
@@ -95,42 +97,155 @@ export function createAndOpenProjectFromMockup(
   projectName?: string,
   mockupImage?: string,
 ): LabProject {
-  const bundle = extractCodeBundleFromMarkdown(messageContent);
   const projectId = generateUUID();
   const timestamp = new Date().toISOString();
 
-  const files: LabFile[] = [
-    {
+  // Détection des différents blocs de code
+  const pythonMatch = messageContent.match(/```(?:python|py)\r?\n([\s\S]*?)```/i);
+  const tsxMatch = messageContent.match(/```(?:tsx|jsx)\r?\n([\s\S]*?)```/i);
+  const tsMatch = messageContent.match(/```(?:typescript|ts)\r?\n([\s\S]*?)```/i);
+
+  let templateId: any = 'html-css-js';
+  const files: LabFile[] = [];
+
+  if (pythonMatch) {
+    templateId = 'python-app';
+    files.push({
       id: `file-${generateUUID()}`,
-      name: 'index.html',
-      path: 'index.html',
-      content: bundle.html,
-      language: 'html',
+      name: 'main.py',
+      path: 'main.py',
+      content: pythonMatch[1].trim(),
+      language: 'python',
       isModified: false,
-    },
-    {
-      id: `file-${generateUUID()}`,
-      name: 'style.css',
-      path: 'style.css',
-      content: bundle.css,
-      language: 'css',
-      isModified: false,
-    },
-    {
-      id: `file-${generateUUID()}`,
-      name: 'app.js',
-      path: 'app.js',
-      content: bundle.js,
-      language: 'javascript',
-      isModified: false,
-    },
-  ];
+    });
+  } else if (tsxMatch || tsMatch) {
+    const rawCode = (tsxMatch ? tsxMatch[1] : tsMatch ? tsMatch[1] : '').trim();
+    const isReact = /import React|useState|useEffect|return\s*\(|</.test(rawCode);
+
+    if (isReact) {
+      templateId = 'html-css-js';
+      // Enveloppe HTML avec support React et Babel/Tailwind pour exécution instantanée dans la preview
+      const htmlWrapper = `<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Projet React NEXUS LAB</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+  <div id="root"></div>
+  <script type="text/babel">
+    ${rawCode.replace(/export\s+default\s+function\s+([A-Za-z0-9_]+)/, 'function $1')}
+    
+    // Montage automatique du composant React
+    const rootElement = document.getElementById('root');
+    if (rootElement) {
+      const root = ReactDOM.createRoot(rootElement);
+      // Trouve le premier composant défini
+      const targetComponent = typeof App !== 'undefined' ? App : (typeof Component !== 'undefined' ? Component : null);
+      if (targetComponent) {
+        root.render(React.createElement(targetComponent));
+      }
+    }
+  </script>
+</body>
+</html>`;
+
+      files.push(
+        {
+          id: `file-${generateUUID()}`,
+          name: 'index.html',
+          path: 'index.html',
+          content: htmlWrapper,
+          language: 'html',
+          isModified: false,
+        },
+        {
+          id: `file-${generateUUID()}`,
+          name: 'Component.tsx',
+          path: 'Component.tsx',
+          content: rawCode,
+          language: 'typescript',
+          isModified: false,
+        },
+        {
+          id: `file-${generateUUID()}`,
+          name: 'style.css',
+          path: 'style.css',
+          content: '/* Styles globaux NEXUS LAB */\nbody { margin: 0; font-family: system-ui, sans-serif; }\n',
+          language: 'css',
+          isModified: false,
+        },
+      );
+    } else {
+      const bundle = extractCodeBundleFromMarkdown(messageContent);
+      files.push(
+        {
+          id: `file-${generateUUID()}`,
+          name: 'index.html',
+          path: 'index.html',
+          content: bundle.html,
+          language: 'html',
+          isModified: false,
+        },
+        {
+          id: `file-${generateUUID()}`,
+          name: 'index.ts',
+          path: 'index.ts',
+          content: rawCode,
+          language: 'typescript',
+          isModified: false,
+        },
+        {
+          id: `file-${generateUUID()}`,
+          name: 'style.css',
+          path: 'style.css',
+          content: bundle.css,
+          language: 'css',
+          isModified: false,
+        },
+      );
+    }
+  } else {
+    const bundle = extractCodeBundleFromMarkdown(messageContent);
+    files.push(
+      {
+        id: `file-${generateUUID()}`,
+        name: 'index.html',
+        path: 'index.html',
+        content: bundle.html,
+        language: 'html',
+        isModified: false,
+      },
+      {
+        id: `file-${generateUUID()}`,
+        name: 'style.css',
+        path: 'style.css',
+        content: bundle.css,
+        language: 'css',
+        isModified: false,
+      },
+      {
+        id: `file-${generateUUID()}`,
+        name: 'app.js',
+        path: 'app.js',
+        content: bundle.js,
+        language: 'javascript',
+        isModified: false,
+      },
+    );
+  }
 
   const newProject: LabProject = {
     id: projectId,
-    name: projectName?.trim() || `Maquette UI #${Math.floor(100 + Math.random() * 900)}`,
-    description: 'Projet généré automatiquement via Vision Multimodale & Gemini 2.5',
-    templateId: 'html-css-js',
+    name: projectName?.trim() || `Projet NEXUS LAB #${Math.floor(100 + Math.random() * 900)}`,
+    description: 'Projet généré par NEXUS AI avec code prêt pour compilation & prévisualisation',
+    templateId,
     files,
     createdAt: timestamp,
     updatedAt: timestamp,

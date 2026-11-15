@@ -2,6 +2,8 @@
  * Application-wide type definitions for NEXUS AI
  */
 
+import type { AttachedDocument } from './documents';
+
 // ─── AI & Conversations ───────────────────────────────────────────────────────
 
 export type MessageRole = 'user' | 'assistant' | 'system';
@@ -13,6 +15,7 @@ export interface Message {
   timestamp: Date;
   agentId?: string;
   images?: string[]; // URLs ou Data-URIs base64 d'images attachées (Vision Multimodale)
+  documents?: AttachedDocument[]; // Documents attachés et analysés (PDF, code, données)
   isStreaming?: boolean;
 }
 

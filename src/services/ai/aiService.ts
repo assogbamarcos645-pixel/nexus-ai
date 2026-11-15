@@ -10,6 +10,7 @@ import { API_BASE_URL } from '../../lib/constants.ts';
 import { getAIConfig } from './aiConfigService.ts';
 import { logAIRequest, sanitizeErrorMessage } from './aiTelemetryService.ts';
 import type { AITokenUsage, AIProviderId } from '../../types/ai.ts';
+import type { AttachedDocument } from '../../types/documents.ts';
 
 export interface ChatRequest {
   message: string;
@@ -17,7 +18,9 @@ export interface ChatRequest {
   conversationHistory?: Array<{ role: 'user' | 'assistant'; content: string }>;
   providerId?: AIProviderId;
   modelId?: string;
+  systemPrompt?: string;
   images?: string[]; // Images en base64 Data-URI pour vision multimodale (Gemini 2.5)
+  documents?: AttachedDocument[]; // Documents complets pour analyse (PDF, code, données)
   onChunk?: (chunk: string) => void;
 }
 
@@ -58,7 +61,9 @@ async function realChat(
         conversationHistory: request.conversationHistory,
         providerId,
         modelId,
+        systemPrompt: request.systemPrompt,
         images: request.images,
+        documents: request.documents,
         stream: isStream,
         settings: {
           maxTokens: config.settings.maxTokens,

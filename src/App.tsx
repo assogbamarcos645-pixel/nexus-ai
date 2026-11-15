@@ -85,6 +85,9 @@ function AppContent() {
     attachedImages,
     addAttachedImage,
     removeAttachedImage,
+    attachedDocuments,
+    addAttachedDocument,
+    removeAttachedDocument,
     isLoading,
     sendMessage,
     stopGeneration,
@@ -237,6 +240,9 @@ function AppContent() {
               attachedImages={attachedImages}
               onAddImage={addAttachedImage}
               onRemoveImage={removeAttachedImage}
+              attachedDocuments={attachedDocuments}
+              onAddDocument={addAttachedDocument}
+              onRemoveDocument={removeAttachedDocument}
             />
           ) : activeView === 'lab' ? (
             <Suspense fallback={<WorkspaceFallback label="Chargement de NEXUS LAB" />}>

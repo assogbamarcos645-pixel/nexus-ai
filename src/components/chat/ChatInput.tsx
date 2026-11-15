@@ -1,9 +1,28 @@
-import { Send, Square, AlertCircle, Paperclip, Image as ImageIcon, ChevronDown, Check, X, Sparkles, UploadCloud } from 'lucide-react';
+import {
+  Send,
+  Square,
+  AlertCircle,
+  Paperclip,
+  Image as ImageIcon,
+  ChevronDown,
+  Check,
+  X,
+  Sparkles,
+  UploadCloud,
+  FileText,
+  Code2,
+  Bug,
+  Zap,
+  Loader2,
+} from 'lucide-react';
 import { useRef, useEffect, useState, type KeyboardEvent, type ChangeEvent, type ClipboardEvent, type DragEvent } from 'react';
 import { cn } from '@/utils/cn';
 import { useTranslation } from '@/hooks/useTranslation';
 import { AGENTS } from '@/config/agents';
 import type { Agent } from '@/types';
+import type { AttachedDocument } from '@/types/documents';
+import { parseDocumentFile } from '@/services/documents/documentParserService';
+import { AttachedDocumentsList } from './AttachedDocumentsList';
 
 interface ChatInputProps {
   value: string;
@@ -20,6 +39,9 @@ interface ChatInputProps {
   attachedImages?: string[];
   onAddImage?: (dataUrl: string) => void;
   onRemoveImage?: (index: number) => void;
+  attachedDocuments?: AttachedDocument[];
+  onAddDocument?: (doc: AttachedDocument) => void;
+  onRemoveDocument?: (id: string) => void;
 }
 
 export function ChatInput({
@@ -37,6 +59,9 @@ export function ChatInput({
   attachedImages,
   onAddImage,
   onRemoveImage,
+  attachedDocuments,
+  onAddDocument,
+  onRemoveDocument,
 }: ChatInputProps) {
   const { t, language } = useTranslation();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -45,18 +70,25 @@ export function ChatInput({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [isAgentMenuOpen, setIsAgentMenuOpen] = useState(false);
   const [localImages, setLocalImages] = useState<string[]>([]);
+  const [localDocuments, setLocalDocuments] = useState<AttachedDocument[]>([]);
+  const [isParsingDoc, setIsParsingDoc] = useState(false);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
 
   const effectiveImages = attachedImages ?? localImages;
+  const effectiveDocuments = attachedDocuments ?? localDocuments;
 
   const defaultPlaceholder =
     language === 'fr'
-      ? effectiveImages.length > 0
-        ? 'Décrivez la maquette (ou Entrée)...'
-        : 'Message à NEXUS AI (ou collez une image)...'
-      : effectiveImages.length > 0
-        ? 'Describe mockup (or Enter)...'
-        : 'Message NEXUS AI (or paste an image)...';
+      ? effectiveDocuments.length > 0
+        ? 'Posez vos questions sur le document joint (ou Entrée)...'
+        : effectiveImages.length > 0
+          ? 'Décrivez la maquette (ou Entrée)...'
+          : 'Message à NEXUS AI (posez une question, collez du code ou un document)...'
+      : effectiveDocuments.length > 0
+        ? 'Ask questions about the attached document (or Enter)...'
+        : effectiveImages.length > 0
+          ? 'Describe mockup (or Enter)...'
+          : 'Message NEXUS AI (ask a question, paste code or attach a document)...';
 
   const activePlaceholder = placeholder || defaultPlaceholder;
   const currentAgent = agents.find((a) => a.id === selectedAgentId) ?? agents[0];
@@ -74,6 +106,39 @@ export function ChatInput({
       onRemoveImage(index);
     } else {
       setLocalImages((prev) => prev.filter((_, i) => i !== index));
+    }
+  };
+
+  const addDocumentToState = (doc: AttachedDocument) => {
+    if (onAddDocument) {
+      onAddDocument(doc);
+    } else {
+      setLocalDocuments((prev) => [...prev, doc]);
+    }
+  };
+
+  const removeDocumentFromState = (id: string) => {
+    if (onRemoveDocument) {
+      onRemoveDocument(id);
+    } else {
+      setLocalDocuments((prev) => prev.filter((d) => d.id !== id));
+    }
+  };
+
+  const processDocumentFile = async (file: File) => {
+    setIsParsingDoc(true);
+    try {
+      const result = await parseDocumentFile(file);
+      if (result.success && result.document) {
+        addDocumentToState(result.document);
+        textareaRef.current?.focus({ preventScroll: true });
+      } else {
+        alert(result.error || (language === 'fr' ? 'Échec de la lecture du document.' : 'Failed to read document.'));
+      }
+    } catch (err: any) {
+      alert(`Erreur document: ${err?.message || 'Format non pris en charge'}`);
+    } finally {
+      setIsParsingDoc(false);
     }
   };
 
@@ -193,29 +258,23 @@ export function ChatInput({
         const file = files[i];
         if (file.type.startsWith('image/')) {
           processImageFile(file);
+        } else {
+          processDocumentFile(file);
         }
       }
     }
   };
 
-  // Gestion de l'import d'un fichier texte/code via l'icône trombone
+  // Gestion de l'import d'un document ou fichier via l'icône trombone
   const handleFileAttach = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 512 * 1024) {
-      alert(language === 'fr' ? 'Le fichier dépasse la taille maximale de 512 Ko.' : 'File exceeds maximum size of 512 KB.');
-      return;
+    if (file.type.startsWith('image/')) {
+      processImageFile(file);
+    } else {
+      processDocumentFile(file);
     }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const textContent = typeof reader.result === 'string' ? reader.result : '';
-      const prefix = value ? `${value}\n\n` : '';
-      onChange(`${prefix}[Fichier: ${file.name}]\n\`\`\`\n${textContent.slice(0, 4000)}\n\`\`\`\n`);
-      textareaRef.current?.focus({ preventScroll: true });
-    };
-    reader.readAsText(file);
     e.target.value = '';
   };
 
@@ -233,6 +292,91 @@ export function ChatInput({
         centered ? 'max-w-2xl px-2 sm:px-0' : 'max-w-2xl px-3 sm:px-4 pb-1 sm:pb-1.5',
       )}
     >
+      {/* Suggestions d'actions contextuelles proactives */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 scrollbar-none px-0.5 select-none text-[11.5px]">
+        <button
+          type="button"
+          onClick={() => {
+            const prompt = language === 'fr'
+              ? 'Analyse ce code en détail : identifie les bugs potentiels, la complexité algorithmique et propose une refactorisation Clean Code :'
+              : 'Analyze this code in detail: find potential bugs, evaluate algorithmic complexity and provide clean code refactoring:';
+            onChange(prompt);
+            textareaRef.current?.focus({ preventScroll: true });
+          }}
+          className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 shrink-0 transition-colors cursor-pointer"
+        >
+          <Code2 size={13} className="text-cyan-500" />
+          <span>{language === 'fr' ? 'Analyser ce code' : 'Analyze code'}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            const prompt = language === 'fr'
+              ? "Voici l'erreur rencontrée dans mon application. Explique la cause racine (Root Cause) et donne la solution exacte corrigée pas à pas :"
+              : "Here is the error encountered in my app. Explain the root cause and provide the exact step-by-step fix:";
+            onChange(prompt);
+            textareaRef.current?.focus({ preventScroll: true });
+          }}
+          className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 shrink-0 transition-colors cursor-pointer"
+        >
+          <Bug size={13} className="text-rose-500" />
+          <span>{language === 'fr' ? 'Expliquer cette erreur' : 'Explain error'}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            if (effectiveDocuments.length === 0) {
+              fileInputRef.current?.click();
+            } else {
+              const prompt = language === 'fr'
+                ? 'Fais une synthèse exhaustive et structurée de ce document, avec les points clés, décisions et recommandations :'
+                : 'Provide a structured and comprehensive summary of this document, with key takeaways, decisions and recommendations:';
+              onChange(prompt);
+              textareaRef.current?.focus({ preventScroll: true });
+            }
+          }}
+          className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 shrink-0 transition-colors cursor-pointer"
+        >
+          <FileText size={13} className="text-emerald-500" />
+          <span>{language === 'fr' ? 'Résumer ce document' : 'Summarize document'}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            const prompt = language === 'fr'
+              ? 'Optimise les performances de ce traitement (réduction de la complexité temporelle/mémoire, parallélisme, index ou cache) :'
+              : 'Optimize the performance of this logic (reduce time/space complexity, concurrency, caching or indexing):';
+            onChange(prompt);
+            textareaRef.current?.focus({ preventScroll: true });
+          }}
+          className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 shrink-0 transition-colors cursor-pointer"
+        >
+          <Zap size={13} className="text-amber-500" />
+          <span>{language === 'fr' ? 'Optimiser' : 'Optimize'}</span>
+        </button>
+      </div>
+
+      {/* Liste des documents complets attachés */}
+      <AttachedDocumentsList
+        documents={effectiveDocuments}
+        onRemove={removeDocumentFromState}
+      />
+
+      {/* Indicateur de lecture de document en cours */}
+      {isParsingDoc && (
+        <div className="flex items-center gap-2 mb-2 px-3 py-1.5 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs shadow-xs animate-pulse">
+          <Loader2 size={14} className="animate-spin text-cyan-400" />
+          <span>
+            {language === 'fr'
+              ? 'Extraction et analyse du document en cours...'
+              : 'Extracting and parsing document...'}
+          </span>
+        </div>
+      )}
+
       {/* Zone de prévisualisation des maquettes / captures d'écran attachées */}
       {effectiveImages.length > 0 && (
         <div className="flex flex-wrap items-center gap-2 mb-2 p-2.5 rounded-2xl bg-slate-900/90 dark:bg-black/75 border border-cyan-500/40 backdrop-blur-xl shadow-[0_4px_25px_rgba(6,182,212,0.2)] animate-in fade-in slide-in-from-bottom-2 duration-200">
@@ -278,11 +422,11 @@ export function ChatInput({
         </div>
       )}
 
-      {/* Input fichier caché pour le trombone */}
+      {/* Input fichier caché pour le trombone : support PDF, code, markdown, csv, archives */}
       <input
         ref={fileInputRef}
         type="file"
-        accept=".txt,.md,.json,.js,.ts,.tsx,.py,.html,.css,.csv"
+        accept=".pdf,.docx,.txt,.md,.json,.csv,.tsv,.xml,.yaml,.yml,.js,.jsx,.ts,.tsx,.py,.html,.css,.sql,.zip,.sh,.c,.cpp,.h"
         onChange={handleFileAttach}
         className="hidden"
         aria-hidden="true"

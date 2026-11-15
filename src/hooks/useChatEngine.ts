@@ -1,12 +1,13 @@
 import { useState, useCallback, useRef } from 'react';
 import type { MessageRole } from '@/types';
+import type { AttachedDocument } from '@/types/documents';
 import { MAX_MESSAGE_LENGTH } from '@/config/app';
 import { chat } from '@/services/ai/aiService';
 
 interface UseChatEngineOptions {
   agentId: string;
   conversationMessages?: { role: MessageRole; content: string }[];
-  addMessage: (role: MessageRole, content: string, images?: string[], isStreaming?: boolean) => string | void;
+  addMessage: (role: MessageRole, content: string, images?: string[], isStreaming?: boolean, documents?: AttachedDocument[]) => string | void;
   updateMessage?: (messageId: string, content: string, isStreaming?: boolean) => void;
 }
 
@@ -17,6 +18,10 @@ interface UseChatEngineReturn {
   addAttachedImage: (dataUrl: string) => void;
   removeAttachedImage: (index: number) => void;
   clearAttachedImages: () => void;
+  attachedDocuments: AttachedDocument[];
+  addAttachedDocument: (doc: AttachedDocument) => void;
+  removeAttachedDocument: (id: string) => void;
+  clearAttachedDocuments: () => void;
   isLoading: boolean;
   sendMessage: (customMessage?: string) => Promise<void>;
   stopGeneration: () => void;
@@ -35,6 +40,7 @@ export function useChatEngine({
 }: UseChatEngineOptions): UseChatEngineReturn {
   const [input, setInput] = useState('');
   const [attachedImages, setAttachedImages] = useState<string[]>([]);
+  const [attachedDocuments, setAttachedDocuments] = useState<AttachedDocument[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -51,13 +57,29 @@ export function useChatEngine({
     setAttachedImages([]);
   }, []);
 
+  const addAttachedDocument = useCallback((doc: AttachedDocument) => {
+    setAttachedDocuments((prev) => [...prev, doc]);
+  }, []);
+
+  const removeAttachedDocument = useCallback((id: string) => {
+    setAttachedDocuments((prev) => prev.filter((d) => d.id !== id));
+  }, []);
+
+  const clearAttachedDocuments = useCallback(() => {
+    setAttachedDocuments([]);
+  }, []);
+
   const sendMessage = useCallback(async (customMessage?: string) => {
+    const defaultPromptForDocuments =
+      attachedDocuments.length > 0
+        ? 'Analyse en détail le contenu de ce(s) document(s), résume les points clés et réponds à mes questions techniques.'
+        : '';
     const defaultPromptForImages =
       attachedImages.length > 0
         ? 'Convertis cette maquette en interface web moderne, esthétique et responsive pour NEXUS LAB.'
         : '';
     const textToSend = customMessage !== undefined ? customMessage : input;
-    const trimmed = textToSend.trim() || defaultPromptForImages;
+    const trimmed = textToSend.trim() || defaultPromptForDocuments || defaultPromptForImages;
 
     if (!trimmed || isLoading) return;
     if (trimmed.length > MAX_MESSAGE_LENGTH) {
@@ -66,10 +88,18 @@ export function useChatEngine({
     }
 
     const currentImages = [...attachedImages];
+    const currentDocuments = [...attachedDocuments];
     setInput('');
     setAttachedImages([]);
+    setAttachedDocuments([]);
     setError(null);
-    addMessage('user', trimmed, currentImages.length > 0 ? currentImages : undefined);
+    addMessage(
+      'user',
+      trimmed,
+      currentImages.length > 0 ? currentImages : undefined,
+      false,
+      currentDocuments.length > 0 ? currentDocuments : undefined,
+    );
 
     abortRef.current = new AbortController();
     setIsLoading(true);
@@ -96,6 +126,7 @@ export function useChatEngine({
           agentId,
           conversationHistory,
           images: currentImages.length > 0 ? currentImages : undefined,
+          documents: currentDocuments.length > 0 ? currentDocuments : undefined,
           onChunk: (chunk) => {
             accumulatedContent += chunk;
             if (assistantMsgId && updateMessage) {
@@ -133,7 +164,16 @@ export function useChatEngine({
       setIsLoading(false);
       abortRef.current = null;
     }
-  }, [input, attachedImages, isLoading, agentId, conversationMessages, addMessage, updateMessage]);
+  }, [
+    input,
+    attachedImages,
+    attachedDocuments,
+    isLoading,
+    agentId,
+    conversationMessages,
+    addMessage,
+    updateMessage,
+  ]);
 
   const stopGeneration = useCallback(() => {
     abortRef.current?.abort();
@@ -146,6 +186,10 @@ export function useChatEngine({
     addAttachedImage,
     removeAttachedImage,
     clearAttachedImages,
+    attachedDocuments,
+    addAttachedDocument,
+    removeAttachedDocument,
+    clearAttachedDocuments,
     isLoading,
     sendMessage,
     stopGeneration,

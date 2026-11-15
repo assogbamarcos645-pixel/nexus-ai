@@ -15,23 +15,50 @@ const CORS_HEADERS = {
 
 function getAgentSystemPrompt(agentId?: string): string {
   const commonRule = `
-POSTURE RELATIONNELLE & COURTOISIE :
-- Adopte une posture polie, courtoise, respectueuse, chaleureuse et naturelle.
-- Tu es un véritable partenaire d'échange : tu peux converser sur tout sujet (sciences, culture, méthodologie, tech) avec bienveillance.
-- Zéro rigidité : Privilégie un ton humain, fluide et collaboratif. Rends toujours les blocs de code complets sans troncature.`;
+POSTURE RELATIONNELLE, EXPERTISE & BIENVEILLANCE :
+- Tu es un assistant IA de nouvelle génération, ultra-polyvalent, empathique, senior et pédagogue.
+- Tu réponds avec précision, clarté et structure à TOUTES les questions des utilisateurs (sciences, méthodologie, culture générale, gestion de projet, rédaction, questions quotidiennes).
+- Tu adaptes ton niveau de détail au besoin de l'utilisateur : synthétique par défaut, approfondi dès que nécessaire.
+- Courtoisie absolue : Sois toujours poli, chaleureux et constructif.
+
+RÈGLE D'OR EN GÉNIE LOGICIEL & CODE :
+- ZÉRO CODE TRONQUÉ : Il est STRICTEMENT INTERDIT d'écrire des commentaires d'omission tels que "// TODO", "// implémenter ici", "// reste du code inchangé", "// ...".
+- Tous les blocs de code doivent être COMPLETS, valides syntaxiquement, typés (TypeScript strict, Python type hints, etc.), défensifs et directement exécutables.
+- Inclus systématiquement la gestion des erreurs (try/catch, validation, fallbacks) et propose des tests unitaires ou d'intégration lorsque pertinent.
+- Explique clairement l'architecture, les patterns utilisés (SOLID, Clean Architecture) et la complexité algorithmique (Big-O).
+
+ANALYSE DE DOCUMENTS & DONNÉES :
+- Lorsque des documents (PDF, Markdown, code, CSV, JSON) te sont fournis, analyse-les exhaustivement.
+- Extrais fidèlement les informations clés, cite les sections pertinentes et réponds aux requêtes avec une exactitude sans faille.`;
 
   switch (agentId) {
     case 'coder':
-      return `Tu es CodeX, Ingénieur Logiciel Full-Stack Senior sur NEXUS AI. Écris du code propre, typé (TypeScript), sans troncature. ${commonRule}`;
+      return `Tu es CodeX, Ingénieur Logiciel Full-Stack Senior & Clean Codeur sur NEXUS AI.
+Ta mission est de produire du code de niveau production irréprochable.
+- Stack de prédilection : TypeScript, React 19, Node.js, Python, Rust, Go, SQL.
+- Typage strict, interdiction de 'any', validation de schémas (Zod).
+- Code 100% exécutable, modulaire, élégant et sans aucune coupure. ${commonRule}`;
+
     case 'writer':
-      return `Tu es DocOps, Spécialiste Documentation Technique et Architecte d'API sur NEXUS AI. ${commonRule}`;
+      return `Tu es DocOps, Spécialiste de la Documentation Technique, Architecture d'API et Synthèse Documentaire sur NEXUS AI.
+- Rédaction de spécifications OpenAPI 3.1, Architecture RFC, ADR (Architectural Decision Records).
+- Analyse critique et résumés haute fidélité de documents complexes (PDF, manuels, contrats). ${commonRule}`;
+
     case 'analyst':
-      return `Tu es Perf & Data, DBA et Spécialiste Optimisation des Performances sur NEXUS AI. ${commonRule}`;
+      return `Tu es Perf & Data, DBA et Ingénieur d'Optimisation des Performances sur NEXUS AI.
+- Optimisation des requêtes SQL (Postgres, BigQuery), plans d'exécution (EXPLAIN ANALYZE), indexation.
+- Analyse algorithmique (Big-O temps et mémoire), profilage, structures de données et gestion du cache. ${commonRule}`;
+
     case 'researcher':
-      return `Tu es CyberSec & QA, Auditeur en Cybersécurité (OWASP Top 10) et Qualité Logicielle. ${commonRule}`;
+      return `Tu es CyberSec & QA, Auditeur en Cybersécurité Applicative (OWASP Top 10) et Qualité Logicielle sur NEXUS AI.
+- Traque des failles (Injections, XSS, CSRF, failles d'authentification, fuites de secrets).
+- Conception de suites de tests exhaustives (TDD, Vitest, Jest, PyTest, tests de charge). ${commonRule}`;
+
     case 'general':
     default:
-      return `Tu es NEXUS Architect, Lead Developer et Architecte Logiciel Principal sur NEXUS AI. ${commonRule}`;
+      return `Tu es NEXUS Assistant & Lead Architect, l'assistant principal de la plateforme NEXUS AI.
+- Tu excelles à la fois comme Assistant Universel (répondant à toute question avec clarté et pédagogie) et comme Lead Developer / Architecte Système.
+- Tu guides l'utilisateur pas à pas, vulgarises les concepts complexes et conçois des architectures résilientes et scalables. ${commonRule}`;
   }
 }
 
@@ -54,9 +81,11 @@ export default async function handler(req: Request): Promise<Response> {
       agentId = 'general',
       providerId = 'demo',
       modelId,
+      systemPrompt: customSystemPrompt,
       settings,
       conversationHistory,
       images,
+      documents,
     } = body;
 
     const url = new URL(req.url);
@@ -74,6 +103,18 @@ export default async function handler(req: Request): Promise<Response> {
 
     const safeMaxTokens = Math.min(8192, Math.max(128, Number(settings?.maxTokens || 2048)));
     const safeTemp = Math.min(2.0, Math.max(0.0, Number(settings?.temperature || 0.7)));
+
+    // Construction du message enrichi avec les documents complets si fournis
+    let effectiveMessage = message;
+    if (Array.isArray(documents) && documents.length > 0) {
+      const docsSummary = documents
+        .map(
+          (doc: any, idx: number) =>
+            `--- DÉBUT DOCUMENT #${idx + 1} : "${doc.name}" (${doc.category || 'fichier'}, ${doc.size || 0} octets) ---\n${doc.content}\n--- FIN DOCUMENT : "${doc.name}" ---`,
+        )
+        .join('\n\n');
+      effectiveMessage = `${message}\n\n═══════════════════════════════════════════════════════════════\nDOCUMENTS ATTACHÉS POUR ANALYSE :\n═══════════════════════════════════════════════════════════════\n${docsSummary}\n═══════════════════════════════════════════════════════════════\n`;
+    }
 
     // Détermination du provider effectif
     let targetProvider = providerId;
@@ -126,7 +167,11 @@ export default async function handler(req: Request): Promise<Response> {
       );
     }
 
-    const systemPrompt = getAgentSystemPrompt(agentId);
+    const baseSystemPrompt = getAgentSystemPrompt(agentId);
+    const systemPrompt =
+      customSystemPrompt && String(customSystemPrompt).trim().length > 20
+        ? `${customSystemPrompt}\n\n${baseSystemPrompt}`
+        : baseSystemPrompt;
 
     // ── 1. Mistral AI ──────────────────────────────────────────────────────────
     if (targetProvider === 'mistral') {
@@ -138,7 +183,7 @@ export default async function handler(req: Request): Promise<Response> {
               .filter((t: any) => t.content && (t.role === 'user' || t.role === 'assistant'))
               .map((t: any) => ({ role: t.role, content: String(t.content) }))
           : []),
-        { role: 'user', content: message },
+        { role: 'user', content: effectiveMessage },
       ];
 
       if (isStream) {
@@ -217,7 +262,7 @@ export default async function handler(req: Request): Promise<Response> {
           }
         }
       }
-      userParts.push({ text: message });
+      userParts.push({ text: effectiveMessage });
       contents.push({ role: 'user', parts: userParts });
 
       const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${envKey}`;
@@ -280,7 +325,7 @@ export default async function handler(req: Request): Promise<Response> {
               .filter((t: any) => t.content && (t.role === 'user' || t.role === 'assistant'))
               .map((t: any) => ({ role: t.role, content: String(t.content) }))
           : []),
-        { role: 'user', content: message },
+        { role: 'user', content: effectiveMessage },
       ];
 
       if (isStream) {
@@ -326,14 +371,18 @@ export default async function handler(req: Request): Promise<Response> {
 
     // ── 4. Anthropic Claude ────────────────────────────────────────────────────
     if (targetProvider === 'anthropic') {
-      const anthropicModel = modelId || 'claude-3-5-haiku-20241022';
+      let anthropicModel = modelId || 'claude-3-5-sonnet-20241022';
+      if (anthropicModel === 'claude-3-5-sonnet') anthropicModel = 'claude-3-5-sonnet-20241022';
+      else if (anthropicModel === 'claude-3-7-sonnet') anthropicModel = 'claude-3-7-sonnet-20250219';
+      else if (anthropicModel === 'claude-3-5-haiku') anthropicModel = 'claude-3-5-haiku-20241022';
+
       const messages = [
         ...(Array.isArray(conversationHistory)
           ? conversationHistory
               .filter((t: any) => t.content && (t.role === 'user' || t.role === 'assistant'))
               .map((t: any) => ({ role: t.role, content: String(t.content) }))
           : []),
-        { role: 'user', content: message },
+        { role: 'user', content: effectiveMessage },
       ];
 
       const res = await fetch('https://api.anthropic.com/v1/messages', {

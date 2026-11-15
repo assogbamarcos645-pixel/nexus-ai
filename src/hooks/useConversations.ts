@@ -8,6 +8,7 @@
 
 import { useCallback, useReducer, useEffect, useRef } from 'react';
 import type { Conversation, Message, MessageRole } from '@/types';
+import type { AttachedDocument } from '@/types/documents';
 import { DEFAULT_AGENT_ID } from '@/config/agents';
 import { generateUUID } from '@/utils/uuid';
 import { useAuth } from '@/hooks/useAuth';
@@ -33,7 +34,7 @@ type Action =
   | { type: 'CREATE_CONVERSATION'; agentId?: string; isCloud?: boolean }
   | { type: 'SELECT_CONVERSATION'; id: string }
   | { type: 'DELETE_CONVERSATION'; id: string }
-  | { type: 'ADD_MESSAGE'; conversationId: string; message: Omit<Message, 'timestamp'> & { id?: string; images?: string[]; isStreaming?: boolean } }
+  | { type: 'ADD_MESSAGE'; conversationId: string; message: Omit<Message, 'timestamp'> & { id?: string; images?: string[]; documents?: AttachedDocument[]; isStreaming?: boolean } }
   | { type: 'UPDATE_MESSAGE'; conversationId: string; messageId: string; content: string; isStreaming?: boolean }
   | { type: 'UPDATE_CONVERSATION_TITLE'; id: string; title: string }
   | { type: 'SET_CONVERSATIONS'; conversations: Conversation[] }
@@ -46,8 +47,9 @@ function createMessage(
   id?: string,
   images?: string[],
   isStreaming?: boolean,
+  documents?: AttachedDocument[],
 ): Message {
-  return { id: id || generateUUID(), role, content, timestamp: new Date(), agentId, images, isStreaming };
+  return { id: id || generateUUID(), role, content, timestamp: new Date(), agentId, images, documents, isStreaming };
 }
 
 // ─── Reducer ──────────────────────────────────────────────────────────────────
@@ -94,6 +96,7 @@ function reducer(state: ConversationState, action: Action): ConversationState {
             action.message.id,
             action.message.images,
             action.message.isStreaming,
+            action.message.documents,
           );
           const updatedMessages = [...conv.messages, message];
           // Génération automatique du titre à partir du premier message utilisateur
@@ -314,13 +317,13 @@ export function useConversations() {
   );
 
   const addMessage = useCallback(
-    (role: MessageRole, content: string, images?: string[], isStreaming?: boolean): string => {
+    (role: MessageRole, content: string, images?: string[], isStreaming?: boolean, documents?: AttachedDocument[]): string => {
       const messageId = generateUUID();
       if (!state.activeConversationId) return messageId;
       dispatch({
         type: 'ADD_MESSAGE',
         conversationId: state.activeConversationId,
-        message: { id: messageId, role, content, agentId: activeConversation?.agentId, images, isStreaming },
+        message: { id: messageId, role, content, agentId: activeConversation?.agentId, images, documents, isStreaming },
       });
 
       // Synchronisation cloud automatique asynchrone si l'utilisateur est connecté
@@ -332,6 +335,7 @@ export function useConversations() {
           agentId: activeConversation.agentId,
           timestamp: new Date(),
           images,
+          documents,
           isStreaming,
         };
         const updatedConv: Conversation = {
