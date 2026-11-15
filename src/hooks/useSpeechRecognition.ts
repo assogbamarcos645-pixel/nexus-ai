@@ -60,10 +60,34 @@ export function useSpeechRecognition({
     }
   }, []);
 
-  const startListening = useCallback(() => {
+  const startListening = useCallback(async () => {
     setError(null);
 
     if (typeof window === 'undefined') return;
+
+    // 1. Demande d'autorisation explicite via getUserMedia pour déclencher la boîte de dialogue native
+    if (navigator?.mediaDevices?.getUserMedia) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        // Ferme le flux temporaire dès que l'autorisation est confirmée
+        stream.getTracks().forEach((track) => track.stop());
+      } catch (mediaErr: any) {
+        if (
+          mediaErr.name === 'NotAllowedError' ||
+          mediaErr.name === 'PermissionDeniedError' ||
+          mediaErr.name === 'SecurityError'
+        ) {
+          const deniedMsg =
+            language === 'fr'
+              ? "Accès au microphone refusé. Cliquez sur le cadenas 🔒 à gauche de l'adresse du site et activez « Microphone »."
+              : 'Microphone access denied. Click the lock icon 🔒 in your browser address bar and enable "Microphone".';
+          setError(deniedMsg);
+          onError?.(deniedMsg);
+          setIsListening(false);
+          return;
+        }
+      }
+    }
 
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -124,8 +148,8 @@ export function useSpeechRecognition({
           case 'permission-denied':
             msg =
               language === 'fr'
-                ? "Accès au microphone refusé. Veuillez autoriser l'accès au micro dans les paramètres de votre navigateur."
-                : 'Microphone access denied. Please allow microphone permissions in your browser settings.';
+                ? "Accès au microphone refusé. Cliquez sur le cadenas 🔒 à gauche de l'adresse du site et activez « Microphone »."
+                : 'Microphone access denied. Click the lock icon 🔒 in your browser address bar and enable "Microphone".';
             break;
           case 'no-speech':
             // Simple absence de parole détectée, pas une erreur bloquante
