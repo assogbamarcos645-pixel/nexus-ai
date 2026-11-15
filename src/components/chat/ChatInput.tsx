@@ -14,10 +14,13 @@ import {
   Bug,
   Zap,
   Loader2,
+  Mic,
+  MicOff,
 } from 'lucide-react';
 import { useRef, useEffect, useState, type KeyboardEvent, type ChangeEvent, type ClipboardEvent, type DragEvent } from 'react';
 import { cn } from '@/utils/cn';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { AGENTS } from '@/config/agents';
 import type { Agent } from '@/types';
 import type { AttachedDocument } from '@/types/documents';
@@ -73,6 +76,41 @@ export function ChatInput({
   const [localDocuments, setLocalDocuments] = useState<AttachedDocument[]>([]);
   const [isParsingDoc, setIsParsingDoc] = useState(false);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
+
+  const baseTextBeforeSpeechRef = useRef('');
+  const [voiceFeedbackError, setVoiceFeedbackError] = useState<string | null>(null);
+
+  const {
+    isListening,
+    toggleListening,
+    stopListening,
+    error: speechError,
+  } = useSpeechRecognition({
+    language,
+    onTranscript: (newTranscript) => {
+      const base = baseTextBeforeSpeechRef.current;
+      const combined = base ? `${base.trim()} ${newTranscript}` : newTranscript;
+      onChange(combined);
+    },
+    onError: (errMsg) => {
+      setVoiceFeedbackError(errMsg);
+    },
+  });
+
+  const handleToggleVoice = () => {
+    if (voiceFeedbackError) setVoiceFeedbackError(null);
+    if (!isListening) {
+      baseTextBeforeSpeechRef.current = value;
+    }
+    toggleListening();
+  };
+
+  const handleSendMessage = () => {
+    if (isListening) {
+      stopListening();
+    }
+    onSend();
+  };
 
   const effectiveImages = attachedImages ?? localImages;
   const effectiveDocuments = attachedDocuments ?? localDocuments;
@@ -214,6 +252,7 @@ export function ChatInput({
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       if (value.trim() || effectiveImages.length > 0) {
+        if (isListening) stopListening();
         onSend();
       }
     }
@@ -377,6 +416,33 @@ export function ChatInput({
         </div>
       )}
 
+      {/* Indicateur d'écoute vocale en temps réel */}
+      {isListening && (
+        <div className="flex items-center justify-between mb-2 px-3 py-2 rounded-xl bg-rose-500/10 dark:bg-rose-950/30 border border-rose-500/30 text-rose-600 dark:text-rose-300 text-xs shadow-sm animate-in fade-in slide-in-from-bottom-1">
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
+            </span>
+            <span className="font-semibold">
+              {language === 'fr' ? 'À votre écoute...' : 'Listening...'}
+            </span>
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:inline">
+              {language === 'fr'
+                ? 'Parlez naturellement, la dictée est retranscrite en direct'
+                : 'Speak naturally, dictation is transcribed live'}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={stopListening}
+            className="text-[11.5px] font-semibold text-rose-600 dark:text-rose-400 hover:underline cursor-pointer ml-2"
+          >
+            {language === 'fr' ? 'Arrêter' : 'Stop'}
+          </button>
+        </div>
+      )}
+
       {/* Zone de prévisualisation des maquettes / captures d'écran attachées */}
       {effectiveImages.length > 0 && (
         <div className="flex flex-wrap items-center gap-2 mb-2 p-2.5 rounded-2xl bg-slate-900/90 dark:bg-black/75 border border-cyan-500/40 backdrop-blur-xl shadow-[0_4px_25px_rgba(6,182,212,0.2)] animate-in fade-in slide-in-from-bottom-2 duration-200">
@@ -415,10 +481,22 @@ export function ChatInput({
         </div>
       )}
 
-      {error && (
-        <div className="flex items-center gap-2 mb-2 px-3 py-1.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs shadow-xs">
-          <AlertCircle size={14} className="shrink-0" />
-          <span>{error}</span>
+      {(error || voiceFeedbackError || speechError) && (
+        <div className="flex items-center justify-between gap-2 mb-2 px-3 py-1.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs shadow-xs animate-in fade-in">
+          <div className="flex items-center gap-2 min-w-0">
+            <AlertCircle size={14} className="shrink-0" />
+            <span className="truncate">{error || voiceFeedbackError || speechError}</span>
+          </div>
+          {(voiceFeedbackError || speechError) && (
+            <button
+              type="button"
+              onClick={() => setVoiceFeedbackError(null)}
+              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer p-0.5"
+              aria-label="Fermer"
+            >
+              <X size={12} />
+            </button>
+          )}
         </div>
       )}
 
@@ -590,6 +668,33 @@ export function ChatInput({
             )}
           </div>
 
+          {/* Bouton Microphone Speech-to-Text */}
+          <button
+            type="button"
+            id="btn-voice-input"
+            onClick={handleToggleVoice}
+            disabled={isLoading}
+            title={
+              isListening
+                ? (language === 'fr' ? 'Arrêter la dictée vocale' : 'Stop voice dictation')
+                : (language === 'fr' ? 'Dicter votre message au micro' : 'Dictate your message with microphone')
+            }
+            aria-label={isListening ? 'Arrêter la dictée vocale' : 'Activer le microphone'}
+            className={cn(
+              'btn-tactile relative flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200 cursor-pointer shrink-0',
+              isListening
+                ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-[0_0_12px_rgba(244,63,94,0.5)] ring-2 ring-rose-400/50'
+                : 'bg-slate-100/90 hover:bg-slate-200/90 text-slate-600 hover:text-slate-900 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 dark:text-slate-400 dark:hover:text-slate-100',
+              isLoading && 'opacity-40 cursor-not-allowed',
+            )}
+          >
+            {isListening ? (
+              <MicOff size={14} className="animate-pulse" />
+            ) : (
+              <Mic size={14} />
+            )}
+          </button>
+
           {/* Bouton Stop ou Envoyer compact */}
           {isLoading ? (
             <button
@@ -605,7 +710,7 @@ export function ChatInput({
             <button
               type="button"
               id="btn-send"
-              onClick={onSend}
+              onClick={handleSendMessage}
               disabled={!value.trim()}
               aria-label={t('chat.send')}
               className={cn(
