@@ -23,7 +23,7 @@ Ce document récapitule les mesures de sécurité, les assainissements effectué
   - `X-Frame-Options: SAMEORIGIN` (protection contre le clickjacking).
   - `X-XSS-Protection: 1; mode=block`.
   - `Referrer-Policy: strict-origin-when-cross-origin`.
-  - `Permissions-Policy: camera=(), microphone=(), geolocation=()`.
+  - `Permissions-Policy: camera=(self), microphone=(self), geolocation=()`.
 
 ### Protection du Centre de Contrôle Administratif
 - **Barrière d'authentification (`AuthGate`)** : Lorsque l'infrastructure cloud Supabase est configurée, l'accès à la gouvernance des modèles IA, à la configuration des fournisseurs et aux déclenchements de tests serveur est réservé aux administrateurs authentifiés.

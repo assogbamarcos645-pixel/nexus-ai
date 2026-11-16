@@ -84,6 +84,7 @@ export function ChatInput({
 
   const {
     isListening,
+    isProcessingAudio,
     startListening,
     stopListening,
     error: speechError,
@@ -679,23 +680,33 @@ export function ChatInput({
               type="button"
               id="btn-voice-input"
               onClick={handleToggleVoice}
-              disabled={isLoading}
+              disabled={isLoading || isProcessingAudio}
               title={
-                isListening
-                  ? (language === 'fr' ? 'Arrêter la dictée' : 'Stop voice dictation')
-                  : (language === 'fr' ? 'Dicter au microphone' : 'Dictate with microphone')
+                isProcessingAudio
+                  ? (language === 'fr' ? 'Transcription audio en cours...' : 'Transcribing audio...')
+                  : isListening
+                    ? (language === 'fr' ? 'Arrêter la dictée' : 'Stop voice dictation')
+                    : (language === 'fr' ? 'Dicter au microphone' : 'Dictate with microphone')
               }
-              aria-label={isListening ? 'Arrêter la dictée vocale' : 'Activer le microphone'}
+              aria-label={
+                isProcessingAudio
+                  ? 'Transcription audio en cours'
+                  : isListening
+                    ? 'Arrêter la dictée vocale'
+                    : 'Activer le microphone'
+              }
               className={cn(
                 'btn-tactile relative flex items-center justify-center w-9 h-9 rounded-full transition-all duration-200 cursor-pointer shrink-0',
                 isListening
                   ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-[0_0_12px_rgba(244,63,94,0.5)] ring-2 ring-rose-400/50'
                   : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800/70',
-                isLoading && 'opacity-40 cursor-not-allowed',
+                (isLoading || isProcessingAudio) && 'opacity-60 cursor-not-allowed',
               )}
             >
               {isListening ? (
                 <MicOff size={16} className="animate-pulse" />
+              ) : isProcessingAudio ? (
+                <Loader2 size={16} className="animate-spin text-blue-500 dark:text-sky-400" />
               ) : (
                 <Mic size={16} />
               )}
