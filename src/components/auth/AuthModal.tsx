@@ -22,6 +22,8 @@ import {
   ArrowLeft,
   Smartphone,
   ExternalLink,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import { ModalCloseButton } from '@/components/ui/ModalCloseButton';
 import { useAuth } from '@/hooks/useAuth';
@@ -71,6 +73,8 @@ export function AuthModal({ isOpen, initialMode = 'sign-in', onClose }: AuthModa
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [fullName, setFullName] = useState('');
   const [totpCode, setTotpCode] = useState('');
   const [successNotice, setSuccessNotice] = useState<string | null>(null);
@@ -100,6 +104,8 @@ export function AuthModal({ isOpen, initialMode = 'sign-in', onClose }: AuthModa
     clearError();
     setLocalError(null);
     setSuccessNotice(null);
+    setShowPassword(false);
+    setShowConfirmPassword(false);
     onClose();
   };
 
@@ -514,14 +520,23 @@ export function AuthModal({ isOpen, initialMode = 'sign-in', onClose }: AuthModa
                 <div className="relative">
                   <Lock size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
                   <input
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     required
                     minLength={6}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Au moins 6 caractères"
-                    className="w-full pl-9 pr-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white text-xs placeholder:text-white/30 focus:outline-none focus:border-nexus-500 transition-colors"
+                    className="w-full pl-9 pr-10 py-2 rounded-xl bg-black/40 border border-white/10 text-white text-xs placeholder:text-white/30 focus:outline-none focus:border-nexus-500 transition-colors"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-white/40 hover:text-white transition-colors cursor-pointer rounded-lg hover:bg-white/10"
+                    title={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                    aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                  >
+                    {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
                 </div>
               </div>
             )}
@@ -534,14 +549,23 @@ export function AuthModal({ isOpen, initialMode = 'sign-in', onClose }: AuthModa
                 <div className="relative">
                   <Lock size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
                   <input
-                    type="password"
+                    type={showConfirmPassword ? 'text' : 'password'}
                     required
                     minLength={6}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Répétez le mot de passe"
-                    className="w-full pl-9 pr-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white text-xs placeholder:text-white/30 focus:outline-none focus:border-nexus-500 transition-colors"
+                    className="w-full pl-9 pr-10 py-2 rounded-xl bg-black/40 border border-white/10 text-white text-xs placeholder:text-white/30 focus:outline-none focus:border-nexus-500 transition-colors"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword((prev) => !prev)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-white/40 hover:text-white transition-colors cursor-pointer rounded-lg hover:bg-white/10"
+                    title={showConfirmPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                    aria-label={showConfirmPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                  >
+                    {showConfirmPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
                 </div>
               </div>
             )}
