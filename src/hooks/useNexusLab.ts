@@ -67,6 +67,15 @@ export function useNexusLab() {
   const [isExporting, setIsExporting] = useState(false);
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
 
+  // Disparition automatique des notifications après maximum 1 seconde (demande utilisateur)
+  useEffect(() => {
+    if (!notification) return;
+    const timer = setTimeout(() => {
+      setNotification(null);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [notification]);
+
   // Instantanés (Snapshots & Historique) pour le projet actif
   const [snapshots, setSnapshots] = useState<ProjectSnapshot[]>(() => {
     const list = loadProjectsFromStorage();

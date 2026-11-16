@@ -8,12 +8,20 @@
  */
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import Editor, { type OnMount } from '@monaco-editor/react';
+import Editor, { loader, type OnMount } from '@monaco-editor/react';
+
+// Configuration explicite et robuste du CDN Monaco Editor
+if (typeof window !== 'undefined') {
+  loader.config({
+    paths: {
+      vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs',
+    },
+  });
+}
 import {
   Save,
   Sparkles,
   Check,
-  AlertCircle,
   FileCode,
   Zap,
   Plus,
@@ -87,7 +95,15 @@ function getTabFileIcon(path: string) {
   }
 }
 
-function MonacoLoadingSkeleton({ content, isDark }: { content: string; isDark: boolean }) {
+function MonacoLoadingSkeleton({
+  content,
+  isDark,
+  onSwitchToFallback,
+}: {
+  content: string;
+  isDark: boolean;
+  onSwitchToFallback?: () => void;
+}) {
   const lines = useMemo(() => (content || '').split('\n').slice(0, 35), [content]);
 
   return (
@@ -120,10 +136,21 @@ function MonacoLoadingSkeleton({ content, isDark }: { content: string; isDark: b
           isDark ? 'border-white/5 text-slate-500' : 'border-slate-100 text-slate-400',
         )}
       >
-        <span className="flex items-center gap-1.5 animate-pulse">
-          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-          Initialisation de l’éditeur...
-        </span>
+        <div className="flex items-center gap-2.5">
+          <span className="flex items-center gap-1.5 animate-pulse text-cyan-400">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+            Chargement de Monaco...
+          </span>
+          {onSwitchToFallback && (
+            <button
+              type="button"
+              onClick={onSwitchToFallback}
+              className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 hover:text-cyan-300 border border-cyan-500/25 cursor-pointer transition-colors"
+            >
+              Écrire directement (mode rapide)
+            </button>
+          )}
+        </div>
         <span className="font-mono text-[10px]">Monaco Engine</span>
       </div>
     </div>
@@ -192,6 +219,18 @@ export function CodeEditor({
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const editorRef = useRef<any>(null);
   const monacoRef = useRef<any>(null);
+
+  // Watchdog : Si Monaco ne s'est pas monté dans les 2 secondes (latence réseau, CSP ou mobile),
+  // bascule automatique vers l'éditeur rapide pour ne JAMAIS bloquer l'utilisateur sur "Initialisation de l’éditeur...".
+  useEffect(() => {
+    if (editorRef.current || monacoRef.current) return;
+    const timer = setTimeout(() => {
+      if (!editorRef.current) {
+        setMonacoFailed(true);
+      }
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Ouverture du widget Copilot Inline avec capture de la sélection et du curseur
   const openInlineCopilot = useCallback(() => {
@@ -654,6 +693,7 @@ export function CodeEditor({
               <MonacoLoadingSkeleton
                 content={content}
                 isDark={resolvedTheme === 'dark'}
+                onSwitchToFallback={() => setMonacoFailed(true)}
               />
             }
             options={{
@@ -690,18 +730,55 @@ export function CodeEditor({
             }}
           />
         ) : (
-          /* Repli sécurisé pour mobile / défaillance Monaco */
-          <div className="h-full flex flex-col p-2 bg-slate-100 dark:bg-[#070712]">
-            <div className="flex items-center gap-2 p-2 mb-2 bg-amber-500/10 border border-amber-500/20 rounded text-amber-700 dark:text-amber-300 text-xs">
-              <AlertCircle size={14} />
-              <span>Mode éditeur de repli (compatible mobile & tactile).</span>
+          /* Repli ultra-réactif : compatible 100% mobile, tactile et sans blocage */
+          <div className="h-full flex flex-col bg-white dark:bg-[#070712] relative overflow-hidden">
+            <div className="flex items-center justify-between px-3 py-1.5 bg-slate-100 dark:bg-white/[0.04] border-b border-slate-200 dark:border-white/10 text-xs shrink-0">
+              <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium text-[11px]">
+                <Zap size={13} className="text-amber-500" />
+                <span>Mode Éditeur Rapide & Réactif</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMonacoFailed(false)}
+                className="text-[11px] px-2 py-0.5 rounded bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 cursor-pointer transition-colors"
+              >
+                Activer Monaco
+              </button>
             </div>
-            <textarea
-              value={content}
-              onChange={(e) => onChange(e.target.value)}
-              className="flex-1 w-full bg-white dark:bg-black/40 text-slate-900 dark:text-white font-mono text-[16px] sm:text-xs p-3 rounded-lg border border-slate-300 dark:border-white/10 outline-none resize-none leading-relaxed"
-              spellCheck={false}
-            />
+            <div className="flex-1 flex relative overflow-hidden">
+              <div
+                className="w-10 sm:w-12 py-3 pr-2 text-right select-none font-mono text-[12px] sm:text-[13px] leading-relaxed text-slate-400 dark:text-slate-600 bg-slate-50 dark:bg-black/25 border-r border-slate-200/60 dark:border-white/5 overflow-hidden"
+                aria-hidden="true"
+              >
+                {(content || '').split('\n').map((_, i) => (
+                  <div key={i}>{i + 1}</div>
+                ))}
+              </div>
+              <textarea
+                value={content}
+                onChange={(e) => onChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Tab') {
+                    e.preventDefault();
+                    const target = e.currentTarget;
+                    const start = target.selectionStart;
+                    const end = target.selectionEnd;
+                    const val = target.value;
+                    const newVal = val.substring(0, start) + '  ' + val.substring(end);
+                    onChange(newVal);
+                    requestAnimationFrame(() => {
+                      target.selectionStart = target.selectionEnd = start + 2;
+                    });
+                  }
+                }}
+                placeholder="Écrivez votre code ici..."
+                className="flex-1 w-full bg-transparent text-slate-900 dark:text-white font-mono text-[13px] p-3 outline-none resize-none leading-relaxed overflow-auto scrollbar-thin"
+                spellCheck={false}
+                autoCapitalize="off"
+                autoComplete="off"
+                autoCorrect="off"
+              />
+            </div>
           </div>
         )}
       </div>

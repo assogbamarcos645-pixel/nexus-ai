@@ -9,6 +9,15 @@
 
 import { loader } from '@monaco-editor/react';
 
+// Configuration explicite et robuste du CDN de Monaco Editor
+if (typeof window !== 'undefined') {
+  loader.config({
+    paths: {
+      vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.57.0/min/vs',
+    },
+  });
+}
+
 let isPreloadStarted = false;
 let isMonacoReady = false;
 
