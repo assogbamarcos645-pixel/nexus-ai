@@ -78,12 +78,12 @@ export function ChatWindow({
   return (
     <div className="flex flex-col flex-1 h-full min-h-0 overflow-hidden relative">
       {isEmpty ? (
-        /* État initial d'accueil (comme ChatGPT et Claude) : Centré verticalement avec protection de débordement mobile */
+        /* État initial d'accueil : Centré verticalement avec protection de débordement mobile */
         <div
           ref={messagesContainerRef}
           className="flex-1 overflow-y-auto scrollbar-thin px-2 sm:px-6"
         >
-          <div className="min-h-full flex flex-col items-center justify-start sm:justify-center py-3 sm:py-8">
+          <div className="min-h-full flex flex-col items-center justify-start sm:justify-center py-2 sm:py-8">
             <WelcomeScreen agent={agent} onSuggestionClick={onSuggestionClick}>
               <ChatInput
                 value={input}
@@ -104,14 +104,13 @@ export function ChatWindow({
           </div>
         </div>
       ) : (
-        /* Fil de discussion actif : Les messages défilent, la zone de saisie reste fermement calée en bas */
+        /* Fil de discussion actif : Messages défilants + zone de saisie fixée au bas naturel */
         <>
           <div
             id="messages-container"
             ref={messagesContainerRef}
             className="flex-1 overflow-y-auto scrollbar-thin px-1.5 sm:px-4 py-2 sm:py-6"
           >
-            {/* Fil de messages épuré sans avatar ni profil */}
             <div className="max-w-3xl mx-auto w-full space-y-3 pt-2">
               {currentMessages.map((msg) => (
                 <MessageBubble key={msg.id} message={msg} agent={agent} />
@@ -127,8 +126,8 @@ export function ChatWindow({
             </div>
           </div>
 
-          {/* Barre de saisie fixée en bas (Style Deep Slate & Cobalt) */}
-          <div className="shrink-0 w-full bg-gradient-to-t from-[#f8fafc]/95 via-[#f8fafc]/70 to-transparent dark:from-[#0b0f19]/95 dark:via-[#0b0f19]/70 dark:to-transparent backdrop-blur-[2px] pt-1 pb-1 md:pb-safe">
+          {/* Barre de saisie fixée en bas, respectant la zone de sécurité iOS (Home Indicator) */}
+          <div className="shrink-0 w-full bg-gradient-to-t from-[#f8fafc]/95 via-[#f8fafc]/80 to-transparent dark:from-[#0b0f19]/95 dark:via-[#0b0f19]/80 dark:to-transparent backdrop-blur-[2px] pt-1 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] md:pb-2">
             <ChatInput
               value={input}
               onChange={onInputChange}
@@ -146,7 +145,7 @@ export function ChatWindow({
               onAddDocument={onAddDocument}
               onRemoveDocument={onRemoveDocument}
             />
-            <p className="text-[10px] sm:text-[11px] text-center text-slate-400 dark:text-white/30 pt-0.5 pb-1 select-none px-4">
+            <p className="text-[10px] sm:text-[11px] text-center text-slate-400 dark:text-white/30 pt-0.5 pb-0.5 select-none px-4">
               {language === 'fr'
                 ? 'NEXUS AI peut commettre des erreurs. Pensez à vérifier les informations importantes.'
                 : 'NEXUS AI can make mistakes. Consider verifying important information.'}

@@ -1,6 +1,6 @@
-
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { Sparkles } from 'lucide-react';
+import { cn } from '@/utils/cn';
 import { useConversations } from '@/hooks/useConversations';
 import { useAgent } from '@/hooks/useAgent';
 import { useChatEngine } from '@/hooks/useChatEngine';
@@ -125,7 +125,6 @@ function AppContent() {
     }, 20);
   };
 
-  // When the engine sends, make sure conversation exists
   const handleSend = () => {
     if (!activeConversationId) {
       createConversation(selectedAgentId);
@@ -135,29 +134,22 @@ function AppContent() {
 
   // Restauration automatique et systématique du curseur dans le chat sans déplacement parasite
   useEffect(() => {
-    if (activeView === 'chat') {
-      const focusChatInput = () => {
-        const inputEl = document.getElementById('chat-input') as HTMLTextAreaElement | null;
-        if (inputEl && document.activeElement !== inputEl) {
-          inputEl.focus({ preventScroll: true });
-        }
-      };
-      focusChatInput();
-      const t1 = setTimeout(focusChatInput, 80);
-      const t2 = setTimeout(focusChatInput, 250);
-      return () => {
-        clearTimeout(t1);
-        clearTimeout(t2);
-      };
+    if (activeView === 'chat' && !isLoading) {
+      const inputEl = document.getElementById('chat-input') as HTMLTextAreaElement | null;
+      if (inputEl) {
+        inputEl.focus({ preventScroll: true });
+        const len = inputEl.value.length;
+        inputEl.setSelectionRange(len, len);
+      }
     }
-  }, [activeView, activeConversationId]);
+  }, [activeView, activeConversationId, isLoading]);
 
   return (
     <div
       id="app-root"
-      className="flex h-[100dvh] max-h-[100dvh] w-full overflow-hidden nexus-ambient-grid bg-[#f8fafc] dark:bg-[#0b0f19] dark:bg-gradient-to-br dark:from-[#070a12] dark:via-[#0b0f19] dark:to-[#070a12]"
+      className="flex h-full h-[100dvh] w-full bg-[#f8fafc] text-slate-800 dark:bg-[#0b0f19] dark:text-slate-100 font-sans overflow-hidden antialiased selection:bg-blue-600 selection:text-white transition-colors duration-200"
     >
-      {/* Barre latérale gauche fixe sur toute la hauteur */}
+      {/* Barre latérale complète */}
       <Sidebar
         conversations={conversations}
         activeConversationId={activeConversationId}
@@ -171,25 +163,22 @@ function AppContent() {
         onOpenMemories={() => setIsMemoriesModalOpen(true)}
       />
 
-      {/* Zone de travail principale à droite */}
+      {/* Zone de travail principale */}
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden relative">
-        {/* Arrière-plan Cinématique d'Ambiance Haute Définition */}
+        {/* Arrière-plan Cinématique d'Ambiance */}
         <div
           className="pointer-events-none absolute inset-0 z-0 overflow-hidden select-none"
           aria-hidden="true"
         >
-          {/* Image d'ambiance 3D ultra-HD */}
           <div
             className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20 dark:opacity-40 transition-opacity duration-1000"
             style={{ backgroundImage: `url('/nexus-ambient-bg.jpg')` }}
           />
-          {/* Masque radial cinématique (vignette pour adoucir les bords) */}
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_15%,rgba(248,250,252,0.85)_75%,#f8fafc_100%)] dark:bg-[radial-gradient(ellipse_at_center,transparent_20%,rgba(11,15,25,0.78)_70%,#0b0f19_100%)]" />
-          {/* Dégradé vertical pour préserver un contraste parfait sur l'en-tête et le bas */}
           <div className="absolute inset-0 bg-gradient-to-b from-[#f8fafc]/70 via-transparent to-[#f8fafc]/95 dark:from-[#0b0f19]/80 dark:via-transparent dark:to-[#0b0f19]/95" />
         </div>
 
-        {/* Lueurs ambiantes Cobalt & Deep Slate avec respiration vivante et accentuée */}
+        {/* Lueurs ambiantes Cobalt & Sky */}
         <div
           className="pointer-events-none absolute -top-24 right-10 w-[680px] h-[680px] rounded-full bg-gradient-to-br from-blue-300/40 via-sky-300/30 to-transparent dark:from-blue-600/25 dark:via-sky-500/20 dark:to-transparent blur-[100px] animate-nexus-aurora"
           aria-hidden="true"
@@ -214,6 +203,7 @@ function AppContent() {
           onOpenMemories={() => setIsMemoriesModalOpen(true)}
           onCloseMemories={() => setIsMemoriesModalOpen(false)}
           onToggleMobileSidebar={() => setIsMobileSidebarOpen((prev) => !prev)}
+          onNewConversation={handleNewConversation}
         />
 
         {/* Bannière d'importation des données locales */}
@@ -222,8 +212,13 @@ function AppContent() {
         {/* Notification flottante de confirmation d'e-mail */}
         <EmailConfirmationToast />
 
-        {/* Corps dynamique : Chat, Projets (Lab) ou Explorer (Control Center) */}
-        <main className="flex-1 flex flex-col overflow-hidden relative z-10 pb-[calc(56px+env(safe-area-inset-bottom,0px))] md:pb-0">
+        {/* Corps dynamique : Chat (pleine hauteur mobile), Projets (Lab) ou Explorer */}
+        <main
+          className={cn(
+            'flex-1 flex flex-col overflow-hidden relative z-10',
+            activeView === 'chat' ? 'pb-0' : 'pb-[calc(56px+env(safe-area-inset-bottom,0px))] md:pb-0',
+          )}
+        >
           {activeView === 'chat' ? (
             <ChatWindow
               conversation={activeConversation}
@@ -255,12 +250,14 @@ function AppContent() {
           )}
         </main>
 
-        {/* Barre de navigation inférieure mobile (accès rapide à 1 pouce) */}
-        <MobileBottomNav
-          activeView={activeView}
-          onNavigateView={setActiveView}
-          onToggleMobileSidebar={() => setIsMobileSidebarOpen((prev) => !prev)}
-        />
+        {/* Barre de navigation inférieure mobile (accès rapide à 1 pouce pour Studio Lab et Centre de Contrôle) */}
+        {activeView !== 'chat' && (
+          <MobileBottomNav
+            activeView={activeView}
+            onNavigateView={setActiveView}
+            onToggleMobileSidebar={() => setIsMobileSidebarOpen((prev) => !prev)}
+          />
+        )}
       </div>
     </div>
   );

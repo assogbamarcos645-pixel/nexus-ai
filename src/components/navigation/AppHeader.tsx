@@ -2,12 +2,24 @@
  * src/components/navigation/AppHeader.tsx
  *
  * En-tête de la zone principale NEXUS AI.
- *  - Gauche : bouton menu (mobile) + titre contextuel de la vue active.
- *  - Droite : bascule clair/sombre et menu profil (compte, langue, bibliothèque).
+ *  - Gauche : bouton menu (mobile) + titre contextuel ou sélecteur de modèle mobile.
+ *  - Droite : bascule clair/sombre, raccourci Studio Lab, nouvelle conversation et menu profil.
  */
 
 import { useEffect, useRef, useState } from 'react';
-import { Sun, Moon, ChevronDown, Menu, LogIn, UserRound, BookOpen, Languages, Check } from 'lucide-react';
+import {
+  Sun,
+  Moon,
+  ChevronDown,
+  Menu,
+  LogIn,
+  UserRound,
+  BookOpen,
+  Languages,
+  Check,
+  SquarePen,
+  Code2,
+} from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
@@ -32,6 +44,7 @@ interface AppHeaderProps {
   onOpenMemories?: () => void;
   onCloseMemories?: () => void;
   onToggleMobileSidebar?: () => void;
+  onNewConversation?: () => void;
 }
 
 export function AppHeader({
@@ -44,6 +57,7 @@ export function AppHeader({
   onOpenMemories,
   onCloseMemories,
   onToggleMobileSidebar,
+  onNewConversation,
 }: AppHeaderProps) {
   const { user, isAuthenticated, isPasswordRecovery } = useAuth();
   const { resolvedTheme, toggleTheme } = useTheme();
@@ -126,30 +140,94 @@ export function AppHeader({
 
   return (
     <>
-      <header className="h-[calc(3.5rem+env(safe-area-inset-top,0px))] sm:h-16 pt-[env(safe-area-inset-top,0px)] px-3 sm:px-6 md:px-8 flex items-center justify-between z-20 shrink-0 select-none border-b border-slate-200/60 dark:border-white/10 liquid-glass shadow-[0_4px_24px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-colors">
+      <header className="h-[calc(3.5rem+env(safe-area-inset-top,0px))] sm:h-16 pt-[env(safe-area-inset-top,0px)] px-2.5 sm:px-6 md:px-8 flex items-center justify-between z-20 shrink-0 select-none border-b border-slate-200/60 dark:border-white/10 liquid-glass shadow-[0_4px_24px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)] transition-colors">
+        {/* Partie gauche : Menu tiroir + Titre / Modèle actif mobile */}
         <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
           {onToggleMobileSidebar && (
             <button
               type="button"
               onClick={onToggleMobileSidebar}
-              className="lg:hidden p-1.5 sm:p-2 -ml-1 rounded-xl text-slate-600 hover:bg-slate-200/60 dark:text-slate-400 dark:hover:bg-slate-800/60 transition-colors cursor-pointer shrink-0"
+              className="lg:hidden p-2 -ml-1 rounded-xl text-slate-600 hover:bg-slate-200/60 dark:text-slate-300 dark:hover:bg-slate-800/60 transition-colors cursor-pointer shrink-0"
               aria-label={fr ? 'Ouvrir le menu' : 'Open menu'}
             >
-              <Menu size={19} />
+              <Menu size={20} />
             </button>
           )}
-          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-            <h1 className="text-sm sm:text-[15px] font-semibold tracking-tight text-slate-900 dark:text-white truncate">
-              {viewTitle}
-            </h1>
-            <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium tracking-wide bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-sky-300 border border-blue-200/70 dark:border-blue-800/50">
-              {viewTag}
-            </span>
-          </div>
+
+          {/* Sur mobile en mode Chat : Pilule interactive du modèle (style ChatGPT / Claude iOS) */}
+          {activeView === 'chat' ? (
+            <div className="flex items-center gap-2 min-w-0">
+              <button
+                type="button"
+                id="btn-mobile-model-pill"
+                onClick={() => onViewChange('control-center')}
+                title={
+                  fr
+                    ? `Modèle actif : ${providerDisplayName} (${modelDisplayName}) — Cliquez pour changer`
+                    : `Active model: ${providerDisplayName} (${modelDisplayName}) — Click to change`
+                }
+                className="btn-tactile flex sm:hidden items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-white/10 text-xs font-semibold text-slate-800 dark:text-slate-200 shadow-2xs max-w-[170px] cursor-pointer"
+              >
+                <span className="relative flex h-2 w-2 shrink-0">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                </span>
+                <span className="truncate font-mono text-[11px]">
+                  {modelDisplayName}
+                </span>
+                <ChevronDown size={12} className="text-slate-400 shrink-0" />
+              </button>
+
+              <div className="hidden sm:flex items-center gap-2 min-w-0">
+                <h1 className="text-[15px] font-semibold tracking-tight text-slate-900 dark:text-white truncate">
+                  {viewTitle}
+                </h1>
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium tracking-wide bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-sky-300 border border-blue-200/70 dark:border-blue-800/50">
+                  {viewTag}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+              <h1 className="text-sm sm:text-[15px] font-semibold tracking-tight text-slate-900 dark:text-white truncate">
+                {viewTitle}
+              </h1>
+              <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium tracking-wide bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-sky-300 border border-blue-200/70 dark:border-blue-800/50">
+                {viewTag}
+              </span>
+            </div>
+          )}
         </div>
 
-        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-          {/* Badge indicateur du modèle IA actif (Dynamique & Réactif) */}
+        {/* Partie droite : Outils rapides, Quotas, Thème & Profil */}
+        <div className="flex items-center gap-1 sm:gap-2.5 shrink-0">
+          {/* Raccourci vers Studio Lab sur mobile lorsqu'on est dans le chat */}
+          {activeView === 'chat' && (
+            <button
+              type="button"
+              onClick={() => onViewChange('lab')}
+              title={fr ? 'Ouvrir Studio Lab (Code)' : 'Open Studio Lab (Code)'}
+              aria-label={fr ? 'Studio Lab' : 'Studio Lab'}
+              className="btn-tactile p-2 rounded-xl text-slate-600 hover:text-blue-600 hover:bg-blue-50 dark:text-slate-300 dark:hover:text-sky-300 dark:hover:bg-slate-800/60 transition-colors cursor-pointer sm:hidden"
+            >
+              <Code2 size={18} />
+            </button>
+          )}
+
+          {/* Bouton Nouvelle Conversation immédiat (Style ChatGPT / Claude) */}
+          {activeView === 'chat' && onNewConversation && (
+            <button
+              type="button"
+              onClick={onNewConversation}
+              title={fr ? 'Nouvelle conversation' : 'New conversation'}
+              aria-label={fr ? 'Nouvelle conversation' : 'New conversation'}
+              className="btn-tactile p-2 rounded-xl text-slate-600 hover:text-blue-600 hover:bg-blue-50 dark:text-slate-300 dark:hover:text-sky-300 dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
+            >
+              <SquarePen size={18} />
+            </button>
+          )}
+
+          {/* Badge indicateur du modèle IA actif sur grand écran */}
           <button
             type="button"
             id="btn-active-model-pill"
@@ -170,16 +248,19 @@ export function AppHeader({
             </span>
           </button>
 
-          {/* Jauge visuelle de quotas et jetons restants */}
-          <TokenQuotaBadge onOpenAuth={handleOpenAuth} />
+          {/* Jauge visuelle de quotas et jetons */}
+          <div className="hidden md:block">
+            <TokenQuotaBadge onOpenAuth={handleOpenAuth} />
+          </div>
 
+          {/* Bascule Clair / Sombre tactile */}
           <button
             type="button"
             id="btn-theme-toggle"
             onClick={toggleTheme}
             aria-label={themeLabel}
             title={themeLabel}
-            className="btn-tactile relative w-8.5 h-8.5 sm:w-10 sm:h-10 grid place-items-center rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 active:scale-90"
+            className="btn-tactile relative w-9 h-9 sm:w-10 sm:h-10 grid place-items-center rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 active:scale-90"
           >
             <Sun
               size={18}
@@ -198,12 +279,13 @@ export function AppHeader({
             <button
               type="button"
               id="btn-user-profile"
-              onClick={() => setMenuOpen((o) => !o)}
+              onClick={() => setMenuOpen((v) => !v)}
               aria-haspopup="menu"
               aria-expanded={menuOpen}
-              className="btn-tactile flex items-center gap-2 pl-1 pr-2 py-1 rounded-full hover:bg-slate-200/60 dark:hover:bg-slate-800/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              aria-label={fr ? `Menu profil (${displayName})` : `Profile menu (${displayName})`}
+              className="btn-tactile flex items-center gap-1.5 sm:gap-2 p-1 sm:px-2.5 sm:py-1 rounded-full hover:bg-slate-200/60 dark:hover:bg-slate-800/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             >
-              <span className="w-8 h-8 rounded-full overflow-hidden grid place-items-center text-white text-xs font-bold bg-gradient-to-tr from-slate-800 via-slate-700 to-blue-600 ring-2 ring-white dark:ring-slate-800 shadow-sm">
+              <span className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-white text-xs font-bold bg-gradient-to-tr from-slate-800 via-slate-700 to-blue-600 ring-2 ring-white dark:ring-slate-800 shadow-sm">
                 {user?.avatarUrl ? (
                   <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" />
                 ) : (
@@ -277,7 +359,7 @@ export function AppHeader({
         </div>
       </header>
 
-      {/* Les modales historiques héritent de la compatibilité clair/sombre */}
+      {/* Modales */}
       <div className="legacy-theme">
         <AuthModal isOpen={isAuthOpen} onClose={handleCloseAuth} />
         <UserProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} />

@@ -759,3 +759,42 @@ input, textarea {
 
 
 
+
+/* Blocs de code haute fidélité pour messages du chat (Style IDE Developer-grade) */
+.code-block-card {
+  margin-top: 0.85rem;
+  margin-bottom: 0.85rem;
+  border-radius: 0.85rem;
+  background-color: #0c101d;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.code-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.45rem 0.85rem;
+  background-color: rgba(15, 23, 42, 0.95);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  user-select: none;
+}
+
+.code-block-card pre {
+  margin: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
+  padding: 0.85rem 1rem !important;
+}
+
+.nexus-copy-code-btn {
+  transition: all 0.15s ease;
+}
+.nexus-copy-code-btn:active {
+  transform: scale(0.92);
+}

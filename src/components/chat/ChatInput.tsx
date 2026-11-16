@@ -110,7 +110,6 @@ export function ChatInput({
       return;
     }
 
-    // Vérifier l'état de la permission
     const currentStatus = await checkPermission();
 
     if (currentStatus === 'granted') {
@@ -120,7 +119,6 @@ export function ChatInput({
       setVoiceModalStatus('blocked');
       setIsVoiceModalOpen(true);
     } else {
-      // Demande polie explicite avant d'ouvrir le micro
       setVoiceModalStatus('request');
       setIsVoiceModalOpen(true);
     }
@@ -133,7 +131,6 @@ export function ChatInput({
       baseTextBeforeSpeechRef.current = value;
       await startListening();
     } else {
-      // Si l'utilisateur ou le navigateur a refusé
       setVoiceModalStatus('blocked');
     }
   };
@@ -151,15 +148,15 @@ export function ChatInput({
   const defaultPlaceholder =
     language === 'fr'
       ? effectiveDocuments.length > 0
-        ? 'Posez vos questions sur le document joint (ou Entrée)...'
+        ? 'Posez vos questions sur le document joint...'
         : effectiveImages.length > 0
-          ? 'Décrivez la maquette (ou Entrée)...'
-          : 'Message à NEXUS AI (posez une question, collez du code ou un document)...'
+          ? 'Décrivez la maquette...'
+          : 'Message à NEXUS AI...'
       : effectiveDocuments.length > 0
-        ? 'Ask questions about the attached document (or Enter)...'
+        ? 'Ask questions about attached doc...'
         : effectiveImages.length > 0
-          ? 'Describe mockup (or Enter)...'
-          : 'Message NEXUS AI (ask a question, paste code or attach a document)...';
+          ? 'Describe mockup...'
+          : 'Message NEXUS AI...';
 
   const activePlaceholder = placeholder || defaultPlaceholder;
   const currentAgent = agents.find((a) => a.id === selectedAgentId) ?? agents[0];
@@ -233,19 +230,16 @@ export function ChatInput({
     reader.readAsDataURL(file);
   };
 
-  // Auto-resize textarea compact et précis
+  // Auto-resize fluide et précis
   useEffect(() => {
     const el = textareaRef.current;
     if (!el) return;
     el.style.height = 'auto';
-    if (!value) {
-      el.style.height = '26px';
-    } else {
-      el.style.height = `${Math.min(Math.max(el.scrollHeight, 26), 130)}px`;
-    }
+    const computedHeight = Math.min(Math.max(el.scrollHeight, 38), 140);
+    el.style.height = `${computedHeight}px`;
   }, [value]);
 
-  // Focus automatique garanti du curseur sans déplacement intempestif de la page
+  // Focus automatique garanti sans scroll parasite
   useEffect(() => {
     if (isLoading) return;
 
@@ -284,7 +278,7 @@ export function ChatInput({
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      if (value.trim() || effectiveImages.length > 0) {
+      if (value.trim() || effectiveImages.length > 0 || effectiveDocuments.length > 0) {
         if (isListening) stopListening();
         onSend();
       }
@@ -337,7 +331,6 @@ export function ChatInput({
     }
   };
 
-  // Gestion de l'import d'un document ou fichier via l'icône trombone
   const handleFileAttach = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -354,6 +347,8 @@ export function ChatInput({
     imageInputRef.current?.click();
   };
 
+  const hasContentToSend = Boolean(value.trim() || effectiveImages.length > 0 || effectiveDocuments.length > 0);
+
   return (
     <div
       onDragOver={handleDragOver}
@@ -361,75 +356,73 @@ export function ChatInput({
       onDrop={handleDrop}
       className={cn(
         'w-full mx-auto shrink-0 transition-all duration-200 relative',
-        centered ? 'max-w-2xl px-2 sm:px-0' : 'max-w-2xl px-3 sm:px-4 pb-1 sm:pb-1.5',
+        centered ? 'max-w-2xl px-2 sm:px-0' : 'max-w-2xl px-2 sm:px-4 pb-0.5 sm:pb-1',
       )}
     >
-      {/* Suggestions d'actions contextuelles proactives */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 scrollbar-none px-0.5 select-none text-[11.5px]">
-        <button
-          type="button"
-          onClick={() => {
-            const prompt = language === 'fr'
-              ? 'Analyse ce code en détail : identifie les bugs potentiels, la complexité algorithmique et propose une refactorisation Clean Code :'
-              : 'Analyze this code in detail: find potential bugs, evaluate algorithmic complexity and provide clean code refactoring:';
-            onChange(prompt);
-            textareaRef.current?.focus({ preventScroll: true });
-          }}
-          className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 shrink-0 transition-colors cursor-pointer"
-        >
-          <Code2 size={13} className="text-cyan-500" />
-          <span>{language === 'fr' ? 'Analyser ce code' : 'Analyze code'}</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            const prompt = language === 'fr'
-              ? "Voici l'erreur rencontrée dans mon application. Explique la cause racine (Root Cause) et donne la solution exacte corrigée pas à pas :"
-              : "Here is the error encountered in my app. Explain the root cause and provide the exact step-by-step fix:";
-            onChange(prompt);
-            textareaRef.current?.focus({ preventScroll: true });
-          }}
-          className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 shrink-0 transition-colors cursor-pointer"
-        >
-          <Bug size={13} className="text-rose-500" />
-          <span>{language === 'fr' ? 'Expliquer cette erreur' : 'Explain error'}</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            if (effectiveDocuments.length === 0) {
-              fileInputRef.current?.click();
-            } else {
+      {/* Suggestions rapides : visibles quand la boîte de saisie est vide pour éviter tout encombrement */}
+      {!centered && !value && !isLoading && (
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 scrollbar-none px-0.5 select-none text-[11px] sm:text-[11.5px] -webkit-overflow-scrolling-touch">
+          <button
+            type="button"
+            onClick={() => {
               const prompt = language === 'fr'
-                ? 'Fais une synthèse exhaustive et structurée de ce document, avec les points clés, décisions et recommandations :'
-                : 'Provide a structured and comprehensive summary of this document, with key takeaways, decisions and recommendations:';
+                ? 'Analyse ce code en détail : identifie les bugs potentiels, la complexité algorithmique et propose une refactorisation Clean Code :'
+                : 'Analyze this code in detail: find potential bugs, evaluate algorithmic complexity and provide clean code refactoring:';
               onChange(prompt);
               textareaRef.current?.focus({ preventScroll: true });
-            }
-          }}
-          className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 shrink-0 transition-colors cursor-pointer"
-        >
-          <FileText size={13} className="text-emerald-500" />
-          <span>{language === 'fr' ? 'Résumer ce document' : 'Summarize document'}</span>
-        </button>
+            }}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/70 hover:bg-slate-100 dark:bg-slate-900/70 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-white/10 shrink-0 transition-colors cursor-pointer shadow-2xs"
+          >
+            <Code2 size={12} className="text-cyan-500" />
+            <span>{language === 'fr' ? 'Analyser le code' : 'Analyze code'}</span>
+          </button>
 
-        <button
-          type="button"
-          onClick={() => {
-            const prompt = language === 'fr'
-              ? 'Optimise les performances de ce traitement (réduction de la complexité temporelle/mémoire, parallélisme, index ou cache) :'
-              : 'Optimize the performance of this logic (reduce time/space complexity, concurrency, caching or indexing):';
-            onChange(prompt);
-            textareaRef.current?.focus({ preventScroll: true });
-          }}
-          className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10 shrink-0 transition-colors cursor-pointer"
-        >
-          <Zap size={13} className="text-amber-500" />
-          <span>{language === 'fr' ? 'Optimiser' : 'Optimize'}</span>
-        </button>
-      </div>
+          <button
+            type="button"
+            onClick={() => {
+              const prompt = language === 'fr'
+                ? "Voici l'erreur rencontrée dans mon application. Explique la cause racine (Root Cause) et donne la solution exacte corrigée pas à pas :"
+                : "Here is the error encountered in my app. Explain the root cause and provide the exact step-by-step fix:";
+              onChange(prompt);
+              textareaRef.current?.focus({ preventScroll: true });
+            }}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/70 hover:bg-slate-100 dark:bg-slate-900/70 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-white/10 shrink-0 transition-colors cursor-pointer shadow-2xs"
+          >
+            <Bug size={12} className="text-rose-500" />
+            <span>{language === 'fr' ? 'Expliquer erreur' : 'Explain error'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              const prompt = language === 'fr'
+                ? 'Fais une synthèse exhaustive et structurée de ce document (points clés, architecture, décisions et recommandations) :'
+                : 'Provide a structured summary of this document (key points, architecture, decisions and recommendations):';
+              onChange(prompt);
+              textareaRef.current?.focus({ preventScroll: true });
+            }}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/70 hover:bg-slate-100 dark:bg-slate-900/70 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-white/10 shrink-0 transition-colors cursor-pointer shadow-2xs"
+          >
+            <FileText size={12} className="text-emerald-500" />
+            <span>{language === 'fr' ? 'Résumer document' : 'Summarize doc'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              const prompt = language === 'fr'
+                ? 'Optimise les performances de ce traitement (réduction de la complexité temporelle/mémoire, parallélisme, index ou cache) :'
+                : 'Optimize the performance of this logic (reduce time/space complexity, concurrency, caching or indexing):';
+              onChange(prompt);
+              textareaRef.current?.focus({ preventScroll: true });
+            }}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/70 hover:bg-slate-100 dark:bg-slate-900/70 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-white/10 shrink-0 transition-colors cursor-pointer shadow-2xs"
+          >
+            <Zap size={12} className="text-amber-500" />
+            <span>{language === 'fr' ? 'Optimiser' : 'Optimize'}</span>
+          </button>
+        </div>
+      )}
 
       {/* Liste des documents complets attachés */}
       <AttachedDocumentsList
@@ -476,12 +469,12 @@ export function ChatInput({
         </div>
       )}
 
-      {/* Zone de prévisualisation des maquettes / captures d'écran attachées */}
+      {/* Zone de prévisualisation des maquettes / captures attachées */}
       {effectiveImages.length > 0 && (
         <div className="flex flex-wrap items-center gap-2 mb-2 p-2.5 rounded-2xl bg-slate-900/90 dark:bg-black/75 border border-cyan-500/40 backdrop-blur-xl shadow-[0_4px_25px_rgba(6,182,212,0.2)] animate-in fade-in slide-in-from-bottom-2 duration-200">
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-[11px] font-semibold">
             <Sparkles size={13} className="text-cyan-400 animate-pulse" />
-            <span>Vision Multimodale (Gemini 2.5)</span>
+            <span>Vision Multimodale</span>
           </div>
 
           {effectiveImages.map((img, idx) => (
@@ -508,8 +501,8 @@ export function ChatInput({
 
           <span className="text-[11px] text-white/60 font-sans italic ml-1">
             {language === 'fr'
-              ? 'Capture prête • Appuyez sur Entrée pour générer le projet LAB'
-              : 'Screenshot ready • Press Enter to generate project in LAB'}
+              ? 'Capture prête • Envoyez pour générer le projet LAB'
+              : 'Screenshot ready • Send to generate project in LAB'}
           </span>
         </div>
       )}
@@ -533,7 +526,7 @@ export function ChatInput({
         </div>
       )}
 
-      {/* Input fichier caché pour le trombone : support PDF, code, markdown, csv, archives */}
+      {/* Input fichier caché pour le trombone */}
       <input
         ref={fileInputRef}
         type="file"
@@ -557,62 +550,36 @@ export function ChatInput({
         aria-hidden="true"
       />
 
-      {/* Overlay Drag & Drop avec lueur Cyber */}
+      {/* Overlay Drag & Drop */}
       {isDraggingOver && (
         <div className="absolute inset-0 z-30 flex items-center justify-center rounded-2xl bg-slate-950/85 border-2 border-dashed border-cyan-400 backdrop-blur-md animate-in fade-in duration-150">
           <div className="flex items-center gap-2 text-cyan-300 font-semibold text-sm">
             <UploadCloud size={20} className="text-cyan-400 animate-bounce" />
             <span>
               {language === 'fr'
-                ? 'Déposez votre capture ou maquette pour la convertir en code'
-                : 'Drop your UI screenshot or mockup to convert into code'}
+                ? 'Déposez votre capture ou document'
+                : 'Drop your screenshot or document'}
             </span>
           </div>
         </div>
       )}
 
-      {/* Pilule principale Liquid Glass compacte et épurée */}
+      {/* Card principale ergonomique : Pleine largeur pour le texte + barre d'outils tactile */}
       <div
         onClick={() => textareaRef.current?.focus({ preventScroll: true })}
         className={cn(
-          'relative flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl sm:rounded-2xl transition-all duration-200 cursor-text',
-          'liquid-glass shadow-[0_2px_14px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.4)]',
+          'relative flex flex-col rounded-2xl sm:rounded-3xl transition-all duration-200 cursor-text p-2 sm:p-2.5',
+          'liquid-glass shadow-[0_4px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.45)]',
           effectiveImages.length > 0 && 'border-cyan-500/40 ring-1 ring-cyan-500/20',
           'border border-slate-200/80 dark:border-white/10 hover:border-slate-300 dark:hover:border-sky-400/30',
           'focus-within:border-blue-500/80 dark:focus-within:border-sky-400 focus-within:ring-2 focus-within:ring-blue-500/20',
         )}
       >
-        {/* Outils à gauche : Pièce jointe & Image */}
-        <div className="flex items-center gap-0.5 shrink-0" onClick={(e) => e.stopPropagation()}>
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            title={language === 'fr' ? 'Joindre un fichier texte ou code' : 'Attach a text or code file'}
-            aria-label={language === 'fr' ? 'Joindre un fichier' : 'Attach file'}
-            className="btn-tactile p-1.5 sm:p-1.5 min-w-[32px] min-h-[32px] flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
-          >
-            <Paperclip size={15} />
-          </button>
-
-          <button
-            type="button"
-            onClick={handleImageAction}
-            title={language === 'fr' ? 'Créer ou décrire une image' : 'Create or describe an image'}
-            aria-label={language === 'fr' ? 'Outil image' : 'Image tool'}
-            className="btn-tactile p-1.5 sm:p-1.5 min-w-[32px] min-h-[32px] flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
-          >
-            <ImageIcon size={15} />
-          </button>
-
-          <div className="h-3.5 w-px bg-slate-200 dark:bg-slate-800 mx-0.5 sm:mx-1" aria-hidden="true" />
-        </div>
-
-        {/* Zone de saisie centrale compacte — 16px sur mobile pour empêcher le zoom automatique Safari iOS */}
+        {/* Ligne 1 : Textarea pleine largeur, 16px sur mobile (évite tout zoom Safari iOS) */}
         <textarea
           id="chat-input"
           ref={textareaRef}
           rows={1}
-          autoFocus
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -621,145 +588,161 @@ export function ChatInput({
           disabled={isLoading}
           aria-label={activePlaceholder}
           className={cn(
-            'flex-1 min-w-0 resize-none bg-transparent text-[16px] sm:text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500',
-            'outline-none scrollbar-thin leading-snug py-0.5',
-            'min-h-[26px] max-h-[130px]',
+            'w-full resize-none bg-transparent text-[16px] sm:text-[14.5px] text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500',
+            'outline-none scrollbar-thin leading-relaxed px-1 sm:px-1.5 py-1',
+            'min-h-[38px] max-h-[140px]',
             'disabled:opacity-50',
           )}
         />
 
-        {/* Sélecteur d'agent compact + Bouton d'envoi */}
-        <div className="flex items-center gap-1 sm:gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
-          {/* Menu sélecteur d'agent NEXUS */}
-          <div className="relative" ref={dropdownRef}>
+        {/* Ligne 2 : Barre d'actions inférieure (Style Claude & ChatGPT) */}
+        <div
+          className="flex items-center justify-between pt-1 mt-0.5 border-t border-slate-100/60 dark:border-white/[0.04]"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Groupe gauche : Fichiers, Photos, Sélecteur d'agent */}
+          <div className="flex items-center gap-1 sm:gap-1.5">
             <button
               type="button"
-              id="btn-agent-selector-pill"
-              onClick={() => setIsAgentMenuOpen((prev) => !prev)}
-              className={cn(
-                'btn-tactile flex items-center gap-1 sm:gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold cursor-pointer select-none transition-all',
-                'bg-blue-50/90 hover:bg-blue-100/80 text-blue-950 border border-blue-200/70',
-                'dark:bg-slate-800/90 dark:hover:bg-slate-700/80 dark:text-slate-200 dark:border-slate-700/80',
-              )}
-              title={language === 'fr' ? 'Choisir l’agent spécialisé' : 'Choose specialized agent'}
+              onClick={() => fileInputRef.current?.click()}
+              title={language === 'fr' ? 'Joindre un fichier texte ou code' : 'Attach a text or code file'}
+              aria-label={language === 'fr' ? 'Joindre un fichier' : 'Attach file'}
+              className="btn-tactile p-2 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800/70 transition-colors cursor-pointer"
             >
-              <span
-                className="w-1.5 h-1.5 rounded-full shadow-xs shrink-0"
-                style={{ backgroundColor: currentAgent.color }}
-              />
-              <span className="tracking-tight font-medium max-w-[105px] truncate hidden sm:inline">
-                {currentAgent.id === 'general' ? 'NEXUS Architect' : currentAgent.name}
-              </span>
-              <span className="tracking-tight font-medium text-[10.5px] max-w-[65px] truncate sm:hidden">
-                {currentAgent.id === 'general' ? 'Architect' : currentAgent.name.split(' ')[0]}
-              </span>
-              <ChevronDown
-                size={11}
-                className={cn('text-slate-400 dark:text-slate-400 transition-transform duration-200 shrink-0', isAgentMenuOpen && 'rotate-180')}
-              />
+              <Paperclip size={16} />
             </button>
 
-            {/* Menu déroulant des agents vers le haut */}
-            {isAgentMenuOpen && (
-              <div className="absolute right-0 bottom-full mb-1.5 w-72 sm:w-80 max-w-[calc(100vw-2rem)] rounded-2xl bg-white/98 dark:bg-[#0f1526]/98 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800 shadow-[0_16px_40px_rgba(15,23,42,0.16)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.8)] p-1.5 z-50 animate-nexus-pop">
-                <div className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800/80 mb-1">
-                  {language === 'fr' ? 'Agents Spécialisés — Génie Logiciel' : 'Specialized Agents — Software Engineering'}
-                </div>
-                {agents.map((ag) => {
-                  const isSelected = ag.id === selectedAgentId;
-                  return (
-                    <button
-                      key={ag.id}
-                      type="button"
-                      onClick={() => {
-                        onSelectAgent?.(ag.id);
-                        setIsAgentMenuOpen(false);
-                        textareaRef.current?.focus({ preventScroll: true });
-                      }}
-                      className={cn(
-                        'btn-tactile w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-xs cursor-pointer mb-0.5',
-                        isSelected
-                          ? 'bg-blue-50/90 text-blue-950 font-semibold dark:bg-slate-800 dark:text-white'
-                          : 'text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/50',
-                      )}
-                    >
-                      <div className="flex items-start gap-2.5 min-w-0 pr-2">
-                        <span
-                          className="w-2.5 h-2.5 rounded-full mt-1 shrink-0"
-                          style={{ backgroundColor: ag.color }}
-                        />
-                        <div className="flex flex-col min-w-0">
-                          <span className="truncate font-medium">{ag.name}</span>
-                          <span className="text-[10px] text-slate-400 dark:text-slate-400 truncate">{ag.description}</span>
+            <button
+              type="button"
+              onClick={handleImageAction}
+              title={language === 'fr' ? 'Joindre une capture ou maquette' : 'Attach an image or mockup'}
+              aria-label={language === 'fr' ? 'Joindre une image' : 'Attach image'}
+              className="btn-tactile p-2 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800/70 transition-colors cursor-pointer"
+            >
+              <ImageIcon size={16} />
+            </button>
+
+            {/* Sélecteur d'agent moderne */}
+            <div className="relative" ref={dropdownRef}>
+              <button
+                type="button"
+                onClick={() => setIsAgentMenuOpen(!isAgentMenuOpen)}
+                title={language === 'fr' ? `Agent actif : ${currentAgent.name}` : `Active agent: ${currentAgent.name}`}
+                aria-haspopup="true"
+                aria-expanded={isAgentMenuOpen}
+                className="btn-tactile flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800/70 dark:hover:bg-slate-700/70 text-slate-700 dark:text-slate-300 transition-all text-xs cursor-pointer border border-slate-200/60 dark:border-white/5"
+              >
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: currentAgent.color }} />
+                <span className="truncate max-w-[75px] sm:max-w-[120px] font-medium">{currentAgent.name}</span>
+                <ChevronDown size={11} className={cn('text-slate-400 transition-transform duration-200 shrink-0', isAgentMenuOpen && 'rotate-180')} />
+              </button>
+
+              {/* Menu déroulant vers le haut pour éviter le masquage par le clavier */}
+              {isAgentMenuOpen && (
+                <div
+                  role="menu"
+                  className="absolute left-0 bottom-full mb-2 w-64 max-w-[calc(100vw-2rem)] rounded-2xl p-1.5 z-50 bg-white/95 dark:bg-[#12121f]/95 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 shadow-[0_20px_50px_rgba(15,23,42,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.6)] animate-nexus-pop"
+                >
+                  <div className="px-3 py-2 text-[11px] font-semibold text-slate-400 dark:text-white/40 uppercase tracking-wider border-b border-slate-100 dark:border-white/[0.06] mb-1">
+                    {language === 'fr' ? 'Agents Spécialisés' : 'Specialized Agents'}
+                  </div>
+                  {agents.map((ag) => {
+                    const isSelected = ag.id === selectedAgentId;
+                    return (
+                      <button
+                        key={ag.id}
+                        type="button"
+                        onClick={() => {
+                          onSelectAgent?.(ag.id);
+                          setIsAgentMenuOpen(false);
+                          textareaRef.current?.focus({ preventScroll: true });
+                        }}
+                        className={cn(
+                          'btn-tactile w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-xs cursor-pointer mb-0.5',
+                          isSelected
+                            ? 'bg-blue-50/90 text-blue-950 font-semibold dark:bg-slate-800 dark:text-white'
+                            : 'text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/50',
+                        )}
+                      >
+                        <div className="flex items-start gap-2.5 min-w-0 pr-2">
+                          <span
+                            className="w-2.5 h-2.5 rounded-full mt-1 shrink-0"
+                            style={{ backgroundColor: ag.color }}
+                          />
+                          <div className="flex flex-col min-w-0">
+                            <span className="truncate font-medium">{ag.name}</span>
+                            <span className="text-[10px] text-slate-400 dark:text-slate-500 truncate">{ag.description}</span>
+                          </div>
                         </div>
-                      </div>
-                      {isSelected && <Check size={14} className="text-blue-600 dark:text-sky-400 shrink-0" />}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+                        {isSelected && <Check size={14} className="text-blue-600 dark:text-sky-400 shrink-0" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Bouton Microphone Speech-to-Text */}
-          <button
-            type="button"
-            id="btn-voice-input"
-            onClick={handleToggleVoice}
-            disabled={isLoading}
-            title={
-              isListening
-                ? (language === 'fr' ? 'Arrêter la dictée vocale' : 'Stop voice dictation')
-                : (language === 'fr' ? 'Dicter votre message au micro' : 'Dictate your message with microphone')
-            }
-            aria-label={isListening ? 'Arrêter la dictée vocale' : 'Activer le microphone'}
-            className={cn(
-              'btn-tactile relative flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200 cursor-pointer shrink-0',
-              isListening
-                ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-[0_0_12px_rgba(244,63,94,0.5)] ring-2 ring-rose-400/50'
-                : 'bg-slate-100/90 hover:bg-slate-200/90 text-slate-600 hover:text-slate-900 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 dark:text-slate-400 dark:hover:text-slate-100',
-              isLoading && 'opacity-40 cursor-not-allowed',
-            )}
-          >
-            {isListening ? (
-              <MicOff size={14} className="animate-pulse" />
-            ) : (
-              <Mic size={14} />
-            )}
-          </button>
-
-          {/* Bouton Stop ou Envoyer compact */}
-          {isLoading ? (
+          {/* Groupe droit : Dictée vocale + Bouton d'envoi/stop */}
+          <div className="flex items-center gap-1.5">
             <button
               type="button"
-              id="btn-stop"
-              onClick={onStop}
-              aria-label={t('chat.stop')}
-              className="btn-tactile flex items-center justify-center w-8 h-8 rounded-full bg-red-500 hover:bg-red-600 text-white shadow-xs cursor-pointer shrink-0"
-            >
-              <Square size={12} fill="currentColor" />
-            </button>
-          ) : (
-            <button
-              type="button"
-              id="btn-send"
-              onClick={handleSendMessage}
-              disabled={!value.trim()}
-              aria-label={t('chat.send')}
+              id="btn-voice-input"
+              onClick={handleToggleVoice}
+              disabled={isLoading}
+              title={
+                isListening
+                  ? (language === 'fr' ? 'Arrêter la dictée' : 'Stop voice dictation')
+                  : (language === 'fr' ? 'Dicter au microphone' : 'Dictate with microphone')
+              }
+              aria-label={isListening ? 'Arrêter la dictée vocale' : 'Activer le microphone'}
               className={cn(
-                'btn-tactile flex items-center justify-center w-8 h-8 rounded-full text-white shrink-0 cursor-pointer transition-all duration-150',
-                value.trim()
-                  ? 'bg-blue-600 hover:bg-blue-500 active:bg-blue-700 shadow-xs active:scale-95'
-                  : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 opacity-40 cursor-not-allowed shadow-none',
+                'btn-tactile relative flex items-center justify-center w-9 h-9 rounded-full transition-all duration-200 cursor-pointer shrink-0',
+                isListening
+                  ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-[0_0_12px_rgba(244,63,94,0.5)] ring-2 ring-rose-400/50'
+                  : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800/70',
+                isLoading && 'opacity-40 cursor-not-allowed',
               )}
             >
-              <Send size={13} className="-ml-0.5 translate-x-0.5" />
+              {isListening ? (
+                <MicOff size={16} className="animate-pulse" />
+              ) : (
+                <Mic size={16} />
+              )}
             </button>
-          )}
+
+            {isLoading ? (
+              <button
+                type="button"
+                id="btn-stop"
+                onClick={onStop}
+                aria-label={t('chat.stop')}
+                className="btn-tactile flex items-center justify-center w-9 h-9 rounded-full bg-red-500 hover:bg-red-600 text-white shadow-xs cursor-pointer shrink-0"
+              >
+                <Square size={13} fill="currentColor" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                id="btn-send"
+                onClick={handleSendMessage}
+                disabled={!hasContentToSend}
+                aria-label={t('chat.send')}
+                className={cn(
+                  'btn-tactile flex items-center justify-center w-9 h-9 rounded-full text-white shrink-0 cursor-pointer transition-all duration-150',
+                  hasContentToSend
+                    ? 'bg-blue-600 hover:bg-blue-500 active:bg-blue-700 shadow-[0_2px_12px_rgba(37,99,235,0.35)] active:scale-95'
+                    : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 opacity-40 cursor-not-allowed shadow-none',
+                )}
+              >
+                <Send size={15} className="-ml-0.5 translate-x-0.5" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Boîte de dialogue élégante pour demander la permission du microphone */}
+      {/* Boîte de dialogue permission microphone */}
       <VoicePermissionModal
         isOpen={isVoiceModalOpen}
         onClose={() => setIsVoiceModalOpen(false)}

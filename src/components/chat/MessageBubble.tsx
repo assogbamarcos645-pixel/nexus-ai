@@ -1,5 +1,5 @@
 import { useState, useMemo, memo } from 'react';
-import { Copy, Check, Sparkles, ArrowRight, FileText } from 'lucide-react';
+import { Copy, Check, Sparkles, ArrowRight, FileText, Volume2, VolumeX } from 'lucide-react';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { cn } from '@/utils/cn';
@@ -7,9 +7,38 @@ import type { Message, Agent } from '@/types';
 import { hasExtractableProject, createAndOpenProjectFromMockup } from '@/services/lab/mockupConverterService';
 import { formatFileSize } from '@/services/documents/documentParserService';
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 marked.setOptions({
   breaks: true,
   gfm: true,
+});
+
+marked.use({
+  renderer: {
+    code({ text, lang }: { text: string; lang?: string }) {
+      const cleanLang = (lang || 'code').trim().toLowerCase();
+      const encoded = encodeURIComponent(text);
+      const escaped = escapeHtml(text);
+      return `<div class="code-block-card my-3 rounded-xl overflow-hidden border border-slate-700/60 bg-[#0c101d] shadow-lg">
+        <div class="code-block-header flex items-center justify-between px-3.5 py-1.5 bg-slate-900/90 border-b border-slate-800 text-[11px] font-mono text-slate-400 select-none">
+          <span class="font-semibold text-sky-400 uppercase tracking-wider">${cleanLang}</span>
+          <button type="button" class="nexus-copy-code-btn flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors cursor-pointer py-1 px-2.5 rounded-md active:scale-95 bg-slate-800/80 hover:bg-slate-700/80 text-[11px]" data-code="${encoded}">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+            <span>Copier</span>
+          </button>
+        </div>
+        <pre class="p-3 sm:p-4 overflow-x-auto text-[12px] sm:text-[13px] leading-relaxed font-mono text-slate-100 scrollbar-thin"><code>${escaped}</code></pre>
+      </div>`;
+    },
+  },
 });
 
 interface MessageBubbleProps {
@@ -19,6 +48,7 @@ interface MessageBubbleProps {
 
 function MessageBubbleComponent({ message }: MessageBubbleProps) {
   const [copied, setCopied] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const [isOpeningLab, setIsOpeningLab] = useState(false);
   const isUser = message.role === 'user';
   const canExtractToLab = !isUser && hasExtractableProject(message.content);
@@ -33,6 +63,28 @@ function MessageBubbleComponent({ message }: MessageBubbleProps) {
     }
   };
 
+  const handleToggleSpeak = () => {
+    if (!('speechSynthesis' in window)) return;
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const cleanText = message.content
+      .replace(/```[\s\S]*?```/g, '')
+      .replace(/`([^`]+)`/g, '$1')
+      .replace(/[#*_~>]/g, '')
+      .trim();
+    if (!cleanText) return;
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.lang = 'fr-FR';
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+    setIsSpeaking(true);
+    window.speechSynthesis.speak(utterance);
+  };
+
   const handleOpenInLab = () => {
     setIsOpeningLab(true);
     const originalMockup = message.images && message.images.length > 0 ? message.images[0] : undefined;
@@ -40,11 +92,44 @@ function MessageBubbleComponent({ message }: MessageBubbleProps) {
     setTimeout(() => setIsOpeningLab(false), 1500);
   };
 
+  const handleBubbleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const btn = (e.target as HTMLElement).closest('.nexus-copy-code-btn') as HTMLButtonElement | null;
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const rawCode = decodeURIComponent(btn.getAttribute('data-code') || '');
+    if (!rawCode) return;
+    navigator.clipboard.writeText(rawCode).then(() => {
+      const span = btn.querySelector('span');
+      if (span) {
+        const orig = span.textContent;
+        span.textContent = 'Copié !';
+        btn.classList.add('text-emerald-400');
+        setTimeout(() => {
+          span.textContent = orig;
+          btn.classList.remove('text-emerald-400');
+        }, 2000);
+      }
+    });
+  };
+
   const formattedHtml = useMemo(() => {
     if (!message.content) return '';
     try {
       const raw = marked.parse(message.content) as string;
-      return DOMPurify.sanitize(raw);
+      return DOMPurify.sanitize(raw, {
+        ADD_TAGS: ['button', 'svg', 'path'],
+        ADD_ATTR: [
+          'data-code',
+          'viewBox',
+          'fill',
+          'stroke',
+          'stroke-width',
+          'stroke-linecap',
+          'stroke-linejoin',
+          'd',
+        ],
+      });
     } catch {
       return message.content;
     }
@@ -53,24 +138,25 @@ function MessageBubbleComponent({ message }: MessageBubbleProps) {
   return (
     <div
       className={cn(
-        'max-w-3xl mx-auto w-full px-1.5 sm:px-4 py-1 sm:py-1.5 group transition-all virtual-message animate-message-fade-in flex',
+        'max-w-3xl mx-auto w-full px-2 sm:px-4 py-1.5 sm:py-2 group transition-all virtual-message animate-message-fade-in flex',
         isUser ? 'justify-end' : 'justify-start',
       )}
     >
-      {/* Bulle de message sobre & épurée sans profil */}
+      {/* Bulle de message : Style ultra-pro & mobile first */}
       <div
+        onClick={handleBubbleClick}
         className={cn(
-          'relative px-3.5 sm:px-5 py-2.5 sm:py-3.5 rounded-xl sm:rounded-2xl text-[13.5px] sm:text-[15px] leading-relaxed max-w-[94%] sm:max-w-[84%] md:max-w-[80%] transition-all',
+          'relative px-4 sm:px-5 py-3 sm:py-4 rounded-2xl text-[14px] sm:text-[15px] leading-relaxed max-w-[92%] sm:max-w-[85%] md:max-w-[80%] transition-all',
           isUser
-            ? 'bg-blue-600 text-white rounded-br-xs shadow-[0_4px_16px_rgba(37,99,235,0.25)] border border-blue-500/40'
-            : 'liquid-glass text-slate-800 dark:text-slate-100 rounded-bl-xs',
+            ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-br-xs shadow-[0_4px_20px_rgba(37,99,235,0.25)] border border-blue-500/30'
+            : 'liquid-glass text-slate-800 dark:text-slate-100 rounded-bl-xs shadow-[0_4px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)]',
         )}
       >
         {message.images && message.images.length > 0 && (
           <div
             className={cn(
               'flex flex-wrap gap-2 mb-3',
-              message.images.length === 1 ? 'max-w-md' : 'max-w-full'
+              message.images.length === 1 ? 'max-w-md' : 'max-w-full',
             )}
           >
             {message.images.map((img, idx) => (
@@ -167,7 +253,7 @@ function MessageBubbleComponent({ message }: MessageBubbleProps) {
         )}
 
         {Boolean(message.content) && (
-          <div className="flex items-center justify-between gap-4 mt-2 pt-1.5 border-t border-slate-100/50 dark:border-slate-800/50">
+          <div className="flex items-center justify-between gap-3 mt-2.5 pt-2 border-t border-slate-100/50 dark:border-slate-800/50">
             <time
               dateTime={message.timestamp.toISOString()}
               className={cn(
@@ -179,23 +265,45 @@ function MessageBubbleComponent({ message }: MessageBubbleProps) {
             </time>
 
             {!isUser && (
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 sm:gap-1.5">
+                {/* Bouton Synthèse vocale / Lecture à voix haute */}
+                <button
+                  type="button"
+                  onClick={handleToggleSpeak}
+                  className="btn-tactile flex items-center gap-1 text-slate-400 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white transition-all px-2 py-1 rounded-lg text-[11px] hover:bg-slate-100/80 dark:hover:bg-slate-800/80 cursor-pointer active:scale-95"
+                  title={isSpeaking ? 'Arrêter la lecture vocale' : 'Écouter la réponse'}
+                  aria-label={isSpeaking ? 'Arrêter la lecture vocale' : 'Écouter la réponse'}
+                >
+                  {isSpeaking ? (
+                    <>
+                      <VolumeX size={13} className="text-rose-500 animate-pulse" />
+                      <span className="text-rose-500 font-medium text-[10.5px]">Stop</span>
+                    </>
+                  ) : (
+                    <>
+                      <Volume2 size={13} />
+                      <span className="hidden sm:inline text-[10.5px]">Écouter</span>
+                    </>
+                  )}
+                </button>
+
+                {/* Bouton Copier le message entier */}
                 <button
                   type="button"
                   onClick={handleCopy}
-                  className="btn-tactile flex items-center gap-1 text-slate-400 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-all px-2 py-0.5 rounded-md text-[11px] hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer active:scale-90"
+                  className="btn-tactile flex items-center gap-1 text-slate-400 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white transition-all px-2 py-1 rounded-lg text-[11px] hover:bg-slate-100/80 dark:hover:bg-slate-800/80 cursor-pointer active:scale-95"
                   title="Copier le message"
                   aria-label="Copier le message"
                 >
                   {copied ? (
                     <>
-                      <Check size={12} className="text-emerald-500" />
-                      <span className="text-emerald-500 font-medium">Copié</span>
+                      <Check size={13} className="text-emerald-500" />
+                      <span className="text-emerald-500 font-medium text-[10.5px]">Copié</span>
                     </>
                   ) : (
                     <>
-                      <Copy size={12} />
-                      <span>Copier</span>
+                      <Copy size={13} />
+                      <span className="hidden sm:inline text-[10.5px]">Copier</span>
                     </>
                   )}
                 </button>
