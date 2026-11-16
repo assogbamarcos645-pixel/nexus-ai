@@ -13,6 +13,8 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 
+export type MicrophonePermissionState = 'prompt' | 'granted' | 'denied' | 'unsupported';
+
 interface UseSpeechRecognitionOptions {
   language?: string;
   onTranscript?: (transcript: string) => void;
@@ -22,10 +24,13 @@ interface UseSpeechRecognitionOptions {
 interface UseSpeechRecognitionReturn {
   isListening: boolean;
   isSupported: boolean;
+  permissionState: MicrophonePermissionState;
   transcript: string;
-  startListening: () => void;
+  checkPermission: () => Promise<MicrophonePermissionState>;
+  requestPermission: () => Promise<boolean>;
+  startListening: () => Promise<void>;
   stopListening: () => void;
-  toggleListening: () => void;
+  toggleListening: () => Promise<void>;
   error: string | null;
 }
 
@@ -38,16 +43,85 @@ export function useSpeechRecognition({
   const [transcript, setTranscript] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSupported, setIsSupported] = useState(false);
+  const [permissionState, setPermissionState] = useState<MicrophonePermissionState>('prompt');
 
   const recognitionRef = useRef<any>(null);
+
+  const checkPermission = useCallback(async (): Promise<MicrophonePermissionState> => {
+    if (typeof window === 'undefined') return 'unsupported';
+
+    // 1. Interrogation via l'API Permissions standard
+    if (navigator?.permissions?.query) {
+      try {
+        const result = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+        const state = result.state as MicrophonePermissionState;
+        setPermissionState(state);
+
+        // Écoute des changements de permission en direct (ex: cadenas cliqué)
+        result.onchange = () => {
+          setPermissionState(result.state as MicrophonePermissionState);
+        };
+
+        return state;
+      } catch {
+        // Fallback si la permission 'microphone' n'est pas queryable
+      }
+    }
+
+    // 2. Vérification du cache local
+    try {
+      const cached = localStorage.getItem('nexus_mic_permission');
+      if (cached === 'granted' || cached === 'denied') {
+        setPermissionState(cached as MicrophonePermissionState);
+        return cached as MicrophonePermissionState;
+      }
+    } catch {
+      // Ignorer
+    }
+
+    setPermissionState('prompt');
+    return 'prompt';
+  }, []);
+
+  const requestPermission = useCallback(async (): Promise<boolean> => {
+    if (typeof window === 'undefined' || !navigator?.mediaDevices?.getUserMedia) {
+      setPermissionState('unsupported');
+      return false;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach((track) => track.stop());
+      try {
+        localStorage.setItem('nexus_mic_permission', 'granted');
+      } catch {}
+      setPermissionState('granted');
+      setError(null);
+      return true;
+    } catch (err: any) {
+      console.warn('[NEXUS Voice Debug] requestPermission error:', err);
+      if (
+        err.name === 'NotAllowedError' ||
+        err.name === 'PermissionDeniedError' ||
+        err.name === 'SecurityError'
+      ) {
+        try {
+          localStorage.setItem('nexus_mic_permission', 'denied');
+        } catch {}
+        setPermissionState('denied');
+      }
+      return false;
+    }
+  }, []);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const SpeechRecognition =
         (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       setIsSupported(Boolean(SpeechRecognition));
+      checkPermission();
     }
-  }, []);
+  }, [checkPermission]);
 
   const stopListening = useCallback(() => {
     if (recognitionRef.current) {
@@ -235,11 +309,11 @@ export function useSpeechRecognition({
     }
   }, [language, onTranscript, onError]);
 
-  const toggleListening = useCallback(() => {
+  const toggleListening = useCallback(async () => {
     if (isListening) {
       stopListening();
     } else {
-      startListening();
+      await startListening();
     }
   }, [isListening, startListening, stopListening]);
 
@@ -259,7 +333,10 @@ export function useSpeechRecognition({
   return {
     isListening,
     isSupported,
+    permissionState,
     transcript,
+    checkPermission,
+    requestPermission,
     startListening,
     stopListening,
     toggleListening,

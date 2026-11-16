@@ -26,6 +26,7 @@ import type { Agent } from '@/types';
 import type { AttachedDocument } from '@/types/documents';
 import { parseDocumentFile } from '@/services/documents/documentParserService';
 import { AttachedDocumentsList } from './AttachedDocumentsList';
+import { VoicePermissionModal } from './VoicePermissionModal';
 
 interface ChatInputProps {
   value: string;
@@ -79,11 +80,15 @@ export function ChatInput({
 
   const baseTextBeforeSpeechRef = useRef('');
   const [voiceFeedbackError, setVoiceFeedbackError] = useState<string | null>(null);
+  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
+  const [voiceModalStatus, setVoiceModalStatus] = useState<'request' | 'blocked'>('request');
 
   const {
     isListening,
-    toggleListening,
+    startListening,
     stopListening,
+    checkPermission,
+    requestPermission,
     error: speechError,
   } = useSpeechRecognition({
     language,
@@ -97,12 +102,40 @@ export function ChatInput({
     },
   });
 
-  const handleToggleVoice = () => {
+  const handleToggleVoice = async () => {
     if (voiceFeedbackError) setVoiceFeedbackError(null);
-    if (!isListening) {
-      baseTextBeforeSpeechRef.current = value;
+
+    if (isListening) {
+      stopListening();
+      return;
     }
-    toggleListening();
+
+    // Vérifier l'état de la permission
+    const currentStatus = await checkPermission();
+
+    if (currentStatus === 'granted') {
+      baseTextBeforeSpeechRef.current = value;
+      await startListening();
+    } else if (currentStatus === 'denied') {
+      setVoiceModalStatus('blocked');
+      setIsVoiceModalOpen(true);
+    } else {
+      // Demande polie explicite avant d'ouvrir le micro
+      setVoiceModalStatus('request');
+      setIsVoiceModalOpen(true);
+    }
+  };
+
+  const handleModalRequestPermission = async () => {
+    const granted = await requestPermission();
+    if (granted) {
+      setIsVoiceModalOpen(false);
+      baseTextBeforeSpeechRef.current = value;
+      await startListening();
+    } else {
+      // Si l'utilisateur ou le navigateur a refusé
+      setVoiceModalStatus('blocked');
+    }
   };
 
   const handleSendMessage = () => {
@@ -725,6 +758,14 @@ export function ChatInput({
           )}
         </div>
       </div>
+
+      {/* Boîte de dialogue élégante pour demander la permission du microphone */}
+      <VoicePermissionModal
+        isOpen={isVoiceModalOpen}
+        onClose={() => setIsVoiceModalOpen(false)}
+        onRequestPermission={handleModalRequestPermission}
+        status={voiceModalStatus}
+      />
     </div>
   );
 }
