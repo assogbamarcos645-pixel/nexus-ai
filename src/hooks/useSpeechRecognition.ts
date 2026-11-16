@@ -4,12 +4,12 @@
  * Hook de reconnaissance vocale Speech-to-Text (STT) haute performance.
  * Utilise l'API native Web Speech (SpeechRecognition / webkitSpeechRecognition).
  *
- * Points forts :
- * - Déclenchement direct dans le geste utilisateur (zéro perte d'activation iOS/Safari)
- * - Aucune dépendance matérielle parasite (évite les verrous audio de getUserMedia)
- * - Support natif Chrome, Edge, Safari (iOS 14.5+ & macOS) et navigateurs mobiles
- * - Transcription fluide en continu sans duplication de mots
- * - Gestion automatique de la reprise sur pause iOS
+ * Points clés de robustesse :
+ * - Démarrage strictement synchrone dans le geste utilisateur (zéro perte d'activation)
+ * - Suppression des boucles de relance timers qui provoquaient de fausses erreurs 'not-allowed'
+ * - Diagnostic matériel intelligent : vérifie si le micro physique est accessible avant d'afficher un blocage
+ * - Support optimal Chrome, Edge, Safari (iOS 14.5+ & macOS)
+ * - Transcription fluide continue sans duplication de texte
  */
 
 import { useState, useRef, useEffect, useCallback } from 'react';
@@ -48,8 +48,6 @@ export function useSpeechRecognition({
   const [permissionState, setPermissionState] = useState<MicrophonePermissionState>('prompt');
 
   const recognitionRef = useRef<any>(null);
-  const shouldListenRef = useRef(false);
-  const restartTimerRef = useRef<any>(null);
 
   // Vérification de la prise en charge au montage
   useEffect(() => {
@@ -80,12 +78,6 @@ export function useSpeechRecognition({
   }, []);
 
   const stopListening = useCallback(() => {
-    shouldListenRef.current = false;
-    if (restartTimerRef.current) {
-      clearTimeout(restartTimerRef.current);
-      restartTimerRef.current = null;
-    }
-
     if (recognitionRef.current) {
       try {
         recognitionRef.current.stop();
@@ -127,15 +119,13 @@ export function useSpeechRecognition({
       return;
     }
 
-    // Arrêter toute instance précédente en cours
+    // Arrêter toute instance précédente en cours sans relance parasite
     if (recognitionRef.current) {
       try {
         recognitionRef.current.abort();
       } catch {}
       recognitionRef.current = null;
     }
-
-    shouldListenRef.current = true;
 
     try {
       const recognition = new SpeechRecognitionClass();
@@ -171,50 +161,77 @@ export function useSpeechRecognition({
         onTranscript?.(fullTranscript);
       };
 
-      recognition.onerror = (event: any) => {
+      recognition.onerror = async (event: any) => {
         console.warn('[NEXUS STT] Erreur capturée :', event.error);
 
-        // Erreur bénigne : simple absence de parole momentanée
+        // Erreur bénigne : absence de parole détectée
         if (event.error === 'no-speech') {
           return;
         }
 
-        // Annulation manuelle
+        // Annulation manuelle ou arrêt normal
         if (event.error === 'aborted') {
-          return;
-        }
-
-        // Permission refusée ou bloquée par l'utilisateur
-        if (event.error === 'not-allowed' || event.error === 'permission-denied') {
-          shouldListenRef.current = false;
           setIsListening(false);
-          setPermissionState('denied');
-          const blockedMsg =
-            language === 'fr'
-              ? "Microphone bloqué : veuillez autoriser le micro dans la barre d'adresse de votre navigateur."
-              : 'Microphone blocked: please allow microphone in your browser address bar.';
-          setError(blockedMsg);
-          onError?.(blockedMsg);
-          onPermissionBlocked?.();
           return;
         }
 
-        // Problème matériel ou micro en cours d'utilisation par une autre app
+        // Cas d'erreur d'autorisation ou de refus
+        if (event.error === 'not-allowed' || event.error === 'permission-denied') {
+          setIsListening(false);
+
+          // Test de diagnostic réel : est-ce que le microphone physique est véritablement bloqué ?
+          let hardwareBlocked = false;
+          if (navigator?.mediaDevices?.getUserMedia) {
+            try {
+              const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+              stream.getTracks().forEach((track) => track.stop());
+              hardwareBlocked = false;
+            } catch (err: any) {
+              if (
+                err.name === 'NotAllowedError' ||
+                err.name === 'PermissionDeniedError' ||
+                err.name === 'SecurityError'
+              ) {
+                hardwareBlocked = true;
+              }
+            }
+          }
+
+          if (hardwareBlocked) {
+            setPermissionState('denied');
+            const blockedMsg =
+              language === 'fr'
+                ? "Microphone bloqué dans le navigateur ou dans les paramètres Windows. Cliquez sur le cadenas ou vérifiez les autorisations d'applications de bureau."
+                : 'Microphone blocked in browser or Windows settings. Please allow access.';
+            setError(blockedMsg);
+            onError?.(blockedMsg);
+            onPermissionBlocked?.();
+          } else {
+            // Le micro fonctionne, mais le service cloud de reconnaissance vocale du navigateur est indisponible
+            const serviceMsg =
+              language === 'fr'
+                ? "Microphone opérationnel, mais le service de reconnaissance vocale de votre navigateur a été restreint (désactivez les boucliers Brave / extensions de blocage ou vérifiez votre connexion)."
+                : 'Microphone is working, but speech recognition service was restricted (check Brave shields or network).';
+            setError(serviceMsg);
+            onError?.(serviceMsg);
+          }
+          return;
+        }
+
+        // Micro occupé ou débranché
         if (event.error === 'audio-capture') {
-          shouldListenRef.current = false;
           setIsListening(false);
           const captureMsg =
             language === 'fr'
-              ? "Aucun signal audio détecté ou le micro est utilisé par une autre application (Teams, Zoom, etc.)."
+              ? "Microphone introuvable ou utilisé en exclusivité par une autre application (Zoom, Teams, Discord, etc.)."
               : 'No audio capture: microphone is unplugged or used by another application.';
           setError(captureMsg);
           onError?.(captureMsg);
           return;
         }
 
-        // Erreur réseau (serveur de reconnaissance vocale de Google/Apple)
+        // Erreur réseau
         if (event.error === 'network') {
-          shouldListenRef.current = false;
           setIsListening(false);
           const netMsg =
             language === 'fr'
@@ -225,7 +242,7 @@ export function useSpeechRecognition({
           return;
         }
 
-        // Autre erreur
+        // Autre erreur générique
         const genericMsg =
           language === 'fr'
             ? `Erreur microphone (${event.error}).`
@@ -236,21 +253,7 @@ export function useSpeechRecognition({
       };
 
       recognition.onend = () => {
-        // Sur iOS / Safari ou après une pause, Web Speech API coupe souvent la session.
-        // Si l'utilisateur n'a pas appuyé sur Stop, on relance en douceur.
-        if (shouldListenRef.current) {
-          restartTimerRef.current = setTimeout(() => {
-            if (shouldListenRef.current) {
-              try {
-                recognition.start();
-              } catch {
-                setIsListening(false);
-              }
-            }
-          }, 150);
-        } else {
-          setIsListening(false);
-        }
+        setIsListening(false);
       };
 
       recognitionRef.current = recognition;
@@ -259,7 +262,6 @@ export function useSpeechRecognition({
       recognition.start();
     } catch (err: any) {
       console.warn('[NEXUS STT] Exception recognition.start :', err);
-      shouldListenRef.current = false;
       setIsListening(false);
       const msg = err?.message || 'Impossible de démarrer la reconnaissance vocale.';
       setError(msg);
@@ -278,10 +280,6 @@ export function useSpeechRecognition({
   // Nettoyage au démontage
   useEffect(() => {
     return () => {
-      shouldListenRef.current = false;
-      if (restartTimerRef.current) {
-        clearTimeout(restartTimerRef.current);
-      }
       if (recognitionRef.current) {
         try {
           recognitionRef.current.abort();
