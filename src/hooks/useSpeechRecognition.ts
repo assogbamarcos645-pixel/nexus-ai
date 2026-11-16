@@ -1,14 +1,15 @@
 /**
  * src/hooks/useSpeechRecognition.ts
  *
- * Hook de reconnaissance vocale Speech-to-Text (STT) utilisant l'API Web Speech
- * (SpeechRecognition / webkitSpeechRecognition).
+ * Hook de reconnaissance vocale Speech-to-Text (STT) haute performance.
+ * Utilise l'API native Web Speech (SpeechRecognition / webkitSpeechRecognition).
  *
- * Fonctionnalités :
- * - Support natif Chrome, Edge, Safari et navigateurs mobiles
- * - Transcription fluide en continu avec transcription en temps réel
- * - Sélection automatique de la langue (fr-FR / en-US)
- * - Gestion élégante des autorisations et des erreurs
+ * Points forts :
+ * - Déclenchement direct dans le geste utilisateur (zéro perte d'activation iOS/Safari)
+ * - Aucune dépendance matérielle parasite (évite les verrous audio de getUserMedia)
+ * - Support natif Chrome, Edge, Safari (iOS 14.5+ & macOS) et navigateurs mobiles
+ * - Transcription fluide en continu sans duplication de mots
+ * - Gestion automatique de la reprise sur pause iOS
  */
 
 import { useState, useRef, useEffect, useCallback } from 'react';
@@ -19,6 +20,7 @@ interface UseSpeechRecognitionOptions {
   language?: string;
   onTranscript?: (transcript: string) => void;
   onError?: (error: string) => void;
+  onPermissionBlocked?: () => void;
 }
 
 interface UseSpeechRecognitionReturn {
@@ -26,18 +28,18 @@ interface UseSpeechRecognitionReturn {
   isSupported: boolean;
   permissionState: MicrophonePermissionState;
   transcript: string;
-  checkPermission: () => Promise<MicrophonePermissionState>;
-  requestPermission: () => Promise<boolean>;
-  startListening: () => Promise<void>;
+  startListening: () => void;
   stopListening: () => void;
-  toggleListening: () => Promise<void>;
+  toggleListening: () => void;
   error: string | null;
+  clearError: () => void;
 }
 
 export function useSpeechRecognition({
   language = 'fr',
   onTranscript,
   onError,
+  onPermissionBlocked,
 }: UseSpeechRecognitionOptions = {}): UseSpeechRecognitionReturn {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
@@ -46,92 +48,60 @@ export function useSpeechRecognition({
   const [permissionState, setPermissionState] = useState<MicrophonePermissionState>('prompt');
 
   const recognitionRef = useRef<any>(null);
+  const shouldListenRef = useRef(false);
+  const restartTimerRef = useRef<any>(null);
 
-  const checkPermission = useCallback(async (): Promise<MicrophonePermissionState> => {
-    if (typeof window === 'undefined') return 'unsupported';
-
-    // Nettoyage de tout ancien verrou résiduel en cache
-    try {
-      localStorage.removeItem('nexus_mic_permission');
-    } catch {}
-
-    // 1. Interrogation dynamique via l'API Permissions standard
-    if (navigator?.permissions?.query) {
-      try {
-        const result = await navigator.permissions.query({ name: 'microphone' as PermissionName });
-        const state = result.state as MicrophonePermissionState;
-        setPermissionState(state);
-
-        // Écoute dynamique des modifications dans la barre d'adresse
-        result.onchange = () => {
-          setPermissionState(result.state as MicrophonePermissionState);
-        };
-
-        return state;
-      } catch {
-        // Fallback
-      }
-    }
-
-    setPermissionState('prompt');
-    return 'prompt';
-  }, []);
-
-  const requestPermission = useCallback(async (): Promise<boolean> => {
-    if (typeof window === 'undefined' || !navigator?.mediaDevices?.getUserMedia) {
-      setPermissionState('unsupported');
-      return false;
-    }
-
-    try {
-      localStorage.removeItem('nexus_mic_permission');
-    } catch {}
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      stream.getTracks().forEach((track) => track.stop());
-      setPermissionState('granted');
-      setError(null);
-      return true;
-    } catch (err: any) {
-      console.warn('[NEXUS Voice Debug] requestPermission error:', err);
-      if (
-        err.name === 'NotAllowedError' ||
-        err.name === 'PermissionDeniedError' ||
-        err.name === 'SecurityError'
-      ) {
-        setPermissionState('denied');
-      }
-      return false;
-    }
-  }, []);
-
+  // Vérification de la prise en charge au montage
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const SpeechRecognition =
         (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       setIsSupported(Boolean(SpeechRecognition));
-      checkPermission();
+
+      // Vérifier si l'API Permissions est disponible
+      if (navigator?.permissions?.query) {
+        navigator.permissions
+          .query({ name: 'microphone' as PermissionName })
+          .then((res) => {
+            setPermissionState(res.state as MicrophonePermissionState);
+            res.onchange = () => {
+              setPermissionState(res.state as MicrophonePermissionState);
+            };
+          })
+          .catch(() => {
+            // Safari ou navigateur ne supportant pas query({ name: 'microphone' })
+          });
+      }
     }
-  }, [checkPermission]);
+  }, []);
+
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
 
   const stopListening = useCallback(() => {
+    shouldListenRef.current = false;
+    if (restartTimerRef.current) {
+      clearTimeout(restartTimerRef.current);
+      restartTimerRef.current = null;
+    }
+
     if (recognitionRef.current) {
       try {
         recognitionRef.current.stop();
       } catch {
         // Ignorer si déjà arrêté
       }
-      setIsListening(false);
     }
+    setIsListening(false);
   }, []);
 
-  const startListening = useCallback(async () => {
+  const startListening = useCallback(() => {
     setError(null);
 
     if (typeof window === 'undefined') return;
 
-    // 1. Vérification du contexte sécurisé (HTTPS ou localhost)
+    // 1. Contexte sécurisé requis (HTTPS ou localhost)
     if (window.isSecureContext === false) {
       const insecureMsg =
         language === 'fr'
@@ -142,182 +112,180 @@ export function useSpeechRecognition({
       return;
     }
 
-    // 2. Vérification de la présence d'un périphérique microphone physique
-    if (navigator?.mediaDevices?.enumerateDevices) {
-      try {
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const hasAudioInput = devices.some((d) => d.kind === 'audioinput');
-        if (!hasAudioInput && devices.length > 0) {
-          const noDeviceMsg =
-            language === 'fr'
-              ? "Aucun microphone physique n'a été détecté sur votre ordinateur. Veuillez brancher un micro ou un casque."
-              : 'No physical microphone detected. Please plug in a microphone or headset.';
-          setError(noDeviceMsg);
-          onError?.(noDeviceMsg);
-          return;
-        }
-      } catch {
-        // En cas d'impossibilité d'énumérer, on continue vers getUserMedia
-      }
-    }
-
-    // 3. Demande d'autorisation explicite via getUserMedia pour déclencher la boîte de dialogue native
-    if (navigator?.mediaDevices?.getUserMedia) {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        // Ferme le flux temporaire dès que l'autorisation est confirmée
-        stream.getTracks().forEach((track) => track.stop());
-      } catch (mediaErr: any) {
-        console.warn('[NEXUS Voice Debug] getUserMedia error:', mediaErr);
-        if (
-          mediaErr.name === 'NotAllowedError' ||
-          mediaErr.name === 'PermissionDeniedError' ||
-          mediaErr.name === 'SecurityError'
-        ) {
-          const deniedMsg =
-            language === 'fr'
-              ? "Accès au micro refusé. Veuillez : 1) Recharger la page (F5) 2) Vérifier sous Windows 'Autoriser les applications de bureau à accéder au micro'."
-              : 'Microphone access denied. Please: 1) Reload page (F5) 2) Check Windows "Allow desktop apps to access your microphone".';
-          setError(deniedMsg);
-          onError?.(deniedMsg);
-          setIsListening(false);
-          return;
-        } else if (mediaErr.name === 'NotFoundError' || mediaErr.name === 'DevicesNotFoundError') {
-          const notFoundMsg =
-            language === 'fr'
-              ? "Aucun périphérique microphone branché ou activé dans les paramètres de son Windows."
-              : 'No microphone device plugged in or enabled in Windows Sound settings.';
-          setError(notFoundMsg);
-          onError?.(notFoundMsg);
-          setIsListening(false);
-          return;
-        }
-      }
-    }
-
-    const SpeechRecognition =
+    // 2. Détection de l'API Web Speech
+    const SpeechRecognitionClass =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
-    if (!SpeechRecognition) {
+    if (!SpeechRecognitionClass) {
       const notSupportedMsg =
         language === 'fr'
-          ? "La reconnaissance vocale n'est pas prise en charge par ce navigateur (ex: Firefox ou Brave avec boucliers stricts). Veuillez utiliser Google Chrome ou Microsoft Edge."
-          : 'Speech recognition is not supported in this browser. Please use Google Chrome or Microsoft Edge.';
+          ? "La reconnaissance vocale en direct est prise en charge sur Google Chrome, Microsoft Edge, Safari et Opera. Veuillez utiliser l'un de ces navigateurs."
+          : 'Speech recognition is supported on Google Chrome, Microsoft Edge, Safari, and Opera. Please use one of these browsers.';
       setError(notSupportedMsg);
       onError?.(notSupportedMsg);
+      setPermissionState('unsupported');
       return;
     }
 
-    // Arrête toute instance précédente
+    // Arrêter toute instance précédente en cours
     if (recognitionRef.current) {
       try {
-        recognitionRef.current.stop();
-      } catch {
-        // Ignorer
-      }
+        recognitionRef.current.abort();
+      } catch {}
+      recognitionRef.current = null;
     }
 
+    shouldListenRef.current = true;
+
     try {
-      const recognition = new SpeechRecognition();
+      const recognition = new SpeechRecognitionClass();
       recognition.continuous = true;
       recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
       recognition.lang = language === 'fr' ? 'fr-FR' : 'en-US';
-
-      let accumulatedFinal = '';
 
       recognition.onstart = () => {
         setIsListening(true);
+        setPermissionState('granted');
         setError(null);
       };
 
       recognition.onresult = (event: any) => {
-        let interim = '';
-        for (let i = event.resultIndex; i < event.results.length; i++) {
+        let finalTranscript = '';
+        let interimTranscript = '';
+
+        for (let i = 0; i < event.results.length; i++) {
           const result = event.results[i];
-          const text = result[0]?.transcript || '';
           if (result.isFinal) {
-            accumulatedFinal += (accumulatedFinal ? ' ' : '') + text.trim();
+            finalTranscript += result[0].transcript;
           } else {
-            interim += text;
+            interimTranscript += result[0].transcript;
           }
         }
 
-        const currentFull = accumulatedFinal + (interim ? ` ${interim}` : '');
-        setTranscript(currentFull);
-        onTranscript?.(currentFull);
+        const fullTranscript = (
+          finalTranscript + (interimTranscript ? ` ${interimTranscript}` : '')
+        ).trim();
+
+        setTranscript(fullTranscript);
+        onTranscript?.(fullTranscript);
       };
 
       recognition.onerror = (event: any) => {
-        console.warn('[NEXUS Voice Debug] recognition error event:', event.error, event);
-        let msg = '';
-        switch (event.error) {
-          case 'not-allowed':
-          case 'permission-denied':
-            msg =
-              language === 'fr'
-                ? "Microphone bloqué : rechargez la page (F5) ou vérifiez les autorisations Windows (applications de bureau)."
-                : 'Microphone blocked: please reload page (F5) or verify Windows desktop app permissions.';
-            break;
-          case 'audio-capture':
-            msg =
-              language === 'fr'
-                ? "Aucun signal audio détecté ou le micro est utilisé en exclusivité par une autre application (Zoom, Teams, etc.)."
-                : 'No audio capture: microphone is either unplugged or used exclusively by another app.';
-            break;
-          case 'no-speech':
-            // Simple absence de parole détectée, pas une erreur bloquante
-            return;
-          case 'network':
-            msg =
-              language === 'fr'
-                ? 'Erreur réseau lors de la reconnaissance vocale (vérifiez votre connexion internet pour le service vocal).'
-                : 'Network error during speech recognition.';
-            break;
-          default:
-            msg =
-              language === 'fr'
-                ? `Erreur de reconnaissance vocale (${event.error}).`
-                : `Speech recognition error (${event.error}).`;
-            break;
+        console.warn('[NEXUS STT] Erreur capturée :', event.error);
+
+        // Erreur bénigne : simple absence de parole momentanée
+        if (event.error === 'no-speech') {
+          return;
         }
 
-        setError(msg);
-        onError?.(msg);
+        // Annulation manuelle
+        if (event.error === 'aborted') {
+          return;
+        }
+
+        // Permission refusée ou bloquée par l'utilisateur
+        if (event.error === 'not-allowed' || event.error === 'permission-denied') {
+          shouldListenRef.current = false;
+          setIsListening(false);
+          setPermissionState('denied');
+          const blockedMsg =
+            language === 'fr'
+              ? "Microphone bloqué : veuillez autoriser le micro dans la barre d'adresse de votre navigateur."
+              : 'Microphone blocked: please allow microphone in your browser address bar.';
+          setError(blockedMsg);
+          onError?.(blockedMsg);
+          onPermissionBlocked?.();
+          return;
+        }
+
+        // Problème matériel ou micro en cours d'utilisation par une autre app
+        if (event.error === 'audio-capture') {
+          shouldListenRef.current = false;
+          setIsListening(false);
+          const captureMsg =
+            language === 'fr'
+              ? "Aucun signal audio détecté ou le micro est utilisé par une autre application (Teams, Zoom, etc.)."
+              : 'No audio capture: microphone is unplugged or used by another application.';
+          setError(captureMsg);
+          onError?.(captureMsg);
+          return;
+        }
+
+        // Erreur réseau (serveur de reconnaissance vocale de Google/Apple)
+        if (event.error === 'network') {
+          shouldListenRef.current = false;
+          setIsListening(false);
+          const netMsg =
+            language === 'fr'
+              ? 'Erreur réseau du service vocal. Vérifiez votre connexion internet.'
+              : 'Speech recognition network error. Please check your internet connection.';
+          setError(netMsg);
+          onError?.(netMsg);
+          return;
+        }
+
+        // Autre erreur
+        const genericMsg =
+          language === 'fr'
+            ? `Erreur microphone (${event.error}).`
+            : `Microphone error (${event.error}).`;
+        setError(genericMsg);
+        onError?.(genericMsg);
         setIsListening(false);
       };
 
       recognition.onend = () => {
-        setIsListening(false);
+        // Sur iOS / Safari ou après une pause, Web Speech API coupe souvent la session.
+        // Si l'utilisateur n'a pas appuyé sur Stop, on relance en douceur.
+        if (shouldListenRef.current) {
+          restartTimerRef.current = setTimeout(() => {
+            if (shouldListenRef.current) {
+              try {
+                recognition.start();
+              } catch {
+                setIsListening(false);
+              }
+            }
+          }, 150);
+        } else {
+          setIsListening(false);
+        }
       };
 
       recognitionRef.current = recognition;
+
+      // Démarrage immédiat et synchrone dans le cadre du geste utilisateur
       recognition.start();
     } catch (err: any) {
-      console.warn('[NEXUS Voice Debug] recognition.start exception:', err);
-      const msg = err?.message || 'Impossible d’initialiser le microphone.';
+      console.warn('[NEXUS STT] Exception recognition.start :', err);
+      shouldListenRef.current = false;
+      setIsListening(false);
+      const msg = err?.message || 'Impossible de démarrer la reconnaissance vocale.';
       setError(msg);
       onError?.(msg);
-      setIsListening(false);
     }
-  }, [language, onTranscript, onError]);
+  }, [language, onTranscript, onError, onPermissionBlocked]);
 
-  const toggleListening = useCallback(async () => {
+  const toggleListening = useCallback(() => {
     if (isListening) {
       stopListening();
     } else {
-      await startListening();
+      startListening();
     }
   }, [isListening, startListening, stopListening]);
 
   // Nettoyage au démontage
   useEffect(() => {
     return () => {
+      shouldListenRef.current = false;
+      if (restartTimerRef.current) {
+        clearTimeout(restartTimerRef.current);
+      }
       if (recognitionRef.current) {
         try {
           recognitionRef.current.abort();
-        } catch {
-          // Ignorer
-        }
+        } catch {}
       }
     };
   }, []);
@@ -327,11 +295,10 @@ export function useSpeechRecognition({
     isSupported,
     permissionState,
     transcript,
-    checkPermission,
-    requestPermission,
     startListening,
     stopListening,
     toggleListening,
     error,
+    clearError,
   };
 }

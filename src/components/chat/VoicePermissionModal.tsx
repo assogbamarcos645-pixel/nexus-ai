@@ -4,7 +4,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 interface VoicePermissionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onRequestPermission: () => Promise<void>;
+  onRequestPermission: () => Promise<void> | void;
   status: 'request' | 'blocked';
 }
 

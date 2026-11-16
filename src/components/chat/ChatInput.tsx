@@ -81,15 +81,13 @@ export function ChatInput({
   const baseTextBeforeSpeechRef = useRef('');
   const [voiceFeedbackError, setVoiceFeedbackError] = useState<string | null>(null);
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
-  const [voiceModalStatus, setVoiceModalStatus] = useState<'request' | 'blocked'>('request');
 
   const {
     isListening,
     startListening,
     stopListening,
-    checkPermission,
-    requestPermission,
     error: speechError,
+    clearError: clearSpeechError,
   } = useSpeechRecognition({
     language,
     onTranscript: (newTranscript) => {
@@ -100,39 +98,28 @@ export function ChatInput({
     onError: (errMsg) => {
       setVoiceFeedbackError(errMsg);
     },
+    onPermissionBlocked: () => {
+      setIsVoiceModalOpen(true);
+    },
   });
 
-  const handleToggleVoice = async () => {
+  const handleToggleVoice = () => {
     if (voiceFeedbackError) setVoiceFeedbackError(null);
+    clearSpeechError();
 
     if (isListening) {
       stopListening();
       return;
     }
 
-    const currentStatus = await checkPermission();
-
-    if (currentStatus === 'granted') {
-      baseTextBeforeSpeechRef.current = value;
-      await startListening();
-    } else if (currentStatus === 'denied') {
-      setVoiceModalStatus('blocked');
-      setIsVoiceModalOpen(true);
-    } else {
-      setVoiceModalStatus('request');
-      setIsVoiceModalOpen(true);
-    }
+    baseTextBeforeSpeechRef.current = value;
+    startListening();
   };
 
-  const handleModalRequestPermission = async () => {
-    const granted = await requestPermission();
-    if (granted) {
-      setIsVoiceModalOpen(false);
-      baseTextBeforeSpeechRef.current = value;
-      await startListening();
-    } else {
-      setVoiceModalStatus('blocked');
-    }
+  const handleModalRetryPermission = async () => {
+    setIsVoiceModalOpen(false);
+    baseTextBeforeSpeechRef.current = value;
+    startListening();
   };
 
   const handleSendMessage = () => {
@@ -516,7 +503,10 @@ export function ChatInput({
           {(voiceFeedbackError || speechError) && (
             <button
               type="button"
-              onClick={() => setVoiceFeedbackError(null)}
+              onClick={() => {
+                setVoiceFeedbackError(null);
+                clearSpeechError();
+              }}
               className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer p-0.5"
               aria-label="Fermer"
             >
@@ -746,8 +736,8 @@ export function ChatInput({
       <VoicePermissionModal
         isOpen={isVoiceModalOpen}
         onClose={() => setIsVoiceModalOpen(false)}
-        onRequestPermission={handleModalRequestPermission}
-        status={voiceModalStatus}
+        onRequestPermission={handleModalRetryPermission}
+        status="blocked"
       />
     </div>
   );
