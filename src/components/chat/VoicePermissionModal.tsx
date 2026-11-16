@@ -199,6 +199,30 @@ export function VoicePermissionModal({
                   </p>
                 </div>
               </div>
+
+              {/* Étape 4 : Matériel physique (micro branché ou casque) */}
+              <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 text-xs">
+                <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-500/15 text-blue-600 dark:text-sky-400 font-bold shrink-0 text-[11px] mt-0.5">
+                  4
+                </span>
+                <div className="text-slate-700 dark:text-slate-300 leading-relaxed">
+                  <span className="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <Mic size={12} className="text-emerald-500" />
+                    {language === 'fr' ? 'Microphone physique branché :' : 'Physical microphone plugged in:'}
+                  </span>
+                  <p className="mt-0.5">
+                    {language === 'fr' ? (
+                      <>
+                        Sur un ordinateur fixe ou sans micro intégré, assurez-vous qu'un <strong>micro USB</strong>, un <strong>casque</strong> ou des <strong>écouteurs avec micro</strong> sont bien branchés et détectés dans <strong>Paramètres Windows &gt; Système &gt; Son &gt; Entrée</strong>. Sur smartphone (iOS/Android), le micro intégré fonctionne directement.
+                      </>
+                    ) : (
+                      <>
+                        On desktop PCs without built-in mics, ensure a <strong>headset or USB microphone</strong> is plugged in and listed under <strong>Windows Settings &gt; System &gt; Sound &gt; Input</strong>. On smartphones (iOS/Android), the built-in mic works directly.
+                      </>
+                    )}
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* Actions */}

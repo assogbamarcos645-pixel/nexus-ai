@@ -153,13 +153,23 @@ export function useSpeechRecognition({
   // Démarrage du moteur MediaRecorder (Universel & Résistant aux restrictions)
   const startMediaRecorder = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        },
-      });
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+          },
+        });
+      } catch (constraintErr: any) {
+        // Si les contraintes avancées échouent (OverconstrainedError), repli sur contrainte simple
+        if (constraintErr.name === 'OverconstrainedError' || constraintErr.name === 'TypeError') {
+          stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        } else {
+          throw constraintErr;
+        }
+      }
 
       audioStreamRef.current = stream;
       audioChunksRef.current = [];
@@ -219,12 +229,23 @@ export function useSpeechRecognition({
         setError(blockedMsg);
         onError?.(blockedMsg);
         onPermissionBlocked?.();
+      } else if (
+        err.name === 'NotFoundError' ||
+        err.name === 'DevicesNotFoundError' ||
+        /not found/i.test(err?.message || '')
+      ) {
+        setPermissionState('unsupported');
+        const notFoundMsg =
+          language === 'fr'
+            ? 'Aucun microphone physique détecté sur cet ordinateur. Veuillez brancher un micro, un casque ou des écouteurs avec micro.'
+            : 'No physical microphone detected on this device. Please plug in a microphone or headset.';
+        setError(notFoundMsg);
+        onError?.(notFoundMsg);
       } else {
         const errMessage =
-          err?.message ||
-          (language === 'fr'
-            ? 'Impossible d’accéder au microphone.'
-            : 'Unable to access microphone.');
+          language === 'fr'
+            ? `Microphone inaccessible : ${err?.message || 'périphérique introuvable'}`
+            : `Microphone inaccessible: ${err?.message || 'device not found'}`;
         setError(errMessage);
         onError?.(errMessage);
       }
