@@ -149,7 +149,7 @@ function MessageBubbleComponent({ message }: MessageBubbleProps) {
           'relative px-4 sm:px-5 py-3 sm:py-4 rounded-2xl text-[14px] sm:text-[15px] leading-relaxed max-w-[92%] sm:max-w-[85%] md:max-w-[80%] transition-all',
           isUser
             ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-br-xs shadow-[0_4px_20px_rgba(37,99,235,0.25)] border border-blue-500/30'
-            : 'liquid-glass text-slate-800 dark:text-slate-100 rounded-bl-xs shadow-[0_4px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)]',
+            : 'liquid-glass text-slate-800 dark:text-slate-100 rounded-bl-xs',
         )}
       >
         {message.images && message.images.length > 0 && (

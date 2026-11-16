@@ -171,24 +171,28 @@ function AppContent() {
           aria-hidden="true"
         >
           <div
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20 dark:opacity-40 transition-opacity duration-1000"
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-40 dark:opacity-65 transition-opacity duration-1000"
             style={{ backgroundImage: `url('/nexus-ambient-bg.jpg')` }}
           />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_15%,rgba(248,250,252,0.85)_75%,#f8fafc_100%)] dark:bg-[radial-gradient(ellipse_at_center,transparent_20%,rgba(11,15,25,0.78)_70%,#0b0f19_100%)]" />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#f8fafc]/70 via-transparent to-[#f8fafc]/95 dark:from-[#0b0f19]/80 dark:via-transparent dark:to-[#0b0f19]/95" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_35%,rgba(248,250,252,0.45)_75%,#f8fafc_100%)] dark:bg-[radial-gradient(ellipse_at_center,transparent_35%,rgba(11,15,25,0.45)_75%,#0b0f19_100%)]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#f8fafc]/20 via-transparent to-[#f8fafc]/50 dark:from-[#0b0f19]/25 dark:via-transparent dark:to-[#0b0f19]/55" />
         </div>
 
-        {/* Lueurs ambiantes Cobalt & Sky */}
+        {/* Lueurs ambiantes Vivid Cobalt, Cyan & Ultra Violet (Substrats de réfraction Liquid Glass) */}
         <div
-          className="pointer-events-none absolute -top-24 right-10 w-[680px] h-[680px] rounded-full bg-gradient-to-br from-blue-300/40 via-sky-300/30 to-transparent dark:from-blue-600/25 dark:via-sky-500/20 dark:to-transparent blur-[100px] animate-nexus-aurora"
+          className="pointer-events-none absolute -top-20 right-5 w-[760px] h-[760px] rounded-full bg-gradient-to-br from-sky-400/60 via-blue-600/50 to-transparent dark:from-cyan-400/50 dark:via-blue-600/45 dark:to-indigo-800/30 blur-[75px] animate-nexus-aurora"
           aria-hidden="true"
         />
         <div
-          className="pointer-events-none absolute top-1/3 -left-20 w-[580px] h-[580px] rounded-full bg-gradient-to-tr from-sky-300/35 via-blue-300/25 to-transparent dark:from-cyan-500/20 dark:via-blue-800/18 dark:to-transparent blur-[100px] animate-nexus-aurora [animation-delay:-4.5s]"
+          className="pointer-events-none absolute top-1/4 -left-20 w-[680px] h-[680px] rounded-full bg-gradient-to-tr from-blue-400/50 via-indigo-500/40 to-transparent dark:from-indigo-500/50 dark:via-purple-600/45 dark:to-fuchsia-700/25 blur-[75px] animate-nexus-aurora [animation-delay:-4.5s]"
           aria-hidden="true"
         />
         <div
-          className="pointer-events-none absolute -bottom-24 right-1/4 w-[520px] h-[520px] rounded-full bg-gradient-to-t from-slate-300/35 to-transparent dark:from-blue-700/18 dark:via-slate-800/25 dark:to-transparent blur-[110px] animate-nexus-aurora [animation-delay:-2.2s]"
+          className="pointer-events-none absolute -bottom-24 right-1/6 w-[650px] h-[650px] rounded-full bg-gradient-to-t from-sky-300/50 via-blue-500/40 to-transparent dark:from-cyan-400/45 dark:via-blue-600/40 dark:to-indigo-900/30 blur-[80px] animate-nexus-aurora [animation-delay:-2.2s]"
+          aria-hidden="true"
+        />
+        <div
+          className="pointer-events-none absolute bottom-0 left-1/4 w-[520px] h-[380px] rounded-full bg-gradient-to-tr from-blue-500/40 via-cyan-400/35 to-transparent dark:from-blue-600/40 dark:via-cyan-400/30 dark:to-transparent blur-[70px] animate-nexus-aurora [animation-delay:-6.8s]"
           aria-hidden="true"
         />
 

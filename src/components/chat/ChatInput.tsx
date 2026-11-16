@@ -560,10 +560,9 @@ export function ChatInput({
         onClick={() => textareaRef.current?.focus({ preventScroll: true })}
         className={cn(
           'relative flex flex-col rounded-2xl sm:rounded-3xl transition-all duration-200 cursor-text p-2 sm:p-2.5',
-          'liquid-glass shadow-[0_4px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.45)]',
-          effectiveImages.length > 0 && 'border-cyan-500/40 ring-1 ring-cyan-500/20',
-          'border border-slate-200/80 dark:border-white/10 hover:border-slate-300 dark:hover:border-sky-400/30',
-          'focus-within:border-blue-500/80 dark:focus-within:border-sky-400 focus-within:ring-2 focus-within:ring-blue-500/20',
+          'liquid-glass',
+          effectiveImages.length > 0 && 'ring-1 ring-cyan-400/40',
+          'focus-within:ring-2 focus-within:ring-sky-400/30 dark:focus-within:ring-sky-400/40',
         )}
       >
         {/* Ligne 1 : Textarea pleine largeur, 16px sur mobile (évite tout zoom Safari iOS) */}

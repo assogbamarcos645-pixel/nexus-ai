@@ -127,7 +127,7 @@ export function ChatWindow({
           </div>
 
           {/* Barre de saisie fixée en bas, respectant la zone de sécurité iOS (Home Indicator) */}
-          <div className="shrink-0 w-full bg-gradient-to-t from-[#f8fafc]/95 via-[#f8fafc]/80 to-transparent dark:from-[#0b0f19]/95 dark:via-[#0b0f19]/80 dark:to-transparent backdrop-blur-[2px] pt-1 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] md:pb-2">
+          <div className="shrink-0 w-full bg-gradient-to-t from-[#f8fafc]/60 via-[#f8fafc]/30 to-transparent dark:from-[#0b0f19]/60 dark:via-[#0b0f19]/30 dark:to-transparent backdrop-blur-[2px] pt-1 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] md:pb-2">
             <ChatInput
               value={input}
               onChange={onInputChange}
