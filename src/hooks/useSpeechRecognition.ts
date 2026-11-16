@@ -50,33 +50,27 @@ export function useSpeechRecognition({
   const checkPermission = useCallback(async (): Promise<MicrophonePermissionState> => {
     if (typeof window === 'undefined') return 'unsupported';
 
-    // 1. Interrogation via l'API Permissions standard
+    // Nettoyage de tout ancien verrou résiduel en cache
+    try {
+      localStorage.removeItem('nexus_mic_permission');
+    } catch {}
+
+    // 1. Interrogation dynamique via l'API Permissions standard
     if (navigator?.permissions?.query) {
       try {
         const result = await navigator.permissions.query({ name: 'microphone' as PermissionName });
         const state = result.state as MicrophonePermissionState;
         setPermissionState(state);
 
-        // Écoute des changements de permission en direct (ex: cadenas cliqué)
+        // Écoute dynamique des modifications dans la barre d'adresse
         result.onchange = () => {
           setPermissionState(result.state as MicrophonePermissionState);
         };
 
         return state;
       } catch {
-        // Fallback si la permission 'microphone' n'est pas queryable
+        // Fallback
       }
-    }
-
-    // 2. Vérification du cache local
-    try {
-      const cached = localStorage.getItem('nexus_mic_permission');
-      if (cached === 'granted' || cached === 'denied') {
-        setPermissionState(cached as MicrophonePermissionState);
-        return cached as MicrophonePermissionState;
-      }
-    } catch {
-      // Ignorer
     }
 
     setPermissionState('prompt');
@@ -90,11 +84,12 @@ export function useSpeechRecognition({
     }
 
     try {
+      localStorage.removeItem('nexus_mic_permission');
+    } catch {}
+
+    try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       stream.getTracks().forEach((track) => track.stop());
-      try {
-        localStorage.setItem('nexus_mic_permission', 'granted');
-      } catch {}
       setPermissionState('granted');
       setError(null);
       return true;
@@ -105,9 +100,6 @@ export function useSpeechRecognition({
         err.name === 'PermissionDeniedError' ||
         err.name === 'SecurityError'
       ) {
-        try {
-          localStorage.setItem('nexus_mic_permission', 'denied');
-        } catch {}
         setPermissionState('denied');
       }
       return false;

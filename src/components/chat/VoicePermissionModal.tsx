@@ -181,23 +181,39 @@ export function VoicePermissionModal({
             </div>
 
             {/* Actions */}
-            <div className="flex items-center justify-end gap-2.5">
+            <div className="flex flex-wrap items-center justify-end gap-2">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                className="px-3.5 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 {language === 'fr' ? 'Fermer' : 'Close'}
               </button>
               <button
                 type="button"
                 onClick={() => {
+                  try {
+                    localStorage.removeItem('nexus_mic_permission');
+                  } catch {}
                   window.location.reload();
+                }}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+              >
+                <RefreshCw size={13} />
+                <span>{language === 'fr' ? 'Recharger' : 'Reload'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    localStorage.removeItem('nexus_mic_permission');
+                  } catch {}
+                  await onRequestPermission();
                 }}
                 className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 active:bg-blue-700 shadow-md shadow-blue-500/20 transition-all cursor-pointer"
               >
-                <RefreshCw size={13} />
-                <span>{language === 'fr' ? 'Actualiser la page' : 'Reload page'}</span>
+                <Mic size={13} />
+                <span>{language === 'fr' ? 'Réessayer le micro' : 'Retry microphone'}</span>
               </button>
             </div>
           </div>
