@@ -756,7 +756,34 @@ export function CodeEditor({
               </div>
               <textarea
                 value={content}
-                onChange={(e) => onChange(e.target.value)}
+                onChange={(e) => {
+                  onChange(e.target.value);
+                  const selStart = e.target.selectionStart;
+                  const textBefore = e.target.value.substring(0, selStart);
+                  const lines = textBefore.split('\n');
+                  setCursorPos({ lineNumber: lines.length, column: lines[lines.length - 1].length + 1 });
+                }}
+                onSelect={(e) => {
+                  const target = e.currentTarget;
+                  const selStart = target.selectionStart;
+                  const textBefore = target.value.substring(0, selStart);
+                  const lines = textBefore.split('\n');
+                  setCursorPos({ lineNumber: lines.length, column: lines[lines.length - 1].length + 1 });
+                }}
+                onClick={(e) => {
+                  const target = e.currentTarget;
+                  const selStart = target.selectionStart;
+                  const textBefore = target.value.substring(0, selStart);
+                  const lines = textBefore.split('\n');
+                  setCursorPos({ lineNumber: lines.length, column: lines[lines.length - 1].length + 1 });
+                }}
+                onKeyUp={(e) => {
+                  const target = e.currentTarget;
+                  const selStart = target.selectionStart;
+                  const textBefore = target.value.substring(0, selStart);
+                  const lines = textBefore.split('\n');
+                  setCursorPos({ lineNumber: lines.length, column: lines[lines.length - 1].length + 1 });
+                }}
                 onKeyDown={(e) => {
                   if (e.key === 'Tab') {
                     e.preventDefault();
@@ -799,33 +826,38 @@ export function CodeEditor({
       />
 
       {/* Barre d'état inférieure style VS Code */}
-      <footer className="h-6 px-2.5 border-t border-slate-200/80 dark:border-white/6 bg-slate-100/90 dark:bg-[#06060f] flex items-center justify-between text-[11px] text-slate-500 dark:text-white/45 font-mono shrink-0 select-none overflow-hidden gap-2">
-        <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 overflow-hidden">
-          <span className="text-slate-800 dark:text-white/70 font-semibold shrink-0">
-            Ln {cursorPos.lineNumber}, Col {cursorPos.column}
+      <footer className="min-h-[28px] sm:min-h-[30px] px-3 py-1 border-t border-slate-200/90 dark:border-white/10 bg-slate-100 dark:bg-[#0c0d1b] flex items-center justify-between text-xs font-mono shrink-0 select-none overflow-x-auto scrollbar-none gap-2 z-10">
+        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+          {/* Badge haute visibilité Ln X, Col Y */}
+          <span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-200 dark:bg-white/10 text-slate-900 dark:text-white font-bold text-[11px] sm:text-xs tracking-wide shadow-xs border border-slate-300/60 dark:border-white/10 shrink-0">
+            <span className="text-cyan-600 dark:text-cyan-400">Ln</span> {cursorPos.lineNumber}, <span className="text-cyan-600 dark:text-cyan-400">Col</span> {cursorPos.column}
           </span>
-          <span className="hidden xl:inline truncate">
+
+          <span className="text-slate-600 dark:text-slate-300 font-medium hidden sm:inline shrink-0">
             {linesCount} lignes • {charsCount} car.
           </span>
-          <span className="hidden 2xl:inline shrink-0">Espaces: 2</span>
-          <span className="hidden 2xl:inline shrink-0">UTF-8</span>
-          <span className="text-cyan-700 dark:text-cyan-300 uppercase font-semibold shrink-0">
+
+          <span className="hidden xl:inline text-slate-500 dark:text-slate-400 shrink-0">Espaces: 2</span>
+          <span className="hidden xl:inline text-slate-500 dark:text-slate-400 shrink-0">UTF-8</span>
+
+          <span className="px-1.5 py-0.5 rounded bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 uppercase font-semibold text-[10px] tracking-wider border border-cyan-500/20 shrink-0">
             {file.language}
           </span>
+
           {hasUnsavedChanges ? (
-            <span className="inline-flex items-center gap-1 text-[10px] text-cyan-600 dark:text-cyan-300 font-medium shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse shadow-[0_0_6px_#22d3ee]" />
+            <span className="inline-flex items-center gap-1 text-[11px] text-amber-600 dark:text-amber-400 font-medium shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse shadow-[0_0_6px_#f59e0b]" />
               <span className="hidden sm:inline">Non enregistré</span>
             </span>
           ) : (
-            <span className="hidden sm:inline-flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-medium shrink-0">
-              <Check size={11} />
+            <span className="hidden sm:inline-flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium shrink-0">
+              <Check size={12} className="text-emerald-500" />
               <span>Enregistré</span>
             </span>
           )}
 
           {/* Déclencheurs rapides du panneau escamotable */}
-          <span className="text-slate-300 dark:text-white/10 hidden sm:inline shrink-0">|</span>
+          <span className="text-slate-300 dark:text-white/15 hidden sm:inline shrink-0">|</span>
 
           <button
             type="button"
@@ -833,11 +865,11 @@ export function CodeEditor({
               setIsBottomPanelOpen(true);
               setBottomPanelTab('terminal');
             }}
-            className="flex items-center gap-1 text-[10px] text-cyan-600 dark:text-cyan-400 hover:text-cyan-300 cursor-pointer transition-colors shrink-0"
+            className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 hover:text-cyan-300 cursor-pointer transition-colors shrink-0 font-medium"
             title="Ouvrir le terminal interactif (Ctrl+`)"
           >
-            <Terminal size={11} />
-            <span className="hidden md:inline">Terminal</span>
+            <Terminal size={12} />
+            <span className="hidden md:inline font-semibold">Terminal</span>
           </button>
 
           <button
@@ -846,11 +878,11 @@ export function CodeEditor({
               setIsBottomPanelOpen(true);
               setBottomPanelTab('console');
             }}
-            className="flex items-center gap-1 text-[10px] text-purple-600 dark:text-purple-400 hover:text-purple-300 cursor-pointer transition-colors shrink-0"
+            className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] text-purple-600 dark:text-purple-400 hover:bg-purple-500/10 hover:text-purple-300 cursor-pointer transition-colors shrink-0 font-medium"
             title="Ouvrir la console d'exécution"
           >
-            <Activity size={11} />
-            <span className="hidden md:inline">Console</span>
+            <Activity size={12} />
+            <span className="hidden md:inline font-semibold">Console</span>
             {logs.length > 0 && <span className="font-bold">({logs.length})</span>}
           </button>
 
@@ -861,22 +893,22 @@ export function CodeEditor({
               setBottomPanelTab('lint');
             }}
             className={cn(
-              'flex items-center gap-1 text-[10px] cursor-pointer transition-colors shrink-0',
+              'flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] cursor-pointer transition-colors shrink-0 font-medium',
               lintErrors > 0
-                ? 'text-red-500 dark:text-red-400 font-bold'
+                ? 'text-red-500 dark:text-red-400 font-bold hover:bg-red-500/10'
                 : lintWarnings > 0
-                ? 'text-amber-500 dark:text-amber-400'
-                : 'text-emerald-500 dark:text-emerald-400',
+                ? 'text-amber-500 dark:text-amber-400 hover:bg-amber-500/10'
+                : 'text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10',
             )}
             title="Ouvrir les diagnostics Lint"
           >
-            <AlertTriangle size={11} />
-            <span className="hidden lg:inline">Lint</span>
+            <AlertTriangle size={12} />
+            <span className="hidden lg:inline font-semibold">Lint</span>
             <span>{lintErrors + lintWarnings > 0 ? `(${lintErrors + lintWarnings})` : '0'}</span>
           </button>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           {/* Indicateur et sélecteur Ghost Text Copilot (< 200 ms) */}
           <button
             type="button"
@@ -889,10 +921,10 @@ export function CodeEditor({
               setTimeout(() => setToastMessage(null), 2500);
             }}
             className={cn(
-              'flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono transition-all cursor-pointer border shrink-0',
+              'flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-mono transition-all cursor-pointer border shrink-0',
               isGhostActive
                 ? 'text-cyan-700 dark:text-cyan-300 bg-cyan-500/10 border-cyan-500/25 hover:bg-cyan-500/20'
-                : 'text-slate-400 dark:text-white/30 bg-slate-100 dark:bg-white/5 border-transparent hover:text-slate-600 dark:hover:text-white',
+                : 'text-slate-600 dark:text-slate-300 bg-slate-200/50 dark:bg-white/5 border-transparent hover:text-slate-900 dark:hover:text-white',
             )}
             title="Auto-complétion en direct Ghost Text (< 200 ms). Tab pour accepter, Échap pour rejeter. Cliquez pour activer/désactiver."
           >
@@ -901,32 +933,32 @@ export function CodeEditor({
                 'w-1.5 h-1.5 rounded-full shrink-0',
                 isGhostActive
                   ? 'bg-cyan-400 animate-pulse shadow-[0_0_6px_#22d3ee]'
-                  : 'bg-slate-400 dark:bg-white/20',
+                  : 'bg-slate-400 dark:bg-white/30',
               )}
             />
             <span className="font-semibold">Ghost Text</span>
-            <span className="text-[9px] text-cyan-600 dark:text-cyan-400 hidden xl:inline font-sans">&lt; 200 ms</span>
-            <span className="hidden 2xl:inline text-[9px] text-slate-500 dark:text-white/40 border border-slate-300 dark:border-white/10 rounded px-1">Tab ⇥</span>
+            <span className="text-[10px] text-cyan-600 dark:text-cyan-400 hidden xl:inline font-sans">&lt; 200 ms</span>
+            <span className="hidden 2xl:inline text-[9px] text-slate-500 dark:text-slate-400 border border-slate-300 dark:border-white/10 rounded px-1">Tab ⇥</span>
           </button>
 
-          <span className="text-slate-300 dark:text-white/10 hidden sm:inline">|</span>
+          <span className="text-slate-300 dark:text-white/15 hidden sm:inline">|</span>
 
           <button
             type="button"
             onClick={openInlineCopilot}
-            className="flex items-center gap-1 text-[10px] text-nexus-600 dark:text-cyan-300 hover:underline cursor-pointer"
+            className="flex items-center gap-1 text-[11px] font-semibold text-nexus-600 dark:text-cyan-300 hover:underline cursor-pointer"
             title="Ouvrir Copilot Inline (Ctrl+K)"
           >
-            <Sparkles size={11} />
+            <Sparkles size={12} className="text-cyan-400" />
             <span className="hidden sm:inline">Copilot (Ctrl+K)</span>
           </button>
 
-          <span className="text-slate-300 dark:text-white/10 hidden sm:inline">|</span>
+          <span className="text-slate-300 dark:text-white/15 hidden sm:inline">|</span>
 
           <button
             type="button"
             onClick={() => setMonacoFailed((prev) => !prev)}
-            className="text-[10px] text-slate-500 dark:text-white/40 hover:text-slate-800 dark:hover:text-white cursor-pointer"
+            className="text-[11px] font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white cursor-pointer px-1.5 py-0.5 rounded hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
             title="Basculer entre Monaco et le mode texte léger"
           >
             {monacoFailed ? 'Activer Monaco' : 'Mode léger'}
