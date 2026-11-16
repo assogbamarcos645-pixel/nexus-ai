@@ -531,7 +531,7 @@ export function AuthModal({ isOpen, initialMode = 'sign-in', onClose }: AuthModa
                   <button
                     type="button"
                     onClick={() => setShowPassword((prev) => !prev)}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-white/40 hover:text-white transition-colors cursor-pointer rounded-lg hover:bg-white/10"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-white/40 hover:text-white transition-colors cursor-pointer rounded-lg hover:bg-white/10 flex items-center justify-center min-w-[36px] min-h-[36px]"
                     title={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
                     aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
                   >
@@ -560,7 +560,7 @@ export function AuthModal({ isOpen, initialMode = 'sign-in', onClose }: AuthModa
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword((prev) => !prev)}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-white/40 hover:text-white transition-colors cursor-pointer rounded-lg hover:bg-white/10"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-white/40 hover:text-white transition-colors cursor-pointer rounded-lg hover:bg-white/10 flex items-center justify-center min-w-[36px] min-h-[36px]"
                     title={showConfirmPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
                     aria-label={showConfirmPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
                   >

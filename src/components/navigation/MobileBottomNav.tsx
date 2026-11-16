@@ -63,9 +63,8 @@ function MobileBottomNavComponent({
       aria-label={fr ? 'Navigation mobile' : 'Mobile navigation'}
       className={cn(
         'md:hidden fixed bottom-0 inset-x-0 z-30 shrink-0 select-none',
-        'liquid-glass border-t border-slate-200/80 dark:border-white/10',
-        'bg-[#f8fafc]/90 dark:bg-[#0b0f19]/90 backdrop-blur-xl',
-        'shadow-[0_-4px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_-8px_32px_rgba(0,0,0,0.5)]',
+        'liquid-glass',
+        'shadow-[0_-4px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_-12px_36px_rgba(0,0,0,0.55)]',
         'pb-[max(env(safe-area-inset-bottom,0px),10px)] pt-1.5 px-3',
       )}
     >
