@@ -365,8 +365,26 @@ export function useConversations() {
         content,
         isStreaming,
       });
+
+      // Si le streaming est finalisé (isStreaming === false), persister la réponse complète dans le cloud
+      if (isStreaming === false && isAuthenticated && user) {
+        const conv = state.conversations.find((c) => c.id === state.activeConversationId);
+        if (conv) {
+          const updatedMessages = conv.messages.map((m) =>
+            m.id === messageId ? { ...m, content, isStreaming: false } : m,
+          );
+          const updatedConv: Conversation = {
+            ...conv,
+            updatedAt: new Date(),
+            messages: updatedMessages,
+          };
+          saveConversationToCloud(user.id, updatedConv).catch((err) => {
+            console.warn('[NEXUS SYNC] Erreur synchro message finalisé cloud:', err);
+          });
+        }
+      }
     },
-    [state.activeConversationId],
+    [state.activeConversationId, state.conversations, isAuthenticated, user],
   );
 
   return {

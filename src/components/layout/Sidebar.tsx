@@ -43,11 +43,11 @@ interface SidebarProps {
 
 type GroupKey = 'today' | 'yesterday' | 'week' | 'older';
 
-function groupOf(date: Date): GroupKey {
+function groupOf(date: Date | string): GroupKey {
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  const t = date.getTime();
-  if (t >= startOfToday) return 'today';
+  const t = date instanceof Date ? date.getTime() : new Date(date).getTime();
+  if (Number.isNaN(t) || t >= startOfToday) return 'today';
   if (t >= startOfToday - 86_400_000) return 'yesterday';
   if (t >= startOfToday - 7 * 86_400_000) return 'week';
   return 'older';
@@ -100,9 +100,13 @@ export function Sidebar({
   const groups = useMemo(() => {
     const q = query.trim().toLowerCase();
     const list = conversations
-      .filter((c) => c.messages.length > 0)
+      .filter((c) => c.messages && c.messages.length > 0)
       .filter((c) => !q || c.title.toLowerCase().includes(q))
-      .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+      .sort((a, b) => {
+        const tA = a.updatedAt instanceof Date ? a.updatedAt.getTime() : new Date(a.updatedAt).getTime();
+        const tB = b.updatedAt instanceof Date ? b.updatedAt.getTime() : new Date(b.updatedAt).getTime();
+        return tB - tA;
+      });
 
     const map: Record<GroupKey, Conversation[]> = { today: [], yesterday: [], week: [], older: [] };
     list.forEach((c) => map[groupOf(c.updatedAt)].push(c));
@@ -305,7 +309,8 @@ export function Sidebar({
                             </button>
                             <button
                               type="button"
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 if (window.confirm(fr ? 'Supprimer cette conversation ?' : 'Delete this conversation?')) {
                                   onDeleteConversation(conv.id);
                                 }

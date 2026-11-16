@@ -56,7 +56,7 @@ export function ChatWindow({
   const currentMessages = conversation?.messages ?? [];
   const isEmpty = currentMessages.length === 0;
 
-  // Défilement automatique vers le bas strictement confiné au conteneur de messages
+  // Défilement automatique vers le bas lors de l'arrivée de messages ou du chargement
   useEffect(() => {
     if (!isEmpty && messagesContainerRef.current) {
       const container = messagesContainerRef.current;
@@ -65,7 +65,17 @@ export function ChatWindow({
         behavior: 'smooth',
       });
     }
-  }, [currentMessages.length, isLoading, isEmpty]);
+  }, [conversation?.id, currentMessages.length, isLoading, isEmpty]);
+
+  // Défilement immédiat au bas de l'historique lors du changement de conversation
+  useEffect(() => {
+    if (conversation?.id && messagesContainerRef.current && !isEmpty) {
+      const container = messagesContainerRef.current;
+      requestAnimationFrame(() => {
+        container.scrollTop = container.scrollHeight;
+      });
+    }
+  }, [conversation?.id, isEmpty]);
 
   // Protection absolue contre tout défilement parasite des conteneurs parents
   useEffect(() => {
