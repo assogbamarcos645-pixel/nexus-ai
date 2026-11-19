@@ -30,6 +30,7 @@ import {
   MoreHorizontal,
   X,
   Rocket,
+  Database,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import type { LabProject, LabFile, LabTab, LabLayoutMode } from '@/types/lab';
@@ -59,6 +60,8 @@ interface LabToolbarProps {
   onOpenHistory?: () => void;
   onOpenGitHubExport?: () => void;
   onOpenCloudDeploy?: () => void;
+  onOpenTemplateHub?: () => void;
+  onOpenDbModeler?: () => void;
   snapshotCount?: number;
   isDevAssistantOpen?: boolean;
   onToggleDevAssistant: () => void;
@@ -89,6 +92,8 @@ export function LabToolbar({
   onOpenHistory,
   onOpenGitHubExport,
   onOpenCloudDeploy,
+  onOpenTemplateHub,
+  onOpenDbModeler,
   snapshotCount = 0,
   isDevAssistantOpen = false,
   onToggleDevAssistant,
@@ -232,6 +237,34 @@ export function LabToolbar({
             <FolderPlus size={13} className="text-nexus-500 dark:text-nexus-400" />
             <span>Nouveau</span>
           </button>
+
+          {/* Bouton Hub de Templates */}
+          {onOpenTemplateHub && (
+            <button
+              type="button"
+              id="btn-toolbar-template-hub"
+              onClick={onOpenTemplateHub}
+              className="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white bg-slate-100/80 dark:bg-white/5 hover:bg-slate-200/80 dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/8 transition-all cursor-pointer shrink-0"
+              title="Explorer le catalogue de templates modernes"
+            >
+              <Sparkles size={13} className="text-cyan-500 dark:text-cyan-400" />
+              <span>Modèles</span>
+            </button>
+          )}
+
+          {/* Bouton Studio BDD */}
+          {onOpenDbModeler && (
+            <button
+              type="button"
+              id="btn-toolbar-db-modeler"
+              onClick={onOpenDbModeler}
+              className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white bg-slate-100/80 dark:bg-white/5 hover:bg-slate-200/80 dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/8 transition-all cursor-pointer shrink-0"
+              title="Modéliser tables, relations et règles RLS Supabase"
+            >
+              <Database size={13} className="text-indigo-500 dark:text-indigo-400" />
+              <span>Studio BDD</span>
+            </button>
+          )}
 
           {/* Bouton nouveau fichier */}
           <button
@@ -641,6 +674,34 @@ export function LabToolbar({
                 <Download size={16} className="text-emerald-500" />
                 <span>Exporter ZIP</span>
               </button>
+
+              {onOpenTemplateHub && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    onOpenTemplateHub();
+                  }}
+                  className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-800 dark:text-white text-xs font-medium cursor-pointer transition-colors"
+                >
+                  <Sparkles size={16} className="text-cyan-400" />
+                  <span>Modèles Modernes</span>
+                </button>
+              )}
+
+              {onOpenDbModeler && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    onOpenDbModeler();
+                  }}
+                  className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-800 dark:text-white text-xs font-medium cursor-pointer transition-colors"
+                >
+                  <Database size={16} className="text-indigo-400" />
+                  <span>Studio BDD</span>
+                </button>
+              )}
 
               {onOpenCloudDeploy && (
                 <button

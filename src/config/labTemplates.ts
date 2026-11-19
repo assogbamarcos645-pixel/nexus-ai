@@ -11,6 +11,7 @@
  */
 
 import type { ProjectTemplate } from '@/types/lab';
+import { MODERN_TEMPLATES } from './modernTemplates.ts';
 
 export const LAB_TEMPLATES: ProjectTemplate[] = [
   {
@@ -891,4 +892,5 @@ Documentation interactive Swagger disponible sur **http://localhost:8000/docs**.
       },
     ],
   },
+  ...MODERN_TEMPLATES,
 ];

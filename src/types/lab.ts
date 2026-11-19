@@ -8,6 +8,12 @@ export type ProjectTemplateId =
   | 'blank'
   | 'html-css-js'
   | 'react-vite'
+  | 'saas-dashboard'
+  | 'ecommerce-store'
+  | 'portfolio-cosmic'
+  | 'ai-studio'
+  | 'landing-page'
+  | 'markdown-blog'
   | 'node-api'
   | 'php-app'
   | 'python-app';

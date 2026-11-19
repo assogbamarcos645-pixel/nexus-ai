@@ -26,6 +26,10 @@ import { NewFileModal } from './NewFileModal';
 import { SnapshotHistoryModal } from './SnapshotHistoryModal';
 import { GitHubExportModal } from './GitHubExportModal';
 import { CloudDeployModal } from './CloudDeployModal';
+import { TemplateHubModal } from './TemplateHubModal';
+import { DatabaseModelerModal } from './DatabaseModelerModal';
+import { injectSchemaIntoProject } from '@/services/lab/databaseModelerService';
+import type { DbSchema } from '@/types/databaseModeler';
 import type { DevProposal, LabLayoutMode } from '@/types/lab';
 import { Check, Info, AlertCircle, X, Sparkles, Plus, FolderPlus } from 'lucide-react';
 
@@ -68,6 +72,8 @@ export function NexusLab() {
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isGitHubModalOpen, setIsGitHubModalOpen] = useState(false);
   const [isCloudDeployOpen, setIsCloudDeployOpen] = useState(false);
+  const [isTemplateHubOpen, setIsTemplateHubOpen] = useState(false);
+  const [isDbModelerOpen, setIsDbModelerOpen] = useState(false);
   const [isDevAssistantOpen, setIsDevAssistantOpen] = useState(false);
   const [isSwarmOpen, setIsSwarmOpen] = useState(false);
   const [showPreview, setShowPreview] = useState(true);
@@ -132,6 +138,12 @@ export function NexusLab() {
     setActiveProposalForDiff(proposal);
   };
 
+  const handleInjectSchema = (schema: DbSchema) => {
+    if (!activeProjectWithDrafts) return;
+    const updated = injectSchemaIntoProject(activeProjectWithDrafts, schema);
+    updateProjectFiles(updated.files);
+  };
+
   return (
     <div
       id="nexus-lab-root"
@@ -190,6 +202,8 @@ export function NexusLab() {
           snapshotCount={snapshots.length}
           onOpenGitHubExport={() => setIsGitHubModalOpen(true)}
           onOpenCloudDeploy={() => setIsCloudDeployOpen(true)}
+          onOpenTemplateHub={() => setIsTemplateHubOpen(true)}
+          onOpenDbModeler={() => setIsDbModelerOpen(true)}
           onSelectProject={(id) => {
             setActiveProjectId(id);
             setActiveTab('editor');
@@ -434,6 +448,7 @@ export function NexusLab() {
         isOpen={isNewProjectModalOpen}
         onClose={() => setIsNewProjectModalOpen(false)}
         onCreateProject={createProject}
+        onOpenTemplateHub={() => setIsTemplateHubOpen(true)}
       />
 
       {/* Modale Nouveau Fichier */}
@@ -470,6 +485,24 @@ export function NexusLab() {
           setIsCloudDeployOpen(false);
           setIsGitHubModalOpen(true);
         }}
+      />
+
+      {/* Hub de Templates Modernes */}
+      <TemplateHubModal
+        isOpen={isTemplateHubOpen}
+        onClose={() => setIsTemplateHubOpen(false)}
+        onSelectTemplate={(templateId, customName) => {
+          createProject(templateId, customName);
+          setIsTemplateHubOpen(false);
+        }}
+      />
+
+      {/* Studio de Modélisation BDD (PostgreSQL / Supabase) */}
+      <DatabaseModelerModal
+        isOpen={isDbModelerOpen}
+        onClose={() => setIsDbModelerOpen(false)}
+        activeProject={activeProjectWithDrafts}
+        onInjectIntoProject={handleInjectSchema}
       />
     </div>
   );

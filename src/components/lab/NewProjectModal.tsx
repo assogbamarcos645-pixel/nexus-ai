@@ -14,6 +14,7 @@ interface NewProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreateProject: (templateId: ProjectTemplateId, customName?: string) => void;
+  onOpenTemplateHub?: () => void;
 }
 
 function getTemplateIcon(id: ProjectTemplateId) {
@@ -37,6 +38,7 @@ export function NewProjectModal({
   isOpen,
   onClose,
   onCreateProject,
+  onOpenTemplateHub,
 }: NewProjectModalProps) {
   const [selectedTemplate, setSelectedTemplate] = useState<ProjectTemplateId>('html-css-js');
   const [projectName, setProjectName] = useState('');
@@ -91,6 +93,24 @@ export function NewProjectModal({
 
         {/* Corps */}
         <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto scrollbar-thin flex-1">
+          {/* Bannière d'accès direct au Hub de Templates */}
+          {onOpenTemplateHub && (
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onOpenTemplateHub();
+              }}
+              className="w-full flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-cyan-500/15 via-indigo-500/15 to-purple-500/15 border border-cyan-500/30 text-xs font-semibold text-cyan-300 hover:text-white transition-all shadow-sm cursor-pointer"
+            >
+              <div className="flex items-center gap-2">
+                <Sparkles size={15} className="text-cyan-400" />
+                <span>Explorer le Hub de Templates Modernes (SaaS, E-Commerce, IA...)</span>
+              </div>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/20 font-mono">Voir tout →</span>
+            </button>
+          )}
+
           {/* Nom du projet */}
           <div>
             <label htmlFor="input-project-name" className="block text-xs font-semibold text-slate-700 dark:text-white/70 uppercase tracking-wider mb-1.5">
