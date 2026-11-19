@@ -19,6 +19,7 @@ import {
   Check,
   SquarePen,
   Code2,
+  Shield,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { useAuth } from '@/hooks/useAuth';
@@ -27,6 +28,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { UserProfileModal } from '@/components/auth/UserProfileModal';
 import { MemoriesModal } from '@/components/memories/MemoriesModal';
+import { AdminVaultModal } from '@/components/admin/AdminVaultModal';
 import { TokenQuotaBadge } from '@/components/ui';
 import { getAIConfig } from '@/services/ai/aiConfigService';
 import { getProviderById, getModelById } from '@/config/aiProviders';
@@ -67,6 +69,7 @@ export function AppHeader({
   const [internalAuthOpen, setInternalAuthOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [internalMemoriesOpen, setInternalMemoriesOpen] = useState(false);
+  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [aiConfig, setAiConfig] = useState(getAIConfig);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -337,6 +340,16 @@ export function AppHeader({
                   }}
                 />
 
+                <div className="my-1 border-t border-slate-100 dark:border-white/[0.06]" />
+                <MenuItem
+                  icon={<Shield size={16} className="text-amber-500" />}
+                  label={fr ? 'Espace Super-Admin' : 'Super-Admin Space'}
+                  onClick={() => {
+                    setMenuOpen(false);
+                    setIsAdminModalOpen(true);
+                  }}
+                />
+
                 <div className="px-3 pt-3 pb-1.5 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-white/35">
                   <Languages size={13} /> {t('nav.language')}
                 </div>
@@ -373,6 +386,7 @@ export function AppHeader({
       <div className="legacy-theme">
         <AuthModal isOpen={isAuthOpen} onClose={handleCloseAuth} />
         <UserProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} />
+        <AdminVaultModal isOpen={isAdminModalOpen} onClose={() => setIsAdminModalOpen(false)} />
         <MemoriesModal
           isOpen={isMemoriesModalOpen}
           onClose={handleCloseMemories}

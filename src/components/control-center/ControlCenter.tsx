@@ -17,6 +17,7 @@ import {
   AlertTriangle,
   XCircle,
   Radio,
+  Shield,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import type {
@@ -47,6 +48,7 @@ import { ProviderCatalog } from './ProviderCatalog';
 import { UsageTracker } from './UsageTracker';
 import { AdvancedSettings } from './AdvancedSettings';
 import { AutomationCenter } from './AutomationCenter';
+import { AdminVaultModal } from '@/components/admin/AdminVaultModal';
 
 export type ControlCenterTab = 'dashboard' | 'providers' | 'usage' | 'settings' | 'automation';
 
@@ -57,6 +59,7 @@ interface ControlCenterProps {
 export function ControlCenter({ onOpenAuth }: ControlCenterProps) {
   const { isAuthenticated, isConfigured } = useAuth();
   const [activeTab, setActiveTab] = useState<ControlCenterTab>('dashboard');
+  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   const [config, setConfig] = useState<AIControlCenterConfig>(getAIConfig());
   const [logs, setLogs] = useState<AITelemetryLog[]>(getTelemetryLogs());
   const [usageSummary, setUsageSummary] = useState<AIUsageSummary>(
@@ -191,6 +194,17 @@ export function ControlCenter({ onOpenAuth }: ControlCenterProps) {
                       : 'Non configuré'}
               </span>
             </div>
+
+            <button
+              type="button"
+              id="btn-open-super-admin-vault"
+              onClick={() => setIsAdminModalOpen(true)}
+              title="Ouvrir le Coffre-Fort Super-Admin (Sécurité Biométrique)"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-700 dark:text-amber-300 font-bold text-xs transition-colors cursor-pointer"
+            >
+              <Shield size={14} className="text-amber-500" />
+              <span className="hidden sm:inline">Coffre Super-Admin</span>
+            </button>
 
             <button
               type="button"
@@ -350,6 +364,12 @@ export function ControlCenter({ onOpenAuth }: ControlCenterProps) {
           )}
         </div>
       </div>
+
+      {/* Coffre-fort Super-Admin Biométrique */}
+      <AdminVaultModal
+        isOpen={isAdminModalOpen}
+        onClose={() => setIsAdminModalOpen(false)}
+      />
     </div>
   );
 }
