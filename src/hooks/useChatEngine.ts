@@ -44,6 +44,8 @@ export function useChatEngine({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  // Verrou synchrone anti-rebond : empêche les doubles soumissions ou frappes frénétiques
+  const isSendingRef = useRef(false);
 
   const addAttachedImage = useCallback((dataUrl: string) => {
     setAttachedImages((prev) => [...prev, dataUrl]);
@@ -81,11 +83,13 @@ export function useChatEngine({
     const textToSend = customMessage !== undefined ? customMessage : input;
     const trimmed = textToSend.trim() || defaultPromptForDocuments || defaultPromptForImages;
 
-    if (!trimmed || isLoading) return;
+    if (!trimmed || isLoading || isSendingRef.current) return;
     if (trimmed.length > MAX_MESSAGE_LENGTH) {
       setError(`Le message est trop long (max ${MAX_MESSAGE_LENGTH} caractères).`);
       return;
     }
+
+    isSendingRef.current = true;
 
     const currentImages = [...attachedImages];
     const currentDocuments = [...attachedDocuments];
@@ -162,6 +166,7 @@ export function useChatEngine({
       console.error('[ChatEngine]', err);
     } finally {
       setIsLoading(false);
+      isSendingRef.current = false;
       abortRef.current = null;
     }
   }, [

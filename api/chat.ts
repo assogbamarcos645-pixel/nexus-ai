@@ -280,7 +280,7 @@ RAPPEL IMPORTANT : Ne réponds JAMAIS par une formule passive d'attente ("Je sui
       contents.push({ role: 'user', parts: userParts });
 
       const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${envKey}`;
-      const res = await fetch(geminiUrl, {
+      let res = await fetch(geminiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -292,6 +292,23 @@ RAPPEL IMPORTANT : Ne réponds JAMAIS par une formule passive d'attente ("Je sui
           },
         }),
       });
+
+      // Repli instantané sur gemini-1.5-flash si 429 (Rate Limit) sur Gemini
+      if (!res.ok && res.status === 429 && geminiModel !== 'gemini-1.5-flash') {
+        const fallbackGeminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${envKey}`;
+        res = await fetch(fallbackGeminiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: systemPrompt }] },
+            contents,
+            generationConfig: {
+              temperature: safeTemp,
+              maxOutputTokens: safeMaxTokens,
+            },
+          }),
+        });
+      }
 
       if (!res.ok) {
         const errJson = await res.json().catch(() => ({}));
@@ -330,7 +347,7 @@ RAPPEL IMPORTANT : Ne réponds JAMAIS par une formule passive d'attente ("Je sui
         ? 'https://api.groq.com/openai/v1/chat/completions'
         : 'https://api.openai.com/v1/chat/completions';
       const defaultModel = isGroq ? 'llama-3.3-70b-versatile' : 'gpt-4o';
-      const finalModel = modelId || defaultModel;
+      let finalModel = modelId || defaultModel;
 
       const messages = [
         { role: 'system', content: systemPrompt },
@@ -346,7 +363,7 @@ RAPPEL IMPORTANT : Ne réponds JAMAIS par une formule passive d'attente ("Je sui
         return handleOpenAICompatibleStream(apiUrl, envKey, finalModel, messages, safeTemp, safeMaxTokens);
       }
 
-      const res = await fetch(apiUrl, {
+      let res = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -359,6 +376,68 @@ RAPPEL IMPORTANT : Ne réponds JAMAIS par une formule passive d'attente ("Je sui
           max_tokens: safeMaxTokens,
         }),
       });
+
+      // Repli instantané sur modèle léger (llama-3.1-8b-instant) en cas de 429
+      if (!res.ok && res.status === 429 && isGroq && finalModel !== 'llama-3.1-8b-instant') {
+        finalModel = 'llama-3.1-8b-instant';
+        res = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${envKey}`,
+          },
+          body: JSON.stringify({
+            model: finalModel,
+            messages,
+            temperature: safeTemp,
+            max_tokens: safeMaxTokens,
+          }),
+        });
+      }
+
+      // Cascade multi-fournisseurs si Groq reste saturé en 429
+      if (!res.ok && res.status === 429 && isGroq) {
+        if (process.env.GEMINI_API_KEY) {
+          const geminiContents = messages
+            .filter((m) => m.role === 'user' || m.role === 'assistant')
+            .map((m) => ({
+              role: m.role === 'assistant' ? 'model' : 'user',
+              parts: [{ text: String(m.content) }],
+            }));
+          const systemInstruction = messages.find((m) => m.role === 'system')?.content || '';
+          const geminiRes = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                ...(systemInstruction ? { systemInstruction: { parts: [{ text: systemInstruction }] } } : {}),
+                contents: geminiContents,
+                generationConfig: {
+                  temperature: safeTemp,
+                  maxOutputTokens: safeMaxTokens,
+                },
+              }),
+            },
+          );
+
+          if (geminiRes.ok) {
+            const data = await geminiRes.json();
+            const content = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            return new Response(
+              JSON.stringify({
+                content,
+                tokens: {
+                  promptTokens: data.usageMetadata?.promptTokenCount || Math.max(1, Math.round(message.length / 4)),
+                  completionTokens: data.usageMetadata?.candidatesTokenCount || Math.max(1, Math.round(content.length / 4)),
+                  totalTokens: data.usageMetadata?.totalTokenCount || 0,
+                },
+              }),
+              { status: 200, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } },
+            );
+          }
+        }
+      }
 
       if (!res.ok) {
         const errJson = await res.json().catch(() => ({}));
@@ -494,20 +573,98 @@ async function handleOpenAICompatibleStream(
   temperature: number,
   max_tokens: number,
 ): Promise<Response> {
-  const upstreamRes = await fetch(url, {
+  let activeModel = model;
+  let upstreamRes = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${key}`,
     },
     body: JSON.stringify({
-      model,
+      model: activeModel,
       messages,
       temperature,
       max_tokens,
       stream: true,
     }),
   });
+
+  // Repli instantané sur modèle léger (llama-3.1-8b-instant) en cas de 429 sur Groq
+  if (!upstreamRes.ok && upstreamRes.status === 429 && url.includes('groq.com') && activeModel !== 'llama-3.1-8b-instant') {
+    activeModel = 'llama-3.1-8b-instant';
+    upstreamRes = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${key}`,
+      },
+      body: JSON.stringify({
+        model: activeModel,
+        messages,
+        temperature,
+        max_tokens,
+        stream: true,
+      }),
+    });
+  }
+
+  // Cascade multi-fournisseurs si Groq reste saturé en 429
+  if (!upstreamRes.ok && upstreamRes.status === 429 && url.includes('groq.com')) {
+    // 1. Cascade automatique vers Google Gemini Flash si configuré
+    if (process.env.GEMINI_API_KEY) {
+      const geminiFallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+      const geminiContents = messages
+        .filter((m) => m.role === 'user' || m.role === 'assistant')
+        .map((m) => ({
+          role: m.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: String(m.content) }],
+        }));
+      const systemInstruction = messages.find((m) => m.role === 'system')?.content || '';
+
+      const geminiRes = await fetch(geminiFallbackUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...(systemInstruction ? { systemInstruction: { parts: [{ text: systemInstruction }] } } : {}),
+          contents: geminiContents,
+          generationConfig: {
+            temperature,
+            maxOutputTokens: max_tokens,
+          },
+        }),
+      });
+
+      if (geminiRes.ok) {
+        const geminiData = await geminiRes.json();
+        const geminiText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        return createSseResponse(async (send) => {
+          send(geminiText);
+        });
+      }
+    }
+
+    // 2. Cascade automatique vers Mistral si configuré
+    if (process.env.MISTRAL_API_KEY) {
+      const mistralRes = await fetch('https://api.mistral.ai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.MISTRAL_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: 'codestral-latest',
+          messages,
+          temperature,
+          max_tokens,
+          stream: true,
+        }),
+      });
+
+      if (mistralRes.ok) {
+        upstreamRes = mistralRes;
+      }
+    }
+  }
 
   if (!upstreamRes.ok) {
     const errJson = await upstreamRes.json().catch(() => ({}));
