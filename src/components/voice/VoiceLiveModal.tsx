@@ -103,7 +103,7 @@ export function VoiceLiveModal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-xl h-[86vh] max-h-[680px] rounded-3xl bg-gradient-to-b from-slate-900 via-[#070716] to-[#030308] border border-white/10 shadow-[0_0_90px_rgba(6,182,212,0.2)] flex flex-col justify-between items-center p-6 sm:p-8 overflow-hidden cursor-default text-slate-100"
+        className="relative w-full max-w-xl h-[92vh] sm:h-[86vh] max-h-[680px] rounded-2xl sm:rounded-3xl bg-gradient-to-b from-slate-900 via-[#070716] to-[#030308] border border-white/10 shadow-[0_0_90px_rgba(6,182,212,0.2)] flex flex-col justify-between items-center p-4 sm:p-8 overflow-y-auto cursor-default text-slate-100"
       >
         {/* Lueur d'ambiance cosmique réactive en arrière-plan */}
         <div

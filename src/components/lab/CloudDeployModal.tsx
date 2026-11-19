@@ -154,19 +154,19 @@ export function CloudDeployModal({
         className="relative w-full max-w-xl bg-white dark:bg-[#0c0d1e] border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden cursor-default"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-white/8 bg-slate-50/80 dark:bg-surface-900/40">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-cyan-500/20">
+        <div className="flex items-center justify-between px-3.5 sm:px-5 py-3 sm:py-4 border-b border-slate-200 dark:border-white/8 bg-slate-50/80 dark:bg-surface-900/40">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-cyan-500/20 shrink-0">
               <Rocket size={16} />
             </div>
-            <div>
-              <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <span>Déploiement Cloud en 1 Clic</span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-600 dark:text-cyan-300 font-semibold uppercase tracking-wider">
+            <div className="min-w-0">
+              <h2 className="text-xs sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-1.5 sm:gap-2">
+                <span className="truncate">Déploiement Cloud 1 Clic</span>
+                <span className="hidden sm:inline-block text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-600 dark:text-cyan-300 font-semibold uppercase tracking-wider shrink-0">
                   NEXUS LAB
                 </span>
               </h2>
-              <p className="text-xs text-slate-500 dark:text-white/60">
+              <p className="hidden sm:block text-xs text-slate-500 dark:text-white/60 truncate">
                 Publiez votre projet « {project.name} » sur le web public en direct.
               </p>
             </div>

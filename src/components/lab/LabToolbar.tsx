@@ -165,7 +165,7 @@ export function LabToolbar({
           )}
 
           {/* Sélecteur de projet actif */}
-          <div className="relative min-w-0 max-w-[140px] sm:max-w-[170px] md:max-w-[180px]">
+          <div className="relative min-w-0 max-w-[120px] sm:max-w-[170px] md:max-w-[180px]">
             <select
               id="select-active-project"
               value={activeProject?.id || ''}
@@ -289,7 +289,7 @@ export function LabToolbar({
               <div className="w-4 h-4 rounded-md bg-gradient-to-tr from-cyan-400 to-indigo-500 flex items-center justify-center text-white shrink-0 shadow-xs">
                 <Sparkles size={10} />
               </div>
-              <span className="font-semibold">Outils Pro</span>
+              <span className="hidden sm:inline font-semibold">Outils Pro</span>
               <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold bg-nexus-500/20 text-nexus-600 dark:text-cyan-300 border border-nexus-500/30">
                 5
               </span>
@@ -330,11 +330,11 @@ export function LabToolbar({
               type="button"
               id="btn-toolbar-deploy-cloud"
               onClick={onOpenCloudDeploy}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-cyan-500 via-indigo-600 to-purple-600 hover:from-cyan-400 hover:to-purple-500 shadow-md shadow-cyan-500/20 transition-all cursor-pointer shrink-0"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-cyan-500 via-indigo-600 to-purple-600 hover:from-cyan-400 hover:to-purple-500 shadow-md shadow-cyan-500/20 transition-all cursor-pointer shrink-0"
               title="Déployer ce projet en 1 clic sur Vercel, Netlify ou générer un HTML autonome"
             >
               <Rocket size={13} className="text-white" />
-              <span>Déployer</span>
+              <span className="hidden sm:inline">Déployer</span>
             </button>
           )}
 

@@ -158,25 +158,25 @@ export function TemplateHubModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* En-tête */}
-        <div className="px-6 py-5 border-b border-slate-800 bg-slate-950/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-2xl bg-gradient-to-tr from-cyan-500/20 to-purple-500/20 border border-cyan-500/30 text-cyan-400 shadow-md">
-              <Sparkles size={22} />
+        <div className="px-3.5 sm:px-6 py-3 sm:py-5 border-b border-slate-800 bg-slate-950/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-cyan-500/20 to-purple-500/20 border border-cyan-500/30 text-cyan-400 shadow-md shrink-0">
+              <Sparkles size={20} className="sm:w-[22px] sm:h-[22px]" />
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-bold text-white tracking-tight">Hub de Templates Modernes</h3>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-mono border border-cyan-500/30">
+                <h3 className="text-base sm:text-lg font-bold text-white tracking-tight truncate">Hub de Templates Modernes</h3>
+                <span className="hidden sm:inline-block text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-mono border border-cyan-500/30 shrink-0">
                   {LAB_TEMPLATES.length} modèles prêts à l'emploi
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="hidden sm:block text-xs text-slate-400 mt-0.5 truncate">
                 Démarrez votre projet sur une base d'ingénierie robuste, typée et responsive.
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Barre de Recherche */}
             <div className="relative w-full sm:w-64">
               <Search size={14} className="absolute left-3 top-2.5 text-slate-400" />
@@ -193,7 +193,7 @@ export function TemplateHubModal({
         </div>
 
         {/* Barre de Filtres Catégories */}
-        <div className="px-6 py-2.5 border-b border-slate-800 bg-slate-900/80 flex items-center gap-2 overflow-x-auto scrollbar-thin shrink-0">
+        <div className="px-3 sm:px-6 py-2 sm:py-2.5 border-b border-slate-800 bg-slate-900/80 flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-none shrink-0">
           {CATEGORIES.map((cat) => {
             const Icon = cat.icon;
             return (
@@ -201,7 +201,7 @@ export function TemplateHubModal({
                 key={cat.id}
                 type="button"
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
                   selectedCategory === cat.id
                     ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-xs'
                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent'
@@ -215,7 +215,7 @@ export function TemplateHubModal({
         </div>
 
         {/* Grille des Modèles */}
-        <div className="flex-1 overflow-y-auto p-6 scrollbar-thin">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-6 scrollbar-thin">
           {filteredTemplates.length === 0 ? (
             <div className="text-center py-20 text-slate-500 text-xs">
               Aucun modèle ne correspond à votre recherche « {searchQuery} ».

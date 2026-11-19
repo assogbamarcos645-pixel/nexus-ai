@@ -218,19 +218,19 @@ export function DatabaseModelerModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* En-tête */}
-        <div className="px-6 py-4 border-b border-slate-800 bg-slate-950/60 flex items-center justify-between gap-4 shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-tr from-cyan-500/20 to-indigo-500/20 border border-cyan-500/30 text-cyan-400">
+        <div className="px-3.5 sm:px-6 py-3 sm:py-4 border-b border-slate-800 bg-slate-950/60 flex items-center justify-between gap-3 shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="p-2 rounded-xl bg-gradient-to-tr from-cyan-500/20 to-indigo-500/20 border border-cyan-500/30 text-cyan-400 shrink-0">
               <Database size={20} />
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold text-white">Studio de Modélisation BDD</h3>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-mono border border-cyan-500/30">
+                <h3 className="text-sm sm:text-base font-bold text-white truncate">Studio de Modélisation BDD</h3>
+                <span className="hidden sm:inline-block text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-mono border border-cyan-500/30 shrink-0">
                   PostgreSQL & Supabase
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="hidden sm:block text-xs text-slate-400 mt-0.5 truncate">
                 Concevez vos entités, relations et règles RLS avec génération de code instantanée.
               </p>
             </div>
@@ -268,47 +268,47 @@ export function DatabaseModelerModal({
         </div>
 
         {/* Barre de navigation interne */}
-        <div className="px-6 py-2.5 border-b border-slate-800 bg-slate-900/80 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2">
+        <div className="px-3.5 sm:px-6 py-2 sm:py-2.5 border-b border-slate-800 bg-slate-900/80 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-none pb-1 sm:pb-0">
             <button
               type="button"
               onClick={() => setActiveTab('tables')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
                 activeTab === 'tables'
                   ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-xs'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
               }`}
             >
-              <TableIcon size={14} />
+              <TableIcon size={14} className="shrink-0" />
               <span>Tables & Colonnes ({schema.tables.length})</span>
             </button>
             <button
               type="button"
               onClick={() => setActiveTab('rls')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
                 activeTab === 'rls'
                   ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-xs'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
               }`}
             >
-              <ShieldCheck size={14} />
+              <ShieldCheck size={14} className="shrink-0" />
               <span>Sécurité RLS ({schema.policies.length})</span>
             </button>
             <button
               type="button"
               onClick={() => setActiveTab('code')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
                 activeTab === 'code'
                   ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-xs'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
               }`}
             >
-              <Code2 size={14} />
-              <span>Code Généré (SQL & TypeScript)</span>
+              <Code2 size={14} className="shrink-0" />
+              <span>Code Généré</span>
             </button>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-end gap-2 shrink-0">
             <button
               type="button"
               onClick={handleInject}
@@ -326,12 +326,12 @@ export function DatabaseModelerModal({
         </div>
 
         {/* Contenu principal */}
-        <div className="flex-1 overflow-hidden flex">
+        <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
           {activeTab === 'tables' && (
             <>
               {/* Panneau gauche : Liste des tables */}
-              <div className="w-64 border-r border-slate-800 bg-slate-950/40 p-3 flex flex-col shrink-0">
-                <div className="flex items-center justify-between mb-3 px-1">
+              <div className="w-full md:w-64 max-h-36 md:max-h-none border-b md:border-b-0 md:border-r border-slate-800 bg-slate-950/40 p-2.5 md:p-3 flex flex-col shrink-0">
+                <div className="flex items-center justify-between mb-2 md:mb-3 px-1">
                   <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                     Tables
                   </span>
@@ -376,11 +376,11 @@ export function DatabaseModelerModal({
 
               {/* Panneau droit : Détail de la table sélectionnée */}
               {currentTable && (
-                <div className="flex-1 flex flex-col overflow-hidden bg-slate-900/60 p-6">
+                <div className="flex-1 flex flex-col overflow-y-auto bg-slate-900/60 p-3 sm:p-6 scrollbar-thin">
                   {/* Configuration générale de la table */}
-                  <div className="flex items-center justify-between gap-4 pb-4 border-b border-slate-800 shrink-0">
-                    <div className="flex items-center gap-4 flex-1">
-                      <div className="flex-1 max-w-xs">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-3 sm:pb-4 border-b border-slate-800 shrink-0">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-4 flex-1">
+                      <div className="flex-1 max-w-full sm:max-w-xs">
                         <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
                           Nom de la table (PostgreSQL)
                         </label>
@@ -395,7 +395,7 @@ export function DatabaseModelerModal({
                           className="w-full px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-xs font-mono text-cyan-300 focus:outline-none focus:border-cyan-500"
                         />
                       </div>
-                      <div className="flex-1 max-w-sm">
+                      <div className="flex-1 max-w-full sm:max-w-sm">
                         <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
                           Commentaire / Rôle
                         </label>

@@ -825,3 +825,13 @@ input, textarea {
 .nexus-copy-code-btn:active {
   transform: scale(0.92);
 }
+
+/* Optimisation tactile et anti-zoom automatique iOS Safari / Android */
+@media screen and (max-width: 768px) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
