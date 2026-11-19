@@ -33,6 +33,7 @@ import {
   Database,
   Mic,
   ShieldCheck,
+  ChevronRight,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import type { LabProject, LabFile, LabTab, LabLayoutMode } from '@/types/lab';
@@ -145,7 +146,10 @@ export function LabToolbar({
   return (
     <header
       id="nexus-lab-toolbar"
-      className="liquid-glass border-b border-slate-200/80 dark:border-white/10 px-3 py-1.5 flex flex-col gap-1.5 shrink-0 select-none z-10"
+      className={cn(
+        'liquid-glass border-b border-slate-200/80 dark:border-white/10 px-3 py-1.5 flex flex-col gap-1.5 shrink-0 select-none transition-all',
+        isToolsDropdownOpen ? 'relative z-50' : 'relative z-30',
+      )}
     >
       <div className="flex items-center justify-between md:grid md:grid-cols-[auto_auto_1fr] lg:grid-cols-[1fr_auto_1fr] gap-1.5 sm:gap-3 w-full min-w-0">
         {/* Zone 1 (Gauche) : Sélecteur de projet & Badge (Largeur contrôlée sans débordement) */}
@@ -276,7 +280,7 @@ export function LabToolbar({
             <span>Nouveau</span>
           </button>
 
-          {/* Menu Déroulant "Outils Pro" regroupant Modèles, Studio BDD, Vocal Live, Tests & Équipe sans aucun chevauchement */}
+          {/* Menu Déroulant "Outils Pro" regroupant Modèles, Studio BDD, Vocal Live, Tests & Équipe */}
           <div className="relative shrink-0" ref={toolsDropdownRef}>
             <button
               type="button"
@@ -284,160 +288,222 @@ export function LabToolbar({
               onClick={() => setIsToolsDropdownOpen((prev) => !prev)}
               aria-expanded={isToolsDropdownOpen}
               className={cn(
-                'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer shrink-0 border',
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 border shadow-xs',
                 isToolsDropdownOpen
-                  ? 'bg-nexus-600/20 text-white border-nexus-500 shadow-[0_0_15px_rgba(124,13,244,0.35)]'
-                  : 'bg-slate-100/90 dark:bg-white/5 text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/90 dark:hover:bg-white/10 border-slate-200/80 dark:border-white/10',
+                  ? 'bg-gradient-to-r from-nexus-600 to-indigo-600 text-white border-nexus-400 shadow-[0_0_18px_rgba(124,13,244,0.4)] ring-2 ring-nexus-400/30'
+                  : 'bg-white/90 dark:bg-white/8 text-slate-800 dark:text-white/90 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/80 dark:hover:bg-white/12 border-slate-300 dark:border-white/15',
               )}
-              title="Outils Pro : Modèles, Studio BDD, Vocal Live, Tests et Mode Équipe"
+              title="Outils Pro (5 fonctionnalités d'ingénierie avancée)"
             >
-              <Sparkles size={13} className="text-nexus-500 dark:text-nexus-400" />
-              <span className="hidden sm:inline">Outils Pro</span>
+              <div className="w-4 h-4 rounded-md bg-gradient-to-tr from-cyan-400 to-indigo-500 flex items-center justify-center text-white shrink-0 shadow-xs">
+                <Sparkles size={10} />
+              </div>
+              <span className="font-semibold">Outils Pro</span>
+              <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold bg-nexus-500/20 text-nexus-600 dark:text-cyan-300 border border-nexus-500/30">
+                5
+              </span>
               <ChevronDown
-                size={12}
+                size={13}
                 className={cn(
-                  'transition-transform duration-200 text-slate-400',
-                  isToolsDropdownOpen && 'rotate-180 text-nexus-400',
+                  'transition-transform duration-200 text-slate-400 dark:text-slate-300',
+                  isToolsDropdownOpen && 'rotate-180 text-white',
                 )}
               />
             </button>
 
             {isToolsDropdownOpen && (
-              <div
-                className="absolute right-0 mt-1.5 w-72 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-2 z-50 flex flex-col gap-1 animate-in fade-in slide-in-from-top-2 duration-150"
-                role="menu"
-              >
-                <div className="px-3 py-1.5 border-b border-slate-100 dark:border-slate-800/80 mb-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    Studio & Ingénierie IA
-                  </span>
+              <>
+                {/* Bouclier transparent de clic extérieur qui intercepte aussi les clics au-dessus des iframes et de l'éditeur */}
+                <div
+                  className="fixed inset-0 z-40 bg-black/25 backdrop-blur-[1px] animate-in fade-in duration-100"
+                  onClick={() => setIsToolsDropdownOpen(false)}
+                />
+
+                <div
+                  className="absolute left-0 mt-2 w-84 sm:w-96 rounded-2xl bg-white dark:bg-[#0c0e22] border-2 border-slate-200 dark:border-indigo-500/40 shadow-[0_25px_60px_rgba(0,0,0,0.35)] dark:shadow-[0_25px_60px_rgba(0,0,0,0.85)] p-2.5 z-50 flex flex-col gap-1.5 animate-in fade-in slide-in-from-top-2 duration-150 ring-1 ring-black/5 dark:ring-white/10"
+                  role="menu"
+                >
+                  {/* En-tête du menu */}
+                  <div className="px-3 py-2 border-b border-slate-100 dark:border-white/8 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Sparkles size={14} className="text-nexus-500 dark:text-cyan-400" />
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-white">
+                        Suite d'Ingénierie NEXUS
+                      </span>
+                    </div>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-300 font-mono font-semibold border border-cyan-500/20">
+                      5 Outils Actifs
+                    </span>
+                  </div>
+
+                  {/* 1. Hub de Modèles */}
+                  {onOpenTemplateHub && (
+                    <button
+                      type="button"
+                      id="btn-toolbar-template-hub"
+                      onClick={() => {
+                        setIsToolsDropdownOpen(false);
+                        onOpenTemplateHub();
+                      }}
+                      className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-100/90 dark:hover:bg-white/8 text-left transition-all cursor-pointer group border border-transparent hover:border-slate-200 dark:hover:border-white/10"
+                      role="menuitem"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500/20 to-blue-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-500 dark:text-cyan-400 shrink-0 group-hover:scale-105 transition-transform shadow-xs">
+                        <Sparkles size={18} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-300 transition-colors">
+                            Hub de Modèles Modernes
+                          </span>
+                          <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-cyan-500/15 text-cyan-600 dark:text-cyan-300 font-mono font-bold">
+                            6 MODÈLES
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-slate-600 dark:text-slate-300 line-clamp-1 mt-0.5">
+                          SaaS, E-Commerce, Portfolios, Apps IA prêtes à cloner
+                        </div>
+                      </div>
+                      <ChevronRight size={15} className="text-slate-400 group-hover:text-cyan-400 group-hover:translate-x-0.5 transition-all shrink-0" />
+                    </button>
+                  )}
+
+                  {/* 2. Studio BDD */}
+                  {onOpenDbModeler && (
+                    <button
+                      type="button"
+                      id="btn-toolbar-db-modeler"
+                      onClick={() => {
+                        setIsToolsDropdownOpen(false);
+                        onOpenDbModeler();
+                      }}
+                      className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-100/90 dark:hover:bg-white/8 text-left transition-all cursor-pointer group border border-transparent hover:border-slate-200 dark:hover:border-white/10"
+                      role="menuitem"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-500 dark:text-indigo-400 shrink-0 group-hover:scale-105 transition-transform shadow-xs">
+                        <Database size={18} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors">
+                            Studio BDD Supabase
+                          </span>
+                          <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-indigo-500/15 text-indigo-600 dark:text-indigo-300 font-mono font-bold">
+                            SQL & RLS
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-slate-600 dark:text-slate-300 line-clamp-1 mt-0.5">
+                          Conception tables relationnelles, clés étrangères & migrations
+                        </div>
+                      </div>
+                      <ChevronRight size={15} className="text-slate-400 group-hover:text-indigo-400 group-hover:translate-x-0.5 transition-all shrink-0" />
+                    </button>
+                  )}
+
+                  {/* 3. Mode Vocal Live */}
+                  {onOpenVoiceLive && (
+                    <button
+                      type="button"
+                      id="btn-toolbar-voice-live"
+                      onClick={() => {
+                        setIsToolsDropdownOpen(false);
+                        onOpenVoiceLive();
+                      }}
+                      className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-cyan-500/10 text-left transition-all cursor-pointer group border border-transparent hover:border-cyan-500/30"
+                      role="menuitem"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500/20 to-teal-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400 shrink-0 group-hover:scale-105 transition-transform shadow-xs">
+                        <Mic size={18} className="animate-pulse" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-cyan-600 dark:text-cyan-300">
+                            Mode Vocal Live
+                          </span>
+                          <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-cyan-500/20 text-cyan-400 font-mono font-bold flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
+                            LIVE
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-slate-600 dark:text-slate-300 line-clamp-1 mt-0.5">
+                          Discussion vocale bidirectionnelle fluide avec l'IA
+                        </div>
+                      </div>
+                      <ChevronRight size={15} className="text-cyan-400 group-hover:translate-x-0.5 transition-all shrink-0" />
+                    </button>
+                  )}
+
+                  {/* 4. Tests 1-Clic */}
+                  {onOpenTestGenerator && (
+                    <button
+                      type="button"
+                      id="btn-toolbar-test-generator"
+                      onClick={() => {
+                        setIsToolsDropdownOpen(false);
+                        onOpenTestGenerator();
+                      }}
+                      className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-emerald-500/10 text-left transition-all cursor-pointer group border border-transparent hover:border-emerald-500/30"
+                      role="menuitem"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-500 dark:text-emerald-400 shrink-0 group-hover:scale-105 transition-transform shadow-xs">
+                        <ShieldCheck size={18} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-300 transition-colors">
+                            Tests Automatisés 1-Clic
+                          </span>
+                          <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 font-mono font-bold">
+                            VITEST & E2E
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-slate-600 dark:text-slate-300 line-clamp-1 mt-0.5">
+                          Génération instantanée de suites unitaires & Playwright
+                        </div>
+                      </div>
+                      <ChevronRight size={15} className="text-slate-400 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all shrink-0" />
+                    </button>
+                  )}
+
+                  {/* 5. Mode Équipe */}
+                  {onOpenTeamCollab && (
+                    <button
+                      type="button"
+                      id="btn-toolbar-team-collab"
+                      onClick={() => {
+                        setIsToolsDropdownOpen(false);
+                        onOpenTeamCollab();
+                      }}
+                      className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-purple-500/10 text-left transition-all cursor-pointer group border border-transparent hover:border-purple-500/30"
+                      role="menuitem"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-500/20 to-pink-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400 shrink-0 group-hover:scale-105 transition-transform shadow-xs">
+                        <Users size={18} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-purple-600 dark:text-purple-300">
+                            Mode Équipe Multijoueur
+                          </span>
+                          <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-purple-500/20 text-purple-400 font-mono font-bold">
+                            PAIR CODE
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-slate-600 dark:text-slate-300 line-clamp-1 mt-0.5">
+                          Collaboration en direct, curseurs partagés & copilote IA
+                        </div>
+                      </div>
+                      <ChevronRight size={15} className="text-purple-400 group-hover:translate-x-0.5 transition-all shrink-0" />
+                    </button>
+                  )}
+
+                  {/* Pied du menu */}
+                  <div className="px-3 py-2 border-t border-slate-100 dark:border-white/8 bg-slate-50/80 dark:bg-white/4 rounded-b-xl flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                    <span>⚡ Intégré directement dans NEXUS LAB</span>
+                    <span>Échap pour fermer</span>
+                  </div>
                 </div>
-
-                {onOpenTemplateHub && (
-                  <button
-                    type="button"
-                    id="btn-toolbar-template-hub"
-                    onClick={() => {
-                      setIsToolsDropdownOpen(false);
-                      onOpenTemplateHub();
-                    }}
-                    className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/70 text-left transition-colors cursor-pointer group"
-                    role="menuitem"
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-500 dark:text-cyan-400 shrink-0 group-hover:scale-105 transition-transform">
-                      <Sparkles size={16} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-xs font-semibold text-slate-800 dark:text-white">Hub de Modèles</div>
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                        SaaS, E-Commerce, Dashboards
-                      </div>
-                    </div>
-                  </button>
-                )}
-
-                {onOpenDbModeler && (
-                  <button
-                    type="button"
-                    id="btn-toolbar-db-modeler"
-                    onClick={() => {
-                      setIsToolsDropdownOpen(false);
-                      onOpenDbModeler();
-                    }}
-                    className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/70 text-left transition-colors cursor-pointer group"
-                    role="menuitem"
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500 dark:text-indigo-400 shrink-0 group-hover:scale-105 transition-transform">
-                      <Database size={16} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-xs font-semibold text-slate-800 dark:text-white">Studio BDD Supabase</div>
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                        Tables relationnelles, clés & RLS
-                      </div>
-                    </div>
-                  </button>
-                )}
-
-                {onOpenVoiceLive && (
-                  <button
-                    type="button"
-                    id="btn-toolbar-voice-live"
-                    onClick={() => {
-                      setIsToolsDropdownOpen(false);
-                      onOpenVoiceLive();
-                    }}
-                    className="flex items-center gap-3 p-2 rounded-xl hover:bg-cyan-500/10 text-left transition-colors cursor-pointer group"
-                    role="menuitem"
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0 group-hover:scale-105 transition-transform">
-                      <Mic size={16} className="animate-pulse" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-xs font-semibold text-cyan-600 dark:text-cyan-300 flex items-center gap-1.5">
-                        <span>Mode Vocal Live</span>
-                        <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-cyan-500/20 text-cyan-400 font-mono font-bold">
-                          LIVE
-                        </span>
-                      </div>
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                        Conversation vocale mains libres
-                      </div>
-                    </div>
-                  </button>
-                )}
-
-                {onOpenTestGenerator && (
-                  <button
-                    type="button"
-                    id="btn-toolbar-test-generator"
-                    onClick={() => {
-                      setIsToolsDropdownOpen(false);
-                      onOpenTestGenerator();
-                    }}
-                    className="flex items-center gap-3 p-2 rounded-xl hover:bg-emerald-500/10 text-left transition-colors cursor-pointer group"
-                    role="menuitem"
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 dark:text-emerald-400 shrink-0 group-hover:scale-105 transition-transform">
-                      <ShieldCheck size={16} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-xs font-semibold text-slate-800 dark:text-white">Tests 1-Clic</div>
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                        Suites Vitest & Playwright
-                      </div>
-                    </div>
-                  </button>
-                )}
-
-                {onOpenTeamCollab && (
-                  <button
-                    type="button"
-                    id="btn-toolbar-team-collab"
-                    onClick={() => {
-                      setIsToolsDropdownOpen(false);
-                      onOpenTeamCollab();
-                    }}
-                    className="flex items-center gap-3 p-2 rounded-xl hover:bg-purple-500/10 text-left transition-colors cursor-pointer group"
-                    role="menuitem"
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400 shrink-0 group-hover:scale-105 transition-transform">
-                      <Users size={16} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-xs font-semibold text-purple-600 dark:text-purple-300 flex items-center gap-1.5">
-                        <span>Mode Équipe</span>
-                        <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-purple-500/20 text-purple-400 font-mono font-bold">
-                          MULTI
-                        </span>
-                      </div>
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                        Curseurs en direct & chat d'équipe
-                      </div>
-                    </div>
-                  </button>
-                )}
-              </div>
+              </>
             )}
           </div>
 
