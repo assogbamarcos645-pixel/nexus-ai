@@ -7,6 +7,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Database,
   Plus,
@@ -73,6 +74,7 @@ export function DatabaseModelerModal({
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
+  if (typeof document === 'undefined') return null;
 
   const currentTable = schema.tables.find((t) => t.id === selectedTableId) || schema.tables[0];
 
@@ -204,9 +206,9 @@ export function DatabaseModelerModal({
   const tsPreview = generateTypeScriptTypes(schema);
   const clientPreview = generateSupabaseClientSnippet();
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 cursor-pointer"
+      className="fixed inset-0 z-[150] flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 cursor-pointer"
       role="dialog"
       aria-modal="true"
       onClick={onClose}
@@ -701,6 +703,7 @@ export function DatabaseModelerModal({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

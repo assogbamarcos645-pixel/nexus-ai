@@ -7,6 +7,7 @@
  */
 
 import { useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import {
   ShieldCheck,
   CheckCircle2,
@@ -45,6 +46,7 @@ export function TestGeneratorModal({
   }, [project]);
 
   if (!isOpen || !project || !testSuite) return null;
+  if (typeof document === 'undefined') return null;
 
   const currentFile = testSuite.files[selectedFileIdx] || testSuite.files[0];
 
@@ -68,9 +70,9 @@ export function TestGeneratorModal({
     }, 600);
   };
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 cursor-pointer"
+      className="fixed inset-0 z-[150] flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 cursor-pointer"
       role="dialog"
       aria-modal="true"
       onClick={onClose}
@@ -191,6 +193,7 @@ export function TestGeneratorModal({
           </div>
         </footer>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

@@ -7,6 +7,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Users,
   X,
@@ -63,6 +64,7 @@ export function TeamCollaborationDrawer({
   }, [roomState.messages, activeTab]);
 
   if (!isOpen) return null;
+  if (typeof document === 'undefined') return null;
 
   const handleCreateRoom = () => {
     collaborationService.createOrJoinRoom();
@@ -93,9 +95,9 @@ export function TeamCollaborationDrawer({
     setChatInput('');
   };
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex justify-end bg-black/65 backdrop-blur-sm animate-in fade-in duration-200 cursor-pointer"
+      className="fixed inset-0 z-[150] flex justify-end bg-black/65 backdrop-blur-sm animate-in fade-in duration-200 cursor-pointer"
       role="dialog"
       aria-modal="true"
       onClick={onClose}
@@ -393,6 +395,7 @@ export function TeamCollaborationDrawer({
           </div>
         )}
       </aside>
-    </div>
+    </div>,
+    document.body,
   );
 }

@@ -7,6 +7,7 @@
  */
 
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   History,
   RotateCcw,
@@ -48,6 +49,7 @@ export function SnapshotHistoryModal({
   const [restoredId, setRestoredId] = useState<string | null>(null);
 
   if (!isOpen) return null;
+  if (typeof document === 'undefined') return null;
 
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,9 +112,9 @@ export function SnapshotHistoryModal({
     }
   };
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200 cursor-pointer"
+      className="fixed inset-0 z-[150] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200 cursor-pointer"
       role="dialog"
       aria-modal="true"
       aria-labelledby="history-modal-title"
@@ -294,6 +296,7 @@ export function SnapshotHistoryModal({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

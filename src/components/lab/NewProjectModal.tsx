@@ -5,6 +5,7 @@
  */
 
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Sparkles, Globe, Atom, Server, FileCode, Terminal } from 'lucide-react';
 import { LAB_TEMPLATES } from '@/config/labTemplates';
 import type { ProjectTemplateId } from '@/types/lab';
@@ -44,6 +45,7 @@ export function NewProjectModal({
   const [projectName, setProjectName] = useState('');
 
   if (!isOpen) return null;
+  if (typeof document === 'undefined') return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,9 +54,9 @@ export function NewProjectModal({
     onClose();
   };
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200 cursor-pointer"
+      className="fixed inset-0 z-[150] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200 cursor-pointer"
       role="dialog"
       aria-modal="true"
       aria-labelledby="new-project-title"
@@ -193,6 +195,7 @@ export function NewProjectModal({
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

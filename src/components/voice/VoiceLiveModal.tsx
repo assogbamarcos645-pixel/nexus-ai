@@ -9,6 +9,7 @@
  */
 
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Mic,
   MicOff,
@@ -73,6 +74,7 @@ export function VoiceLiveModal({
   }, [isOpen, onClose, stop]);
 
   if (!isOpen) return null;
+  if (typeof document === 'undefined') return null;
 
   const handleClose = () => {
     stop();
@@ -92,9 +94,9 @@ export function VoiceLiveModal({
     }
   };
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-2xl animate-in fade-in duration-200 cursor-pointer"
+      className="fixed inset-0 z-[150] flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-2xl animate-in fade-in duration-200 cursor-pointer"
       role="dialog"
       aria-modal="true"
       onClick={handleClose}
@@ -304,6 +306,7 @@ export function VoiceLiveModal({
           </div>
         </footer>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

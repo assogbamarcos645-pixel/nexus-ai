@@ -6,6 +6,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   FolderGit2,
   Lock,
@@ -71,6 +72,7 @@ export function GitHubExportModal({ isOpen, onClose, project }: GitHubExportModa
   }, [isOpen, project]);
 
   if (!isOpen || !project) return null;
+  if (typeof document === 'undefined') return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,9 +122,9 @@ export function GitHubExportModal({ isOpen, onClose, project }: GitHubExportModa
     setTimeout(() => setCopiedClone(false), 2000);
   };
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200 cursor-pointer"
+      className="fixed inset-0 z-[150] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200 cursor-pointer"
       role="dialog"
       aria-modal="true"
       aria-labelledby="github-modal-title"
@@ -370,6 +372,7 @@ export function GitHubExportModal({ isOpen, onClose, project }: GitHubExportModa
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

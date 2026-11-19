@@ -7,6 +7,7 @@
  */
 
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { FilePlus, Check, AlertCircle } from 'lucide-react';
 import { sanitizeAndValidatePath } from '@/services/lab/projectService';
 import { ModalCloseButton } from '@/components/ui/ModalCloseButton';
@@ -22,6 +23,7 @@ export function NewFileModal({ isOpen, onClose, onAddFile }: NewFileModalProps) 
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   if (!isOpen) return null;
+  if (typeof document === 'undefined') return null;
 
   const validation = sanitizeAndValidatePath(filePath);
 
@@ -43,9 +45,9 @@ export function NewFileModal({ isOpen, onClose, onAddFile }: NewFileModalProps) 
     onClose();
   };
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200 cursor-pointer"
+      className="fixed inset-0 z-[150] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200 cursor-pointer"
       role="dialog"
       aria-modal="true"
       aria-labelledby="new-file-title"
@@ -152,6 +154,7 @@ export function NewFileModal({ isOpen, onClose, onAddFile }: NewFileModalProps) 
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

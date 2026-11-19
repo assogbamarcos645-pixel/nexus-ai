@@ -116,17 +116,8 @@ export function LabToolbar({
   const [isToolsDropdownOpen, setIsToolsDropdownOpen] = useState(false);
   const toolsDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Fermer les popovers/menus lors d'un clic extérieur ou Échap
+  // Fermer les popovers/menus lors de la touche Échap
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        toolsDropdownRef.current &&
-        !toolsDropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsToolsDropdownOpen(false);
-      }
-    }
-
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
         setIsToolsDropdownOpen(false);
@@ -135,12 +126,10 @@ export function LabToolbar({
     }
 
     if (isToolsDropdownOpen || isMobileMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
       document.addEventListener('keydown', handleKeyDown);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [isToolsDropdownOpen, isMobileMenuOpen]);
