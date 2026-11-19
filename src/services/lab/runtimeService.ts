@@ -301,12 +301,12 @@ window.addEventListener('error', function(event) {
           <span style="color:#94a3b8;font-size:12px;">Erreur d'exécution React / JavaScript</span>
         </div>
         <button id="btn-iframe-auto-heal" style="background:linear-gradient(135deg,#06b6d4,#6366f1);color:#fff;border:none;padding:6px 14px;border-radius:8px;font-size:11px;font-weight:bold;cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(6,182,212,0.4);">
-          ⚡ Auto-Heal (Corriger avec l'IA)
+          Auto-Heal (Corriger avec l'IA)
         </button>
       </div>
       <h3 style="color:#ffffff;font-size:14px;margin-bottom:12px;font-weight:600;">\${event.message}</h3>
       <pre style="background:rgba(0,0,0,0.5);padding:12px;border-radius:8px;font-size:11px;line-height:1.5;color:#f87171;overflow-x:auto;">\${event.error?.stack || event.filename + ':' + event.lineno}</pre>
-      <p style="margin-top:14px;font-size:11px;color:#94a3b8;">Cliquez sur <strong>⚡ Auto-Heal</strong> ou corrigez le code dans l'éditeur pour actualiser automatiquement l'aperçu.</p>
+      <p style="margin-top:14px;font-size:11px;color:#94a3b8;">Cliquez sur <strong>Auto-Heal</strong> ou corrigez le code dans l'éditeur pour actualiser automatiquement l'aperçu.</p>
     \`;
     const btnHeal = overlay.querySelector('#btn-iframe-auto-heal');
     if (btnHeal) {
@@ -862,21 +862,21 @@ export async function executeTerminalCommand(
     }
 
     return {
-      output: `+ ${pkgName}@latest\nadded 1 package, and audited 18 packages in 0.38s\n✓ Dépendance enregistrée dans package.json et prête pour les imports in-browser.`,
+      output: `+ ${pkgName}@latest\nadded 1 package, and audited 18 packages in 0.38s\n[OK] Dépendance enregistrée dans package.json et prête pour les imports in-browser.`,
       type: 'success',
       updatedFiles,
     };
   }
 
   // 6. Commande : npm run dev / npm start
-  if (cmd === 'npm' && (args[0] === 'run' && args[1] === 'dev' || args[0] === 'start')) {
+  if (cmd === 'npm' && ((args[0] === 'run' && args[1] === 'dev') || args[0] === 'start')) {
     return {
       output: `
   VITE v6.0.0  ready in 138 ms
 
-  ➜  Local:   http://localhost:5173/
-  ➜  Network: use --host to expose
-  ➜  press h + enter to show help
+  >  Local:   http://localhost:5173/
+  >  Network: use --host to expose
+  >  press h + enter to show help
   
   [HMR] Connecté au runtime sub-seconde in-browser.`,
       type: 'success',
@@ -888,11 +888,11 @@ export async function executeTerminalCommand(
     const count = project.files.length;
     return {
       output: `vite v6.0.0 building for production...
-✓ ${count} modules transformés.
+[OK] ${count} modules transformés.
 dist/index.html                   0.52 kB │ gzip:  0.31 kB
 dist/assets/index.js             48.16 kB │ gzip: 14.82 kB
 dist/assets/style.css            12.30 kB │ gzip:  3.10 kB
-✓ Compilation réussie en 192ms`,
+[OK] Compilation réussie en 192ms`,
       type: 'success',
     };
   }
@@ -901,8 +901,8 @@ dist/assets/style.css            12.30 kB │ gzip:  3.10 kB
   if (cmd === 'npm' && args[0] === 'test') {
     return {
       output: `> vitest run
-✓ Tests de syntaxe et d'intégrité validés (${project.files.length} fichiers vérifiés)
-✓ Tous les tests unitaires ont réussi sans régression (0 échec).`,
+[OK] Tests de syntaxe et d'intégrité validés (${project.files.length} fichiers vérifiés)
+[OK] Tous les tests unitaires ont réussi sans régression (0 échec).`,
       type: 'success',
     };
   }

@@ -173,7 +173,7 @@ function MessageBubbleComponent({ message }: MessageBubbleProps) {
                   onClick={() => window.open(img, '_blank')}
                 />
                 <span className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded text-[10px] font-mono bg-black/60 text-white backdrop-blur-xs opacity-0 group-hover/img:opacity-100 transition-opacity pointer-events-none">
-                  Agrandir ↗
+                  Agrandir
                 </span>
               </div>
             ))}

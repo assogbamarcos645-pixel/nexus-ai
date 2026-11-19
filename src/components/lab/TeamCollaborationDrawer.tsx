@@ -144,8 +144,8 @@ export function TeamCollaborationDrawer({
               <div className="w-20 h-20 rounded-3xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center shadow-xl shadow-purple-500/10">
                 <Users size={36} />
               </div>
-              <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 flex items-center justify-center text-xs">
-                ⚡
+              <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 flex items-center justify-center">
+                <Sparkles size={11} />
               </span>
             </div>
 

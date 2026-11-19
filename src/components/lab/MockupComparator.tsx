@@ -22,6 +22,7 @@ import {
   Sparkles,
   RotateCcw,
   Maximize2,
+  MoveHorizontal,
 } from 'lucide-react';
 import type { MockupComparisonMode } from '@/types/lab';
 import { ModalCloseButton } from '@/components/ui/ModalCloseButton';
@@ -365,8 +366,8 @@ export function MockupComparator({
                   <div className="w-0.5 h-full bg-gradient-to-b from-cyan-400 via-white to-purple-500 shadow-[0_0_12px_rgba(255,255,255,0.8)]" />
 
                   {/* Poignée centrale */}
-                  <div className="absolute w-8 h-8 rounded-full bg-[#090918] border-2 border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.8)] flex items-center justify-center text-white text-[11px] font-bold group-hover:scale-110 transition-transform">
-                    <span className="text-[10px] tracking-tighter">◀▶</span>
+                  <div className="absolute w-8 h-8 rounded-full bg-[#090918] border-2 border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.8)] flex items-center justify-center text-cyan-300 group-hover:scale-110 transition-transform">
+                    <MoveHorizontal size={14} />
                   </div>
 
                   {/* Bulle indicateur du pourcentage */}

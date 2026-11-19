@@ -553,7 +553,7 @@ export function PreviewPanel({
                   title="Demander à l'IA de corriger automatiquement le fichier source"
                 >
                   <Sparkles size={13} className={isAutoHealing ? 'animate-spin' : 'animate-pulse text-amber-300'} />
-                  <span>{isAutoHealing ? 'Diagnostic IA...' : '⚡ Auto-Heal'}</span>
+                  <span>{isAutoHealing ? 'Diagnostic IA...' : 'Auto-Heal'}</span>
                 </button>
                 <button
                   type="button"

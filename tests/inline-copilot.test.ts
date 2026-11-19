@@ -177,7 +177,7 @@ describe('NEXUS LAB — Assistant IA Copilot Inline (inlineCopilotService)', () 
 
   test('Injection personnalisée d’un moteur IA simulé avec extraction de bloc markdown', async () => {
     const mockAiCaller = async (_prompt: string) => {
-      return `✨ Modification de test appliquée avec succès.\n\`\`\`typescript\nconst message: string = "Hello Nexus";\n\`\`\``;
+      return `Modification de test appliquée avec succès.\n\`\`\`typescript\nconst message: string = "Hello Nexus";\n\`\`\``;
     };
 
     const proposal = await generateInlineCodeProposal({
@@ -189,6 +189,6 @@ describe('NEXUS LAB — Assistant IA Copilot Inline (inlineCopilotService)', () 
 
     assert.equal(proposal.isMock, false);
     assert.equal(proposal.suggestedSnippet, 'const message: string = "Hello Nexus";');
-    assert.equal(proposal.explanation, '✨ Modification de test appliquée avec succès.');
+    assert.equal(proposal.explanation, 'Modification de test appliquée avec succès.');
   });
 });

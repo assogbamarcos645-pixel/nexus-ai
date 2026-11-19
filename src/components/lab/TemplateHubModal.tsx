@@ -28,6 +28,9 @@ import {
   Terminal,
   Layers,
   ArrowRight,
+  Palette,
+  BarChart3,
+  Cpu,
 } from 'lucide-react';
 import { LAB_TEMPLATES } from '@/config/labTemplates';
 import type { ProjectTemplate, ProjectTemplateId } from '@/types/lab';
@@ -49,15 +52,19 @@ type TemplateCategory =
   | 'docs'
   | 'core';
 
-const CATEGORIES: { id: TemplateCategory; label: string; icon: string }[] = [
-  { id: 'all', label: 'Tous les modèles', icon: '✨' },
-  { id: 'saas', label: 'SaaS & Analytiques', icon: '📊' },
-  { id: 'ecommerce', label: 'E-Commerce', icon: '🛍️' },
-  { id: 'ai', label: 'Applications IA', icon: '⚡' },
-  { id: 'portfolio', label: 'Portfolios & 3D', icon: '🎨' },
-  { id: 'landing', label: 'Landing Pages', icon: '🚀' },
-  { id: 'docs', label: 'Blog & Docs', icon: '📖' },
-  { id: 'core', label: 'Bases & Runtimes', icon: '⚙️' },
+const CATEGORIES: {
+  id: TemplateCategory;
+  label: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+}[] = [
+  { id: 'all', label: 'Tous les modèles', icon: Sparkles },
+  { id: 'saas', label: 'SaaS & Analytiques', icon: BarChart3 },
+  { id: 'ecommerce', label: 'E-Commerce', icon: ShoppingBag },
+  { id: 'ai', label: 'Applications IA', icon: Cpu },
+  { id: 'portfolio', label: 'Portfolios & 3D', icon: Palette },
+  { id: 'landing', label: 'Landing Pages', icon: Rocket },
+  { id: 'docs', label: 'Blog & Docs', icon: BookOpen },
+  { id: 'core', label: 'Bases & Runtimes', icon: Layers },
 ];
 
 function getTemplateCategory(id: string): TemplateCategory {
@@ -185,21 +192,24 @@ export function TemplateHubModal({
 
         {/* Barre de Filtres Catégories */}
         <div className="px-6 py-2.5 border-b border-slate-800 bg-slate-900/80 flex items-center gap-2 overflow-x-auto scrollbar-thin shrink-0">
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat.id}
-              type="button"
-              onClick={() => setSelectedCategory(cat.id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-                selectedCategory === cat.id
-                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-xs'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent'
-              }`}
-            >
-              <span>{cat.icon}</span>
-              <span>{cat.label}</span>
-            </button>
-          ))}
+          {CATEGORIES.map((cat) => {
+            const Icon = cat.icon;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => setSelectedCategory(cat.id)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                  selectedCategory === cat.id
+                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-xs'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent'
+                }`}
+              >
+                <Icon size={13} className="shrink-0" />
+                <span>{cat.label}</span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Grille des Modèles */}

@@ -679,7 +679,7 @@ export function LabToolbar({
 
               {/* Pied du modal */}
               <div className="px-2.5 py-1.5 border-t border-slate-100 dark:border-white/8 bg-slate-50/80 dark:bg-white/4 rounded-xl flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 shrink-0">
-                <span>⚡ Cliquez sur un outil pour l'ouvrir</span>
+                <span>Cliquez sur un outil pour l'ouvrir</span>
                 <span className="font-mono text-[10px]">Échap</span>
               </div>
             </div>

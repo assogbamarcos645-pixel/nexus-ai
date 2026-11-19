@@ -280,12 +280,12 @@ interface Product {
 }
 
 const products: Product[] = [
-  { id: 'p1', name: 'Casque Audio Spatial Quantique', category: 'Audio', price: 289, rating: 4.9, image: '🎧', tag: 'Bestseller' },
-  { id: 'p2', name: 'Clavier Mécanique Photon RGB', category: 'Périphérique', price: 179, rating: 4.8, image: '⌨️', tag: 'Nouveau' },
-  { id: 'p3', name: 'Souris Optique Sans Fil 8000Hz', category: 'Périphérique', price: 119, rating: 4.7, image: '🖱️', tag: 'Populaire' },
-  { id: 'p4', name: 'Microphone Studio Haute Définition', category: 'Audio', price: 219, rating: 4.9, image: '🎙️', tag: 'Pro' },
-  { id: 'p5', name: 'Écran Incurvé OLED 240Hz', category: 'Écrans', price: 749, rating: 5.0, image: '🖥️', tag: 'Élite' },
-  { id: 'p6', name: 'Lampe de Bureau Ambiance Cosmique', category: 'Accessoires', price: 69, rating: 4.6, image: '💡', tag: 'Promo' },
+  { id: 'p1', name: 'Casque Audio Spatial Quantique', category: 'Audio', price: 289, rating: 4.9, image: 'AUDIO PRO', tag: 'Bestseller' },
+  { id: 'p2', name: 'Clavier Mécanique Photon RGB', category: 'Périphérique', price: 179, rating: 4.8, image: 'CLAVIER RGB', tag: 'Nouveau' },
+  { id: 'p3', name: 'Souris Optique Sans Fil 8000Hz', category: 'Périphérique', price: 119, rating: 4.7, image: 'SOURIS 8K', tag: 'Populaire' },
+  { id: 'p4', name: 'Microphone Studio Haute Définition', category: 'Audio', price: 219, rating: 4.9, image: 'MICRO HD', tag: 'Pro' },
+  { id: 'p5', name: 'Écran Incurvé OLED 240Hz', category: 'Écrans', price: 749, rating: 5.0, image: 'OLED 240HZ', tag: 'Élite' },
+  { id: 'p6', name: 'Lampe de Bureau Ambiance Cosmique', category: 'Accessoires', price: 69, rating: 4.6, image: 'LAMPE LED', tag: 'Promo' },
 ];
 
 export function App() {
@@ -395,7 +395,7 @@ export function App() {
               className="p-5 rounded-2xl bg-slate-900/50 border border-white/10 hover:border-cyan-500/40 transition-all flex flex-col justify-between group shadow-xl"
             >
               <div>
-                <div className="h-44 rounded-xl bg-slate-950/60 border border-white/5 flex items-center justify-center text-6xl group-hover:scale-105 transition-transform mb-4">
+                <div className="h-44 rounded-xl bg-gradient-to-tr from-slate-950 to-slate-900 border border-white/5 flex items-center justify-center text-xs font-mono font-bold tracking-widest text-cyan-400/80 group-hover:scale-105 transition-transform mb-4 shadow-inner">
                   {p.image}
                 </div>
                 <div className="flex items-center justify-between text-[11px] mb-1">
@@ -747,7 +747,7 @@ export function App() {
             <div key={p.title} className="p-5 rounded-2xl bg-slate-900/60 border border-white/10 hover:border-cyan-500/40 transition-all space-y-3 group shadow-xl">
               <div className="flex items-center justify-between">
                 <h3 className="font-bold text-sm text-white group-hover:text-cyan-300 transition-colors">{p.title}</h3>
-                <span className="text-xs font-mono text-slate-400">★ {p.stars}</span>
+                <span className="text-xs font-mono text-slate-400">{p.stars} stars</span>
               </div>
               <p className="text-xs text-slate-400 leading-relaxed">{p.desc}</p>
               <div className="flex items-center gap-2 flex-wrap pt-2">
@@ -853,7 +853,7 @@ export function App() {
       {/* Hero */}
       <section className="text-center py-16 px-6 max-w-3xl mx-auto space-y-5">
         <span className="px-3 py-1 rounded-full text-xs font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-          🚀 Nouvelle Version 3.0 Disponible
+          Nouvelle Version 3.0 Disponible
         </span>
         <h1 className="text-4xl md:text-5xl font-extrabold text-white leading-tight">
           Accélérez votre ingénierie produit de <span className="text-cyan-400">10x</span>.

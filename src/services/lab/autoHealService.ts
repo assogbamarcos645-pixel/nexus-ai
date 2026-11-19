@@ -123,7 +123,7 @@ MISSION DE RÉPARATION :
     targetFile,
     proposal: {
       ...proposal,
-      explanation: `⚡ **Auto-Heal Appliqué :** Correction de l'erreur \`${errorSummary.slice(0, 80)}\`.\n\n${proposal.explanation}`,
+      explanation: `**Auto-Heal Appliqué :** Correction de l'erreur \`${errorSummary.slice(0, 80)}\`.\n\n${proposal.explanation}`,
     },
     diagnostics: errorSummary,
   };
