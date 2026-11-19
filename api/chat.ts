@@ -126,7 +126,11 @@ export default async function handler(req: Request): Promise<Response> {
 
     // Réponse de secours en Mode Démo si aucune clé n'est trouvée
     if (targetProvider === 'demo') {
-      const demoReply = `Bonjour ! Je suis l'assistant NEXUS AI (Mode Démonstration).\n\nVotre application est bien connectée en ligne sur Vercel.\n\nPour converser avec les modèles d'IA réels (Mistral Codestral, Gemini Flash, GPT-4o, Claude ou Groq), renseignez vos clés d'API dans votre tableau de bord Vercel (ex: MISTRAL_API_KEY) dans **Project Settings > Environment Variables**.\n\nVotre message était : "${message}".`;
+      const docNote =
+        Array.isArray(documents) && documents.length > 0
+          ? `\n\n📄 Documents joints analysés (${documents.length}) : ${documents.map((d: any) => `"${d.name}"`).join(', ')}.`
+          : '';
+      const demoReply = `Bonjour ! Je suis l'assistant NEXUS AI (Mode Démonstration).\n\nVotre application est bien connectée en ligne sur Vercel.\n\nPour converser avec les modèles d'IA réels (Mistral Codestral, Gemini Flash, GPT-4o, Claude ou Groq), renseignez vos clés d'API dans votre tableau de bord Vercel (ex: MISTRAL_API_KEY) dans **Project Settings > Environment Variables**.\n\nVotre message était : "${message}".${docNote}`;
 
       if (isStream) {
         return createSseResponse(async (send) => {

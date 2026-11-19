@@ -319,14 +319,17 @@ export function ChatInput({
     }
   };
 
-  const handleFileAttach = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleFileAttach = async (e: ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
-    if (file.type.startsWith('image/')) {
-      processImageFile(file);
-    } else {
-      processDocumentFile(file);
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (file.type.startsWith('image/')) {
+        processImageFile(file);
+      } else {
+        await processDocumentFile(file);
+      }
     }
     e.target.value = '';
   };
@@ -517,11 +520,12 @@ export function ChatInput({
         </div>
       )}
 
-      {/* Input fichier caché pour le trombone */}
+      {/* Input fichier caché pour le trombone (support multi-fichiers) */}
       <input
         ref={fileInputRef}
         type="file"
-        accept=".pdf,.docx,.txt,.md,.json,.csv,.tsv,.xml,.yaml,.yml,.js,.jsx,.ts,.tsx,.py,.html,.css,.sql,.zip,.sh,.c,.cpp,.h"
+        multiple
+        accept=".pdf,.docx,.doc,.txt,.md,.json,.csv,.tsv,.xml,.yaml,.yml,.js,.jsx,.ts,.tsx,.py,.html,.css,.sql,.zip,.sh,.c,.cpp,.h,.rs,.go"
         onChange={handleFileAttach}
         className="hidden"
         aria-hidden="true"

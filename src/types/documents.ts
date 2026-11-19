@@ -4,7 +4,7 @@
  * Types pour les documents analysés et attachés aux conversations de NEXUS AI.
  */
 
-export type DocumentCategory = 'pdf' | 'code' | 'data' | 'markdown' | 'text' | 'archive' | 'other';
+export type DocumentCategory = 'pdf' | 'word' | 'code' | 'data' | 'markdown' | 'text' | 'archive' | 'other';
 
 export interface AttachedDocument {
   id: string;

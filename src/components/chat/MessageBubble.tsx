@@ -1,9 +1,10 @@
 import { useState, useMemo, memo } from 'react';
-import { Copy, Check, Sparkles, ArrowRight, FileText, Volume2, VolumeX } from 'lucide-react';
+import { Copy, Check, Sparkles, ArrowRight, FileText, Volume2, VolumeX, Eye, X } from 'lucide-react';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { cn } from '@/utils/cn';
 import type { Message, Agent } from '@/types';
+import type { AttachedDocument } from '@/types/documents';
 import { hasExtractableProject, createAndOpenProjectFromMockup } from '@/services/lab/mockupConverterService';
 import { formatFileSize } from '@/services/documents/documentParserService';
 
@@ -50,6 +51,7 @@ function MessageBubbleComponent({ message }: MessageBubbleProps) {
   const [copied, setCopied] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isOpeningLab, setIsOpeningLab] = useState(false);
+  const [previewDoc, setPreviewDoc] = useState<AttachedDocument | null>(null);
   const isUser = message.role === 'user';
   const canExtractToLab = !isUser && hasExtractableProject(message.content);
 
@@ -181,19 +183,23 @@ function MessageBubbleComponent({ message }: MessageBubbleProps) {
         {message.documents && message.documents.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-3">
             {message.documents.map((doc) => (
-              <div
+              <button
                 key={doc.id}
+                type="button"
+                onClick={() => setPreviewDoc(doc)}
+                title="Cliquer pour prévisualiser le document analysé"
                 className={cn(
-                  'flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs font-medium border shadow-xs backdrop-blur-md',
+                  'flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs font-medium border shadow-xs backdrop-blur-md transition-all cursor-pointer hover:scale-[1.02]',
                   isUser
-                    ? 'bg-blue-700/60 border-blue-400/40 text-blue-50'
-                    : 'bg-slate-800/80 border-slate-700/60 text-slate-200',
+                    ? 'bg-blue-700/60 hover:bg-blue-600/70 border-blue-400/40 text-blue-50'
+                    : 'bg-slate-800/80 hover:bg-slate-700/80 border-slate-700/60 text-slate-200',
                 )}
               >
                 <FileText size={14} className={isUser ? 'text-blue-200' : 'text-cyan-400'} />
                 <span className="truncate max-w-[180px] font-mono">{doc.name}</span>
                 <span className="text-[10px] opacity-75 font-mono">({formatFileSize(doc.size)})</span>
-              </div>
+                <Eye size={12} className="opacity-70 ml-0.5" />
+              </button>
             ))}
           </div>
         )}
@@ -312,6 +318,70 @@ function MessageBubbleComponent({ message }: MessageBubbleProps) {
           </div>
         )}
       </div>
+      {/* Modal d'aperçu du document archivé dans le message */}
+      {previewDoc && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-150"
+          onClick={() => setPreviewDoc(null)}
+        >
+          <div
+            className="relative w-full max-w-2xl max-h-[85vh] flex flex-col rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl text-slate-100 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800 bg-slate-950/50">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <FileText size={16} className="text-cyan-400 shrink-0" />
+                <div className="flex flex-col min-w-0">
+                  <h3 className="text-sm font-semibold text-slate-100 truncate">
+                    {previewDoc.name}
+                  </h3>
+                  <div className="flex items-center gap-2 text-[11px] text-slate-400 font-mono">
+                    <span>{formatFileSize(previewDoc.size)}</span>
+                    {previewDoc.pageCount && <span>• {previewDoc.pageCount} pages</span>}
+                    <span>• {previewDoc.content.length.toLocaleString('fr-FR')} caractères extraits</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1.5 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => navigator.clipboard.writeText(previewDoc.content)}
+                  className="flex items-center gap-1 px-2.5 py-1 text-xs rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors cursor-pointer"
+                  title="Copier le texte extrait"
+                >
+                  <Copy size={13} />
+                  <span>Copier</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewDoc(null)}
+                  className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                  aria-label="Fermer"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 p-4 overflow-y-auto scrollbar-thin font-mono text-[12px] leading-relaxed bg-[#0c101d] text-slate-300 whitespace-pre-wrap select-text">
+              {previewDoc.content}
+            </div>
+
+            <div className="flex items-center justify-end px-4 py-2 border-t border-slate-800 bg-slate-950/40 text-[11px] text-slate-400">
+              <button
+                type="button"
+                onClick={() => setPreviewDoc(null)}
+                className="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium transition-colors cursor-pointer"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

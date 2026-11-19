@@ -64,8 +64,8 @@ function parseRequestBody(req: IncomingMessage): Promise<any> {
     let body = '';
     req.on('data', (chunk) => {
       body += chunk;
-      // Protection anti-déni de service : max 1 Mo
-      if (body.length > 1_000_000) {
+      // Protection anti-déni de service : max 30 Mo pour supporter les documents d'analyse
+      if (body.length > 30_000_000) {
         req.destroy();
         resolve({});
       }
@@ -484,7 +484,16 @@ EXPERTISE TECHNIQUE (Génie Logiciel) :
         // ── 3. POST /api/chat ───────────────────────────────────────────────
         if (req.method === 'POST' && url.startsWith('/api/chat')) {
           const body = await parseRequestBody(req);
-          const { message, agentId, providerId = 'demo', modelId = 'nexus-simulated-echo', settings, conversationHistory, images } = body;
+          const {
+            message,
+            agentId,
+            providerId = 'demo',
+            modelId = 'nexus-simulated-echo',
+            settings,
+            conversationHistory,
+            images,
+            documents,
+          } = body;
           const isStream = Boolean(
             req.headers.accept?.includes('text/event-stream') ||
             body.stream === true ||
@@ -499,10 +508,22 @@ EXPERTISE TECHNIQUE (Génie Logiciel) :
             return sendJson(res, 400, { message: 'Requête invalide : message vide ou manquant.' });
           }
 
-          if (message.length > 8000) {
+          if (message.length > 50000) {
             return sendJson(res, 400, {
-              message: 'Requête refusée : le message dépasse la limite autorisée de 8 000 caractères.',
+              message: 'Requête refusée : le message dépasse la limite autorisée de 50 000 caractères.',
             });
+          }
+
+          // Construction du message enrichi avec les documents complets si fournis
+          let effectiveMessage = message;
+          if (Array.isArray(documents) && documents.length > 0) {
+            const docsSummary = documents
+              .map(
+                (doc: any, idx: number) =>
+                  `--- DÉBUT DOCUMENT #${idx + 1} : "${doc.name}" (${doc.category || 'fichier'}, ${doc.size || 0} octets${doc.pageCount ? `, ${doc.pageCount} pages` : ''}) ---\n${doc.content}\n--- FIN DOCUMENT : "${doc.name}" ---`,
+              )
+              .join('\n\n');
+            effectiveMessage = `${message}\n\n═══════════════════════════════════════════════════════════════\nDOCUMENTS ATTACHÉS POUR ANALYSE :\n═══════════════════════════════════════════════════════════════\n${docsSummary}\n═══════════════════════════════════════════════════════════════\n`;
           }
 
           // Détermination du fournisseur d'IA opérationnel
@@ -519,9 +540,13 @@ EXPERTISE TECHNIQUE (Génie Logiciel) :
           // A. Réponse pour le mode démonstration (ou secours quand aucune clé n'est fournie)
           if (targetProvider === 'demo') {
             const isCoder = agentId === 'coder';
+            const docNote =
+              Array.isArray(documents) && documents.length > 0
+                ? `\n\n📄 Documents joints analysés (${documents.length}) : ${documents.map((d: any) => `"${d.name}"`).join(', ')}.`
+                : '';
             const demoReply = isCoder
-              ? `// [CodeX • Mode Démonstration]\n// Clés API réelles non encore détectées sur Vercel.\n// Veuillez renseigner vos variables d'environnement (ex: MISTRAL_API_KEY, GEMINI_API_KEY).\nconsole.log("NEXUS AI prêt !");`
-              : `Bonjour ! Je suis l'assistant NEXUS AI (Mode Démonstration).\n\nVotre application est bien en ligne sur Vercel. Pour dialoguer avec les vrais modèles d'IA (Mistral, Gemini Flash, GPT-4o, Claude ou Groq), renseignez vos clés d'API dans votre tableau de bord Vercel (ex: MISTRAL_API_KEY).\n\nMessage reçu : "${message}".`;
+              ? `// [CodeX • Mode Démonstration]\n// Clés API réelles non encore détectées sur Vercel.\n// Veuillez renseigner vos variables d'environnement (ex: MISTRAL_API_KEY, GEMINI_API_KEY).\nconsole.log("NEXUS AI prêt !");${docNote}`
+              : `Bonjour ! Je suis l'assistant NEXUS AI (Mode Démonstration).\n\nVotre application est bien en ligne sur Vercel. Pour dialoguer avec les vrais modèles d'IA (Mistral, Gemini Flash, GPT-4o, Claude ou Groq), renseignez vos clés d'API dans votre tableau de bord Vercel (ex: MISTRAL_API_KEY).\n\nMessage reçu : "${message}".${docNote}`;
 
             if (isStream) {
               initSseResponse(res);
@@ -584,7 +609,7 @@ EXPERTISE TECHNIQUE (Génie Logiciel) :
                 }
               }
               const userParts: Array<{ text?: string; inlineData?: { mimeType: string; data: string } }> = [
-                { text: message },
+                { text: effectiveMessage },
               ];
               if (Array.isArray(images) && images.length > 0) {
                 for (const img of images) {
@@ -754,7 +779,7 @@ EXPERTISE TECHNIQUE (Génie Logiciel) :
                           .filter((t: any) => t.content && (t.role === 'user' || t.role === 'assistant'))
                           .map((t: any) => ({ role: t.role, content: String(t.content) }))
                       : []),
-                    { role: 'user', content: `${systemPrompt}\n\n${message}` },
+                    { role: 'user', content: `${systemPrompt}\n\n${effectiveMessage}` },
                   ]
                 : [
                     { role: 'system', content: systemPrompt },
@@ -763,7 +788,7 @@ EXPERTISE TECHNIQUE (Génie Logiciel) :
                           .filter((t: any) => t.content && (t.role === 'user' || t.role === 'assistant'))
                           .map((t: any) => ({ role: t.role, content: String(t.content) }))
                       : []),
-                    { role: 'user', content: message },
+                    { role: 'user', content: effectiveMessage },
                   ];
 
               // Mode Streaming OpenAI
@@ -897,7 +922,7 @@ EXPERTISE TECHNIQUE (Génie Logiciel) :
                       .filter((t: any) => t.content && (t.role === 'user' || t.role === 'assistant'))
                       .map((t: any) => ({ role: t.role, content: String(t.content) }))
                   : []),
-                { role: 'user', content: message },
+                { role: 'user', content: effectiveMessage },
               ];
 
               if (isStream) {
@@ -1014,7 +1039,7 @@ EXPERTISE TECHNIQUE (Génie Logiciel) :
                       .filter((t: any) => t.content && (t.role === 'user' || t.role === 'assistant'))
                       .map((t: any) => ({ role: t.role, content: String(t.content) }))
                   : []),
-                { role: 'user', content: message },
+                { role: 'user', content: effectiveMessage },
               ];
 
               if (isStream) {
@@ -1147,7 +1172,7 @@ EXPERTISE TECHNIQUE (Génie Logiciel) :
                       .filter((t: any) => t.content && (t.role === 'user' || t.role === 'assistant'))
                       .map((t: any) => ({ role: t.role, content: String(t.content) }))
                   : []),
-                { role: 'user', content: message },
+                { role: 'user', content: effectiveMessage },
               ];
 
               const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
@@ -1227,7 +1252,7 @@ EXPERTISE TECHNIQUE (Génie Logiciel) :
                       .filter((t: any) => t.content && (t.role === 'user' || t.role === 'assistant'))
                       .map((t: any) => ({ role: t.role, content: String(t.content) }))
                   : []),
-                { role: 'user', content: message },
+                { role: 'user', content: effectiveMessage },
               ];
 
               const ollamaRes = await fetch('http://127.0.0.1:11434/api/chat', {
