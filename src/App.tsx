@@ -223,7 +223,7 @@ function AppContent() {
         {/* Corps dynamique : Chat (pleine hauteur mobile), Projets (Lab) ou Explorer */}
         <main
           className={cn(
-            'flex-1 flex flex-col overflow-hidden relative z-10',
+            'flex-1 flex flex-col overflow-hidden relative',
             activeView === 'chat' ? 'pb-0' : 'pb-[calc(56px+env(safe-area-inset-bottom,0px))] md:pb-0',
           )}
         >
