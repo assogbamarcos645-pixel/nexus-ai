@@ -16,10 +16,17 @@ const CORS_HEADERS = {
 function getAgentSystemPrompt(agentId?: string): string {
   const commonRule = `
 POSTURE & STYLE DE RÉPONSE (STANDARD MODÈLE IA - TYPE CHATGPT, CLAUDE, GEMINI) :
-- DIRECT ET EFFICACE : Va droit au but sans détour. Réponds avec clarté, pertinence et concision. Évite les salutations répétitives (aucun "Bonjour !", "Ravi de vous retrouver", etc. à chaque message) et bannis les formules de politesse artificielles ou cérémonieuses.
-- ADAPTATIF ET NATUREL : Adapte ton niveau de détail au besoin : direct et concis pour les questions simples, structuré et approfondi (titres, listes à puces, explications claires) pour les sujets complexes ou l'architecture. Ton naturel, professionnel, intelligent et fluide.
+- DIRECT, EFFICACE ET PROACTIF : Va droit au but sans détour. Réponds avec clarté, pertinence et concision. Évite les salutations répétitives (aucun "Bonjour !", "Ravi de vous retrouver", etc. à chaque message) et bannis les formules de politesse artificielles ou cérémonieuses.
+- BANNISSEMENT ABSOLU DES FORMULES DE CHATBOT ROBOTIQUES ET PASSIVES :
+  Il est STRICTEMENT INTERDIT de répondre avec des platitudes passives du style :
+  ❌ "D'accord. Je suis prêt à vous aider. Posez-moi vos questions..."
+  ❌ "Fournissez-moi des informations et je ferai de mon mieux..."
+  ❌ "En quoi puis-je vous aider aujourd'hui ?"
+  ❌ "Je reste à votre entière disposition..."
+- PROACTIVITÉ IMMÉDIATE : Dès qu'un document, du code ou un contexte est présent, analyse-le directement et fournis immédiatement des résultats concrets, une synthèse exhaustive ou du code fonctionnel. Ne demande JAMAIS à l'utilisateur de reformuler ou de reposer une question quand les éléments sont déjà joints.
+- SI L'UTILISATEUR DIT SIMPLEMENT "CC" OU "SALUT" SANS CONTEXTE : Réponds de manière concise, vivante et percutante (ex: "Salut ! Qu'est-ce qu'on code aujourd'hui ?" ou "Salut, qu'est-ce qu'on développe ?"), en une seule phrase, sans monologue d'accueil ni protocole rigide.
 - ZÉRO CODE TRONQUÉ : Lorsque tu fournis du code, fournis du code complet, typé, robuste et directement exécutable (aucun commentaire d'omission comme "// TODO", "// implémenter ici", "// reste inchangé").
-- ANALYSE DE DOCUMENTS & DONNÉES : Analyse les documents ou données fournis avec rigueur et méthode, en restituant directement les points clés et synthèses utiles sans préambule superflu.`;
+- ANALYSE DE DOCUMENTS & DONNÉES : Restitue directement la structure, les points clés et les enseignements techniques majeurs.`;
 
   switch (agentId) {
     case 'coder':
@@ -94,10 +101,29 @@ export default async function handler(req: Request): Promise<Response> {
       const docsSummary = documents
         .map(
           (doc: any, idx: number) =>
-            `--- DÉBUT DOCUMENT #${idx + 1} : "${doc.name}" (${doc.category || 'fichier'}, ${doc.size || 0} octets) ---\n${doc.content}\n--- FIN DOCUMENT : "${doc.name}" ---`,
+            `--- DÉBUT DOCUMENT #${idx + 1} : "${doc.name}" (${doc.category || 'fichier'}, ${doc.size || 0} octets${doc.pageCount ? `, ${doc.pageCount} pages` : ''}) ---\n${doc.content}\n--- FIN DOCUMENT : "${doc.name}" ---`,
         )
         .join('\n\n');
-      effectiveMessage = `${message}\n\n═══════════════════════════════════════════════════════════════\nDOCUMENTS ATTACHÉS POUR ANALYSE :\n═══════════════════════════════════════════════════════════════\n${docsSummary}\n═══════════════════════════════════════════════════════════════\n`;
+
+      const isShortGreeting =
+        !message ||
+        /^(cc|salut|bonjour|hello|coucou|yo|hey|hi|analyse|voici|regarde|doc|document)[\s!.]*$/i.test(
+          message.trim(),
+        );
+
+      const promptContext = isShortGreeting
+        ? 'L’utilisateur t’a transmis ce(s) document(s). Analyse-les directement et complètement : résume l’objet du document, dégage les points clés, la structure, les éventuelles anomalies ou décisions techniques, et propose les prochaines étapes concrètes.'
+        : `Demande de l'utilisateur : "${message}"\n\nDirectives d'analyse : réponds précisément à la demande ci-dessus en exploitant l'intégralité du contenu des documents joints.`;
+
+      effectiveMessage = `═══════════════════════════════════════════════════════════════
+DOCUMENTS CONFIÉS PAR L'UTILISATEUR POUR ANALYSE IMMÉDIATE :
+═══════════════════════════════════════════════════════════════
+${promptContext}
+
+${docsSummary}
+═══════════════════════════════════════════════════════════════
+RAPPEL IMPORTANT : Ne réponds JAMAIS par une formule passive d'attente ("Je suis prêt, posez-moi vos questions"). Démarre directement par la synthèse et les réponses opérationnelles.
+═══════════════════════════════════════════════════════════════\n`;
     }
 
     // Détermination du provider effectif

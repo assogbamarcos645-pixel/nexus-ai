@@ -431,8 +431,15 @@ export async function handleApiRequest(req: IncomingMessage, res: ServerResponse
 function getAgentSystemPrompt(agentId?: string): string {
   const commonConductRule = `
 POSTURE & STYLE DE RÉPONSE (STANDARD MODÈLE IA - TYPE CHATGPT, CLAUDE, GEMINI) :
-- DIRECT ET EFFICACE : Va droit au but sans détour. Réponds avec clarté, pertinence et concision. Évite les salutations répétitives (aucun "Bonjour !", "Ravi de vous retrouver", etc. à chaque message) et bannis les formules de politesse artificielles ou cérémonieuses.
-- ADAPTATIF ET NATUREL : Adapte ton niveau de détail au besoin : direct et concis pour les questions simples, structuré et approfondi (titres, listes à puces, explications claires) pour les sujets complexes ou l'architecture. Ton naturel, professionnel, intelligent et fluide.
+- DIRECT, EFFICACE ET PROACTIF : Va droit au but sans détour. Réponds avec clarté, pertinence et concision. Évite les salutations répétitives (aucun "Bonjour !", "Ravi de vous retrouver", etc. à chaque message) et bannis les formules de politesse artificielles ou cérémonieuses.
+- BANNISSEMENT ABSOLU DES FORMULES DE CHATBOT ROBOTIQUES ET PASSIVES :
+  Il est STRICTEMENT INTERDIT de répondre avec des platitudes passives du style :
+  ❌ "D'accord. Je suis prêt à vous aider. Posez-moi vos questions..."
+  ❌ "Fournissez-moi des informations et je ferai de mon mieux..."
+  ❌ "En quoi puis-je vous aider aujourd'hui ?"
+  ❌ "Je reste à votre entière disposition..."
+- PROACTIVITÉ IMMÉDIATE : Dès qu'un document, du code ou un contexte est présent, analyse-le directement et fournis immédiatement des résultats concrets, une synthèse exhaustive ou du code fonctionnel. Ne demande JAMAIS à l'utilisateur de reformuler ou de reposer une question quand les éléments sont déjà joints.
+- SI L'UTILISATEUR DIT SIMPLEMENT "CC" OU "SALUT" SANS CONTEXTE : Réponds de manière concise, vivante et percutante (ex: "Salut ! Qu'est-ce qu'on code aujourd'hui ?" ou "Salut, qu'est-ce qu'on développe ?"), en une seule phrase, sans monologue d'accueil ni protocole rigide.
 - ZÉRO CODE TRONQUÉ : Lorsque tu fournis du code, fournis du code 100% complet, propre, typé et immédiatement exécutable (aucun commentaire d'omission comme "// TODO", "// implémenter ici", "// reste inchangé").
 - ANALYSE FACTUELLE : Traite les questions, documents et codes avec rigueur, méthode et clarté factuelle sans préambule superflu.`;
 
@@ -522,7 +529,26 @@ EXPERTISE TECHNIQUE (Génie Logiciel & Connaissances Générales) :
                   `--- DÉBUT DOCUMENT #${idx + 1} : "${doc.name}" (${doc.category || 'fichier'}, ${doc.size || 0} octets${doc.pageCount ? `, ${doc.pageCount} pages` : ''}) ---\n${doc.content}\n--- FIN DOCUMENT : "${doc.name}" ---`,
               )
               .join('\n\n');
-            effectiveMessage = `${message}\n\n═══════════════════════════════════════════════════════════════\nDOCUMENTS ATTACHÉS POUR ANALYSE :\n═══════════════════════════════════════════════════════════════\n${docsSummary}\n═══════════════════════════════════════════════════════════════\n`;
+
+            const isShortGreeting =
+              !message ||
+              /^(cc|salut|bonjour|hello|coucou|yo|hey|hi|analyse|voici|regarde|doc|document)[\s!.]*$/i.test(
+                message.trim(),
+              );
+
+            const promptContext = isShortGreeting
+              ? 'L’utilisateur t’a transmis ce(s) document(s). Analyse-les directement et complètement : résume l’objet du document, dégage les points clés, la structure, les éventuelles anomalies ou décisions techniques, et propose les prochaines étapes concrètes.'
+              : `Demande de l'utilisateur : "${message}"\n\nDirectives d'analyse : réponds précisément à la demande ci-dessus en exploitant l'intégralité du contenu des documents joints.`;
+
+            effectiveMessage = `═══════════════════════════════════════════════════════════════
+DOCUMENTS CONFIÉS PAR L'UTILISATEUR POUR ANALYSE IMMÉDIATE :
+═══════════════════════════════════════════════════════════════
+${promptContext}
+
+${docsSummary}
+═══════════════════════════════════════════════════════════════
+RAPPEL IMPORTANT : Ne réponds JAMAIS par une formule passive d'attente ("Je suis prêt, posez-moi vos questions"). Démarre directement par la synthèse et les réponses opérationnelles.
+═══════════════════════════════════════════════════════════════\n`;
           }
 
           // Détermination du fournisseur d'IA opérationnel
