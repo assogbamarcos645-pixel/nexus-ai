@@ -148,6 +148,13 @@ export function AuthModal({ isOpen, initialMode = 'sign-in', onClose }: AuthModa
       const res = await verify2FALogin(cleanCode);
       if (!res.error) {
         setTotpCode('');
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('nexus-auth-success', {
+              detail: { user: { email: email.trim(), fullName: fullName.trim() } },
+            }),
+          );
+        }
         handleClose();
       }
       return;
@@ -160,6 +167,13 @@ export function AuthModal({ isOpen, initialMode = 'sign-in', onClose }: AuthModa
         return;
       }
       if (!res.error) {
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('nexus-auth-success', {
+              detail: { user: { email: email.trim(), fullName: fullName.trim() } },
+            }),
+          );
+        }
         handleClose();
       }
     } else if (mode === 'sign-up') {

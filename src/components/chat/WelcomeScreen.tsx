@@ -1,7 +1,9 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { Code2, ArrowUpRight, Sparkles, Bug, Zap, FileText } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useAuth } from '@/hooks/useAuth';
+import { generateUserGreeting, getFriendlyUserName } from '@/utils/greetingUtils';
 import type { Agent } from '@/types';
 
 interface QuickAction {
@@ -76,7 +78,14 @@ interface WelcomeScreenProps {
 
 function WelcomeScreenComponent({ onSuggestionClick, children }: WelcomeScreenProps) {
   const { language } = useTranslation();
+  const { user, isAuthenticated } = useAuth();
   const fr = language === 'fr';
+
+  const userGreeting = useMemo(() => {
+    if (!isAuthenticated || !user) return null;
+    const name = getFriendlyUserName(user.fullName, user.email);
+    return generateUserGreeting(name);
+  }, [isAuthenticated, user]);
 
   return (
     <div className="w-full flex flex-col items-center text-center select-none max-w-4xl mx-auto px-2.5 sm:px-6 animate-nexus-fade-up">
@@ -92,9 +101,25 @@ function WelcomeScreenComponent({ onSuggestionClick, children }: WelcomeScreenPr
         </span>
       </div>
 
+      {/* Salutation personnalisée pour l'utilisateur connecté */}
+      {userGreeting && (
+        <div className="flex items-center gap-2 mb-2 px-3.5 py-1 rounded-full bg-blue-500/10 dark:bg-sky-500/10 border border-blue-500/20 text-blue-600 dark:text-sky-300 text-xs sm:text-[13px] font-semibold animate-in fade-in duration-200">
+          <Sparkles size={13} className="text-amber-500 dark:text-amber-400 shrink-0" />
+          <span>{userGreeting.title} !</span>
+          <span className="text-[11px] font-normal text-slate-500 dark:text-slate-400 hidden sm:inline">• {userGreeting.message}</span>
+        </div>
+      )}
+
       {/* Titre Principal percutant */}
       <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-[44px] font-extrabold tracking-tight text-slate-900 dark:text-white mb-1.5 sm:mb-3 leading-[1.2]">
-        {fr ? 'Que voulez-vous concevoir avec ' : 'What will you architect with '}
+        {userGreeting ? (
+          <>
+            <span className="text-slate-900 dark:text-white">{userGreeting.title}, </span>
+            <span className="text-slate-700 dark:text-slate-200 block sm:inline">que concevons-nous avec </span>
+          </>
+        ) : (
+          <>{fr ? 'Que voulez-vous concevoir avec ' : 'What will you architect with '}</>
+        )}
         <span className="bg-gradient-to-r from-blue-600 via-sky-500 to-blue-500 bg-clip-text text-transparent">
           NEXUS AI
         </span>

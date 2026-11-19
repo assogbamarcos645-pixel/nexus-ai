@@ -14,6 +14,7 @@ import { I18nProvider } from '@/i18n/I18nContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { LocalDataImportBanner } from '@/components/auth/LocalDataImportBanner';
 import { EmailConfirmationToast } from '@/components/auth/EmailConfirmationToast';
+import { UserWelcomeToast } from '@/components/auth/UserWelcomeToast';
 import { scheduleMonacoPreload } from '@/services/lab/monacoPreloadService';
 
 const NexusLab = lazy(() =>
@@ -215,6 +216,9 @@ function AppContent() {
 
         {/* Notification flottante de confirmation d'e-mail */}
         <EmailConfirmationToast />
+
+        {/* Salutation et accueil personnalisé lors de la connexion */}
+        <UserWelcomeToast />
 
         {/* Corps dynamique : Chat (pleine hauteur mobile), Projets (Lab) ou Explorer */}
         <main
