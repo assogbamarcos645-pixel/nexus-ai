@@ -82,6 +82,27 @@ export function PreviewPanel({
   const [isAutoHealing, setIsAutoHealing] = useState(false);
   const [autoHealFeedback, setAutoHealFeedback] = useState<string | null>(null);
 
+  // État du Pilote Automatique (Auto-Heal en boucle fermée sans confirmation manuelle)
+  const [isAutopilot, setIsAutopilot] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return true;
+    try {
+      const stored = localStorage.getItem('nexus_autopilot_enabled');
+      return stored !== null ? stored === 'true' : true;
+    } catch {
+      return true;
+    }
+  });
+
+  const toggleAutopilot = () => {
+    setIsAutopilot((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('nexus_autopilot_enabled', String(next));
+      } catch {}
+      return next;
+    });
+  };
+
   // États pour « Inspect & Tweak » (Mode Clic-to-Edit) et Curseur Comparatif Avant/Après
   const [isInspectMode, setIsInspectMode] = useState(false);
   const [inspectedElement, setInspectedElement] = useState<InspectedElementInfo | null>(null);
@@ -142,24 +163,36 @@ export function PreviewPanel({
   }, [project]);
 
   // Déclenchement du diagnostic et de la réparation autonome Auto-Heal
-  const triggerAutoHeal = async (errorToHeal?: {
-    message: string;
-    stack?: string;
-    filename?: string;
-    lineno?: number;
-  }) => {
+  const triggerAutoHeal = async (
+    errorToHeal?: {
+      message: string;
+      stack?: string;
+      filename?: string;
+      lineno?: number;
+    },
+    autoApplyForce?: boolean,
+  ) => {
     const targetErr = errorToHeal || activeRuntimeError;
     if (!project || !targetErr || isAutoHealing) return;
 
     setIsAutoHealing(true);
-    setAutoHealFeedback('Diagnostic et génération du correctif en cours...');
+    setAutoHealFeedback('Pilote Auto : Diagnostic et génération du correctif...');
 
     try {
       const result = await diagnoseAndHealError(project, targetErr);
-      setAutoHealFeedback(`Correctif prêt pour ${result.targetFile.name} !`);
+      const shouldAutoApply = autoApplyForce !== undefined ? autoApplyForce : isAutopilot;
 
-      if (onRequestDiff) {
+      if (shouldAutoApply && onUpdateProjectFiles) {
+        // Mode Pilote Automatique : Application autonome immédiate du correctif
+        const updated = project.files.map((f) =>
+          f.id === result.targetFile.id ? { ...f, content: result.proposal.suggestedCode } : f,
+        );
+        onUpdateProjectFiles(updated);
+        setAutoHealFeedback(`Pilote Auto : Correctif appliqué à ${result.targetFile.name} !`);
+      } else if (onRequestDiff) {
+        // Mode révision manuelle
         onRequestDiff(result.proposal);
+        setAutoHealFeedback(`Correctif prêt pour ${result.targetFile.name} !`);
       } else if (onUpdateProjectFiles) {
         const updated = project.files.map((f) =>
           f.id === result.targetFile.id ? { ...f, content: result.proposal.suggestedCode } : f,
@@ -202,18 +235,30 @@ export function PreviewPanel({
 
         // Détection automatique d'erreur runtime pour le bandeau Auto-Heal
         if (event.data.logType === 'error') {
-          setActiveRuntimeError((prev) => prev || { message: event.data.message || 'Erreur runtime détectée' });
+          const errObj = { message: event.data.message || 'Erreur runtime détectée' };
+          setActiveRuntimeError((prev) => prev || errObj);
+
+          // Si le Pilote Automatique est activé, réparer en boucle fermée
+          if (isAutopilot && !isAutoHealing) {
+            triggerAutoHeal(errObj, true);
+          }
         }
       }
 
       // 2. Erreur d'exécution React / Runtime directe
       if (event.data && event.data.type === 'nexus-preview-error') {
-        setActiveRuntimeError({
+        const errDetails = {
           message: event.data.message || 'Erreur d’exécution React',
           stack: event.data.stack,
           filename: event.data.filename,
           lineno: event.data.lineno,
-        });
+        };
+        setActiveRuntimeError(errDetails);
+
+        // Si le Pilote Automatique est activé, réparer en boucle fermée immédiatement
+        if (isAutopilot && !isAutoHealing) {
+          triggerAutoHeal(errDetails, true);
+        }
       }
 
       // 3. Déclenchement Auto-Heal depuis l'overlay de l'iframe
@@ -349,6 +394,30 @@ export function PreviewPanel({
         </div>
 
         <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+          {/* BOUTON PILOTE AUTOMATIQUE (AUTO-HEAL TEMPS RÉEL) */}
+          <button
+            type="button"
+            id="btn-autopilot-toggle"
+            onClick={toggleAutopilot}
+            className={`flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer shrink-0 border ${
+              isAutopilot
+                ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/40 shadow-xs'
+                : 'text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-white/10 border-slate-300/80 dark:border-white/10'
+            }`}
+            title={
+              isAutopilot
+                ? 'Pilote Automatique ACTIF : Réparation autonome des bugs en direct sans intervention'
+                : 'Activer le Pilote Automatique (Auto-Heal sans intervention)'
+            }
+            aria-pressed={isAutopilot}
+          >
+            <Sparkles size={13} className={isAutopilot ? 'text-emerald-500 dark:text-emerald-400 animate-pulse' : 'text-slate-400'} />
+            <span className="hidden sm:inline">Pilote Auto</span>
+            {isAutopilot && (
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            )}
+          </button>
+
           {/* BOUTON 1 : Mode Clic-to-Edit (« Inspect & Tweak ») */}
           <button
             type="button"

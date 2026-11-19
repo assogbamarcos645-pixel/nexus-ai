@@ -62,6 +62,7 @@ export function NexusSwarmDrawer({
   const [isRunning, setIsRunning] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [createdFiles, setCreatedFiles] = useState<Record<string, boolean>>({});
+  const [autoApplyOnConvergence, setAutoApplyOnConvergence] = useState(true);
   const abortControllerRef = useRef<AbortController | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -98,6 +99,18 @@ export function NexusSwarmDrawer({
         contextFile: file,
         onUpdate: (state) => {
           setSessionState(state);
+          if (state.status === 'converged' && state.finalSynthesis && autoApplyOnConvergence && file) {
+            const proposal: DevProposal = {
+              id: `swarm-prop-${Date.now()}`,
+              filePath: file.path,
+              explanation: `[Swarm Autonome Convergé] ${state.finalSynthesis.summary}`,
+              originalCode: file.content,
+              suggestedCode: state.finalSynthesis.productionCode,
+              timestamp: new Date(),
+              isMock: false,
+            };
+            onRequestDiff(proposal);
+          }
         },
         signal: abortControllerRef.current.signal,
         aiCaller: async (prompt, signal) => {
@@ -570,6 +583,20 @@ export function NexusSwarmDrawer({
               <RotateCcw size={14} />
             </button>
           )}
+        </div>
+
+        {/* Option d'automatisation : Fusion et injection automatique dès convergence */}
+        <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 px-1 pt-1">
+          <label className="flex items-center gap-1.5 cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 transition-colors">
+            <input
+              type="checkbox"
+              checked={autoApplyOnConvergence}
+              onChange={(e) => setAutoApplyOnConvergence(e.target.checked)}
+              className="rounded border-slate-300 dark:border-white/20 text-nexus-600 focus:ring-nexus-500/30"
+            />
+            <span>Fusionner automatiquement dès convergence (100%)</span>
+          </label>
+          <span className="hidden sm:inline font-mono text-[10px]">3 agents en boucle fermée</span>
         </div>
 
         {/* Bouton de fermeture mobile au niveau du pouce */}
