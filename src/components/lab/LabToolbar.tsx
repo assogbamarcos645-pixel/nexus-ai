@@ -29,6 +29,7 @@ import {
   FolderGit2,
   MoreHorizontal,
   X,
+  Rocket,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import type { LabProject, LabFile, LabTab, LabLayoutMode } from '@/types/lab';
@@ -57,6 +58,7 @@ interface LabToolbarProps {
   onExportZip: () => void;
   onOpenHistory?: () => void;
   onOpenGitHubExport?: () => void;
+  onOpenCloudDeploy?: () => void;
   snapshotCount?: number;
   isDevAssistantOpen?: boolean;
   onToggleDevAssistant: () => void;
@@ -86,6 +88,7 @@ export function LabToolbar({
   onExportZip,
   onOpenHistory,
   onOpenGitHubExport,
+  onOpenCloudDeploy,
   snapshotCount = 0,
   isDevAssistantOpen = false,
   onToggleDevAssistant,
@@ -262,6 +265,20 @@ export function LabToolbar({
               <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse lg:hidden" />
             )}
           </button>
+
+          {/* Bouton Déploiement Cloud 1-Clic */}
+          {onOpenCloudDeploy && (
+            <button
+              type="button"
+              id="btn-toolbar-deploy-cloud"
+              onClick={onOpenCloudDeploy}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-gradient-to-r from-cyan-500 via-indigo-600 to-purple-600 hover:from-cyan-400 hover:to-purple-500 shadow-md shadow-cyan-500/20 transition-all cursor-pointer shrink-0"
+              title="Déployer ce projet en 1 clic sur Vercel, Netlify ou générer un HTML autonome"
+            >
+              <Rocket size={13} className="text-white" />
+              <span>Déployer</span>
+            </button>
+          )}
 
           {/* Bouton Exporter ZIP */}
           <button
@@ -624,6 +641,20 @@ export function LabToolbar({
                 <Download size={16} className="text-emerald-500" />
                 <span>Exporter ZIP</span>
               </button>
+
+              {onOpenCloudDeploy && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    onOpenCloudDeploy();
+                  }}
+                  className="flex items-center gap-2 p-2.5 rounded-xl bg-gradient-to-r from-cyan-500/20 to-purple-600/20 text-cyan-600 dark:text-cyan-300 text-xs font-semibold cursor-pointer transition-colors"
+                >
+                  <Rocket size={16} className="text-cyan-500" />
+                  <span>Déploiement Cloud</span>
+                </button>
+              )}
 
               {onOpenGitHubExport && (
                 <button

@@ -267,6 +267,16 @@ export const INSPECTOR_INTERCEPTOR_SCRIPT = `
 const ERROR_BOUNDARY_SNIPPET = `
 <script type="module">
 window.addEventListener('error', function(event) {
+  try {
+    window.parent.postMessage({
+      type: 'nexus-preview-error',
+      message: event.message || 'Erreur runtime',
+      stack: event.error?.stack || '',
+      filename: event.filename || '',
+      lineno: event.lineno || 0,
+    }, '*');
+  } catch(e) {}
+
   const root = document.getElementById('root') || document.body;
   if (!document.getElementById('nexus-error-overlay')) {
     const overlay = document.createElement('div');
@@ -285,14 +295,28 @@ window.addEventListener('error', function(event) {
     overlay.style.overflow = 'auto';
 
     overlay.innerHTML = \`
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-        <span style="background:#ef4444;color:#fff;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:bold;">VITE RUNTIME ERROR</span>
-        <span style="color:#94a3b8;font-size:12px;">Erreur d'exécution React / JavaScript</span>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="background:#ef4444;color:#fff;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:bold;">VITE RUNTIME ERROR</span>
+          <span style="color:#94a3b8;font-size:12px;">Erreur d'exécution React / JavaScript</span>
+        </div>
+        <button id="btn-iframe-auto-heal" style="background:linear-gradient(135deg,#06b6d4,#6366f1);color:#fff;border:none;padding:6px 14px;border-radius:8px;font-size:11px;font-weight:bold;cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(6,182,212,0.4);">
+          ⚡ Auto-Heal (Corriger avec l'IA)
+        </button>
       </div>
       <h3 style="color:#ffffff;font-size:14px;margin-bottom:12px;font-weight:600;">\${event.message}</h3>
       <pre style="background:rgba(0,0,0,0.5);padding:12px;border-radius:8px;font-size:11px;line-height:1.5;color:#f87171;overflow-x:auto;">\${event.error?.stack || event.filename + ':' + event.lineno}</pre>
-      <p style="margin-top:14px;font-size:11px;color:#94a3b8;">Corrigez le code dans l'éditeur pour actualiser automatiquement l'aperçu via Hot Reload.</p>
+      <p style="margin-top:14px;font-size:11px;color:#94a3b8;">Cliquez sur <strong>⚡ Auto-Heal</strong> ou corrigez le code dans l'éditeur pour actualiser automatiquement l'aperçu.</p>
     \`;
+    const btnHeal = overlay.querySelector('#btn-iframe-auto-heal');
+    if (btnHeal) {
+      btnHeal.addEventListener('click', function() {
+        window.parent.postMessage({
+          type: 'nexus-trigger-auto-heal',
+          message: event.message || 'Unknown runtime error'
+        }, '*');
+      });
+    }
     root.appendChild(overlay);
   }
 });

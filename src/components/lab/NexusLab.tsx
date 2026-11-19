@@ -25,6 +25,7 @@ import { NewProjectModal } from './NewProjectModal';
 import { NewFileModal } from './NewFileModal';
 import { SnapshotHistoryModal } from './SnapshotHistoryModal';
 import { GitHubExportModal } from './GitHubExportModal';
+import { CloudDeployModal } from './CloudDeployModal';
 import type { DevProposal, LabLayoutMode } from '@/types/lab';
 import { Check, Info, AlertCircle, X, Sparkles, Plus, FolderPlus } from 'lucide-react';
 
@@ -66,6 +67,7 @@ export function NexusLab() {
   const [isNewFileModalOpen, setIsNewFileModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isGitHubModalOpen, setIsGitHubModalOpen] = useState(false);
+  const [isCloudDeployOpen, setIsCloudDeployOpen] = useState(false);
   const [isDevAssistantOpen, setIsDevAssistantOpen] = useState(false);
   const [isSwarmOpen, setIsSwarmOpen] = useState(false);
   const [showPreview, setShowPreview] = useState(true);
@@ -187,6 +189,7 @@ export function NexusLab() {
           onOpenHistory={() => setIsHistoryModalOpen(true)}
           snapshotCount={snapshots.length}
           onOpenGitHubExport={() => setIsGitHubModalOpen(true)}
+          onOpenCloudDeploy={() => setIsCloudDeployOpen(true)}
           onSelectProject={(id) => {
             setActiveProjectId(id);
             setActiveTab('editor');
@@ -390,6 +393,7 @@ export function NexusLab() {
                   onUpdateProjectFiles={updateProjectFiles}
                   onUpdateMockupImage={updateProjectMockupImage}
                   activeFile={activeFile}
+                  onRequestDiff={handleRequestDiff}
                 />
               </div>
             </>
@@ -455,6 +459,17 @@ export function NexusLab() {
         isOpen={isGitHubModalOpen}
         onClose={() => setIsGitHubModalOpen(false)}
         project={activeProjectWithDrafts || activeProject}
+      />
+
+      {/* Modale Déploiement Cloud One-Click (Vercel, Netlify, Standalone) */}
+      <CloudDeployModal
+        isOpen={isCloudDeployOpen}
+        onClose={() => setIsCloudDeployOpen(false)}
+        project={activeProjectWithDrafts || activeProject}
+        onOpenGitHubExport={() => {
+          setIsCloudDeployOpen(false);
+          setIsGitHubModalOpen(true);
+        }}
       />
     </div>
   );

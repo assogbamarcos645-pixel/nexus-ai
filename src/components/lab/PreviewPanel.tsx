@@ -30,13 +30,16 @@ import {
   SlidersHorizontal,
   ChevronUp,
   ChevronDown,
+  AlertTriangle,
+  Sparkles,
 } from 'lucide-react';
-import type { LabProject, LabFile, ConsoleMessage, InspectedElementInfo } from '@/types/lab';
+import type { LabProject, LabFile, ConsoleMessage, InspectedElementInfo, DevProposal } from '@/types/lab';
 import { LAB_TEMPLATES } from '@/config/labTemplates';
 import { bundleProjectForPreview } from '@/services/lab/runtimeService';
 import { InspectTweakWidget } from './InspectTweakWidget';
 import { MockupComparator } from './MockupComparator';
 import { executeInspectTweak } from '@/services/lab/inspectTweakService';
+import { diagnoseAndHealError } from '@/services/lab/autoHealService';
 import { cn } from '@/utils/cn';
 
 interface PreviewPanelProps {
@@ -47,6 +50,7 @@ interface PreviewPanelProps {
   onUpdateProjectFiles?: (files: LabFile[]) => void;
   onUpdateMockupImage?: (image: string | undefined) => void;
   activeFile?: LabFile | null;
+  onRequestDiff?: (proposal: DevProposal) => void;
 }
 
 export function PreviewPanel({
@@ -57,6 +61,7 @@ export function PreviewPanel({
   onUpdateProjectFiles,
   onUpdateMockupImage,
   activeFile,
+  onRequestDiff,
 }: PreviewPanelProps) {
   const [reloadKey, setReloadKey] = useState(0);
   const [contentVersion, setContentVersion] = useState(0);
@@ -66,6 +71,16 @@ export function PreviewPanel({
   const [copiedCmd, setCopiedCmd] = useState<string | null>(null);
   const [deviceMode, setDeviceMode] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [isConsoleOpen, setIsConsoleOpen] = useState(() => (typeof window !== 'undefined' ? window.innerWidth >= 768 : false));
+
+  // États pour « Auto-Heal » (Débogueur et réparateur IA autonome)
+  const [activeRuntimeError, setActiveRuntimeError] = useState<{
+    message: string;
+    stack?: string;
+    filename?: string;
+    lineno?: number;
+  } | null>(null);
+  const [isAutoHealing, setIsAutoHealing] = useState(false);
+  const [autoHealFeedback, setAutoHealFeedback] = useState<string | null>(null);
 
   // États pour « Inspect & Tweak » (Mode Clic-to-Edit) et Curseur Comparatif Avant/Après
   const [isInspectMode, setIsInspectMode] = useState(false);
@@ -126,6 +141,45 @@ export function PreviewPanel({
     };
   }, [project]);
 
+  // Déclenchement du diagnostic et de la réparation autonome Auto-Heal
+  const triggerAutoHeal = async (errorToHeal?: {
+    message: string;
+    stack?: string;
+    filename?: string;
+    lineno?: number;
+  }) => {
+    const targetErr = errorToHeal || activeRuntimeError;
+    if (!project || !targetErr || isAutoHealing) return;
+
+    setIsAutoHealing(true);
+    setAutoHealFeedback('Diagnostic et génération du correctif en cours...');
+
+    try {
+      const result = await diagnoseAndHealError(project, targetErr);
+      setAutoHealFeedback(`Correctif prêt pour ${result.targetFile.name} !`);
+
+      if (onRequestDiff) {
+        onRequestDiff(result.proposal);
+      } else if (onUpdateProjectFiles) {
+        const updated = project.files.map((f) =>
+          f.id === result.targetFile.id ? { ...f, content: result.proposal.suggestedCode } : f,
+        );
+        onUpdateProjectFiles(updated);
+      }
+
+      setTimeout(() => {
+        setActiveRuntimeError(null);
+        setAutoHealFeedback(null);
+      }, 3500);
+    } catch (err) {
+      console.error('[AUTO-HEAL] Échec du diagnostic:', err);
+      setAutoHealFeedback('Impossible de corriger automatiquement cette erreur.');
+      setTimeout(() => setAutoHealFeedback(null), 3000);
+    } finally {
+      setIsAutoHealing(false);
+    }
+  };
+
   // Écoute des messages postMessage de l'iframe de manière sécurisée
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -145,9 +199,30 @@ export function PreviewPanel({
 
         setLogs((prev) => [...prev.slice(-49), newLog]);
         window.dispatchEvent(new CustomEvent('nexus-runtime-log', { detail: newLog }));
+
+        // Détection automatique d'erreur runtime pour le bandeau Auto-Heal
+        if (event.data.logType === 'error') {
+          setActiveRuntimeError((prev) => prev || { message: event.data.message || 'Erreur runtime détectée' });
+        }
       }
 
-      // 2. Sélection d'élément inspecté (« Inspect & Tweak »)
+      // 2. Erreur d'exécution React / Runtime directe
+      if (event.data && event.data.type === 'nexus-preview-error') {
+        setActiveRuntimeError({
+          message: event.data.message || 'Erreur d’exécution React',
+          stack: event.data.stack,
+          filename: event.data.filename,
+          lineno: event.data.lineno,
+        });
+      }
+
+      // 3. Déclenchement Auto-Heal depuis l'overlay de l'iframe
+      if (event.data && event.data.type === 'nexus-trigger-auto-heal') {
+        const errMsg = event.data.message || 'Erreur runtime';
+        triggerAutoHeal({ message: errMsg });
+      }
+
+      // 4. Sélection d'élément inspecté (« Inspect & Tweak »)
       if (event.data && event.data.type === 'nexus-inspect-selected' && event.data.element) {
         setInspectedElement(event.data.element);
       }
@@ -155,7 +230,7 @@ export function PreviewPanel({
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, []);
+  }, [project, activeRuntimeError, isAutoHealing, onRequestDiff, onUpdateProjectFiles]);
 
   // Synchronisation du mode inspecteur avec l'iframe lors de l'activation/désactivation ou du rechargement
   useEffect(() => {
@@ -451,6 +526,54 @@ export function PreviewPanel({
       {/* Contenu principal de l'aperçu */}
       {viewMode === 'preview' ? (
         <div className="flex-1 flex flex-col relative overflow-hidden bg-slate-200/50 dark:bg-black/50">
+          {/* Bannière Flottante Auto-Heal en cas d'erreur d'exécution */}
+          {activeRuntimeError && (
+            <div className="absolute top-3 left-3 right-3 z-40 p-2.5 sm:p-3 rounded-xl bg-slate-900/95 dark:bg-[#0c0d1e]/95 border border-red-500/50 shadow-2xl backdrop-blur-md flex items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                <div className="w-8 h-8 rounded-lg bg-red-500/20 border border-red-500/40 flex items-center justify-center shrink-0">
+                  <AlertTriangle size={16} className="text-red-400" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[10.5px] font-bold text-red-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <span>Erreur Runtime Détectée</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping" />
+                  </div>
+                  <p className="text-xs text-white/95 truncate font-mono">
+                    {activeRuntimeError.message}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  id="btn-auto-heal-trigger"
+                  onClick={() => triggerAutoHeal()}
+                  disabled={isAutoHealing}
+                  className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-cyan-500 via-indigo-600 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white font-semibold text-xs flex items-center gap-1.5 shadow-lg shadow-cyan-500/25 transition-all cursor-pointer disabled:opacity-50"
+                  title="Demander à l'IA de corriger automatiquement le fichier source"
+                >
+                  <Sparkles size={13} className={isAutoHealing ? 'animate-spin' : 'animate-pulse text-amber-300'} />
+                  <span>{isAutoHealing ? 'Diagnostic IA...' : '⚡ Auto-Heal'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveRuntimeError(null)}
+                  className="p-1.5 text-white/40 hover:text-white rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+                  title="Masquer l'alerte"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Toast de statut Auto-Heal */}
+          {autoHealFeedback && (
+            <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-40 px-3.5 py-1.5 rounded-xl bg-cyan-950/95 border border-cyan-400/40 text-cyan-200 text-xs shadow-xl backdrop-blur-md flex items-center gap-2 animate-in fade-in duration-150">
+              <Sparkles size={13} className="text-cyan-400 animate-pulse" />
+              <span>{autoHealFeedback}</span>
+            </div>
+          )}
           {/* Si le mode Comparateur Avant / Après est activé */}
           {isComparatorOpen ? (
             <MockupComparator
