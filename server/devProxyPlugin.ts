@@ -939,7 +939,7 @@ RAPPEL IMPORTANT : Ne réponds JAMAIS par une formule passive d'attente ("Je sui
             // 3. Groq Cloud API (Inférence LPU ultra-rapide avec streaming SSE, français strict et historique)
             if (targetProvider === 'groq') {
               const systemPrompt = `${getAgentSystemPrompt(agentId)}\n\nDIRECTIVE IMPÉRATIVE DE LANGUE :\nTu dois t'exprimer et répondre EXCLUSIVEMENT en français soigné, naturel et professionnel, peu importe la question posée, sauf si l'utilisateur formule explicitement sa demande dans une autre langue.`;
-              const groqModel = modelId || 'openai/gpt-oss-120b';
+              let groqModel = modelId && modelId !== 'openai/gpt-oss-120b' ? modelId : 'llama-3.3-70b-versatile';
               const messages = [
                 { role: 'system', content: systemPrompt },
                 ...(Array.isArray(conversationHistory)
@@ -953,7 +953,7 @@ RAPPEL IMPORTANT : Ne réponds JAMAIS par une formule passive d'attente ("Je sui
               if (isStream) {
                 initSseResponse(res);
                 try {
-                  const streamRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                  let streamRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
@@ -968,6 +968,26 @@ RAPPEL IMPORTANT : Ne réponds JAMAIS par une formule passive d'attente ("Je sui
                     }),
                     signal: controller.signal,
                   });
+
+                  // Fallback automatique sur modèle léger si Rate Limit (429)
+                  if (!streamRes.ok && streamRes.status === 429) {
+                    groqModel = 'llama-3.1-8b-instant';
+                    streamRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${envKey}`,
+                      },
+                      body: JSON.stringify({
+                        model: groqModel,
+                        messages,
+                        max_tokens: safeMaxTokens,
+                        temperature: safeTemp,
+                        stream: true,
+                      }),
+                      signal: controller.signal,
+                    });
+                  }
 
                   if (!streamRes.ok) {
                     const err = await streamRes.text().catch(() => '');
@@ -1018,7 +1038,7 @@ RAPPEL IMPORTANT : Ne réponds JAMAIS par une formule passive d'attente ("Je sui
               }
 
               // Mode non-streaming Groq
-              const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+              let groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -1032,6 +1052,25 @@ RAPPEL IMPORTANT : Ne réponds JAMAIS par une formule passive d'attente ("Je sui
                 }),
                 signal: controller.signal,
               });
+
+              // Fallback automatique sur modèle instantané si 429 (Rate Limit)
+              if (!groqRes.ok && groqRes.status === 429) {
+                groqModel = 'llama-3.1-8b-instant';
+                groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${envKey}`,
+                  },
+                  body: JSON.stringify({
+                    model: groqModel,
+                    messages,
+                    max_tokens: safeMaxTokens,
+                    temperature: safeTemp,
+                  }),
+                  signal: controller.signal,
+                });
+              }
               clearTimeout(timeout);
 
               if (!groqRes.ok) {
