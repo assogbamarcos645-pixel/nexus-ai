@@ -70,13 +70,13 @@ export function TestGeneratorModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 cursor-pointer"
       role="dialog"
       aria-modal="true"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-4xl h-[84vh] max-h-[700px] flex flex-col rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl text-slate-100 overflow-hidden"
+        className="relative w-full max-w-4xl h-[84vh] max-h-[700px] flex flex-col rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl text-slate-100 overflow-hidden cursor-default"
         onClick={(e) => e.stopPropagation()}
       >
         {/* En-tête */}

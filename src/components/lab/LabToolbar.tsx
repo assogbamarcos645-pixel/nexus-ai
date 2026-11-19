@@ -7,7 +7,7 @@
  * et les raccourcis d'exécution/sauvegarde sans aucun chevauchement.
  */
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   FolderPlus,
   FilePlus,
@@ -111,6 +111,36 @@ export function LabToolbar({
 }: LabToolbarProps) {
   const { t } = useTranslation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isToolsDropdownOpen, setIsToolsDropdownOpen] = useState(false);
+  const toolsDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Fermer le dropdown des outils pro lors d'un clic extérieur ou Échap
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        toolsDropdownRef.current &&
+        !toolsDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsToolsDropdownOpen(false);
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setIsToolsDropdownOpen(false);
+      }
+    }
+
+    if (isToolsDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isToolsDropdownOpen]);
 
   return (
     <header
@@ -246,75 +276,170 @@ export function LabToolbar({
             <span>Nouveau</span>
           </button>
 
-          {/* Bouton Hub de Templates */}
-          {onOpenTemplateHub && (
+          {/* Menu Déroulant "Outils Pro" regroupant Modèles, Studio BDD, Vocal Live, Tests & Équipe sans aucun chevauchement */}
+          <div className="relative shrink-0" ref={toolsDropdownRef}>
             <button
               type="button"
-              id="btn-toolbar-template-hub"
-              onClick={onOpenTemplateHub}
-              className="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white bg-slate-100/80 dark:bg-white/5 hover:bg-slate-200/80 dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/8 transition-all cursor-pointer shrink-0"
-              title="Explorer le catalogue de templates modernes"
+              id="btn-toolbar-pro-tools"
+              onClick={() => setIsToolsDropdownOpen((prev) => !prev)}
+              aria-expanded={isToolsDropdownOpen}
+              className={cn(
+                'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer shrink-0 border',
+                isToolsDropdownOpen
+                  ? 'bg-nexus-600/20 text-white border-nexus-500 shadow-[0_0_15px_rgba(124,13,244,0.35)]'
+                  : 'bg-slate-100/90 dark:bg-white/5 text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/90 dark:hover:bg-white/10 border-slate-200/80 dark:border-white/10',
+              )}
+              title="Outils Pro : Modèles, Studio BDD, Vocal Live, Tests et Mode Équipe"
             >
-              <Sparkles size={13} className="text-cyan-500 dark:text-cyan-400" />
-              <span>Modèles</span>
+              <Sparkles size={13} className="text-nexus-500 dark:text-nexus-400" />
+              <span className="hidden sm:inline">Outils Pro</span>
+              <ChevronDown
+                size={12}
+                className={cn(
+                  'transition-transform duration-200 text-slate-400',
+                  isToolsDropdownOpen && 'rotate-180 text-nexus-400',
+                )}
+              />
             </button>
-          )}
 
-          {/* Bouton Studio BDD */}
-          {onOpenDbModeler && (
-            <button
-              type="button"
-              id="btn-toolbar-db-modeler"
-              onClick={onOpenDbModeler}
-              className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white bg-slate-100/80 dark:bg-white/5 hover:bg-slate-200/80 dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/8 transition-all cursor-pointer shrink-0"
-              title="Modéliser tables, relations et règles RLS Supabase"
-            >
-              <Database size={13} className="text-indigo-500 dark:text-indigo-400" />
-              <span>Studio BDD</span>
-            </button>
-          )}
+            {isToolsDropdownOpen && (
+              <div
+                className="absolute right-0 mt-1.5 w-72 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-2 z-50 flex flex-col gap-1 animate-in fade-in slide-in-from-top-2 duration-150"
+                role="menu"
+              >
+                <div className="px-3 py-1.5 border-b border-slate-100 dark:border-slate-800/80 mb-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    Studio & Ingénierie IA
+                  </span>
+                </div>
 
-          {/* Bouton Voice Live (#5) */}
-          {onOpenVoiceLive && (
-            <button
-              type="button"
-              id="btn-toolbar-voice-live"
-              onClick={onOpenVoiceLive}
-              className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-cyan-300 hover:text-white bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 transition-all cursor-pointer shrink-0 shadow-sm shadow-cyan-500/10"
-              title="Lancer la conversation vocale temps réel avec l'IA"
-            >
-              <Mic size={13} className="text-cyan-400 animate-pulse" />
-              <span>Vocal Live</span>
-            </button>
-          )}
+                {onOpenTemplateHub && (
+                  <button
+                    type="button"
+                    id="btn-toolbar-template-hub"
+                    onClick={() => {
+                      setIsToolsDropdownOpen(false);
+                      onOpenTemplateHub();
+                    }}
+                    className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/70 text-left transition-colors cursor-pointer group"
+                    role="menuitem"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-500 dark:text-cyan-400 shrink-0 group-hover:scale-105 transition-transform">
+                      <Sparkles size={16} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs font-semibold text-slate-800 dark:text-white">Hub de Modèles</div>
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                        SaaS, E-Commerce, Dashboards
+                      </div>
+                    </div>
+                  </button>
+                )}
 
-          {/* Bouton Tests 1-Clic (#6) */}
-          {onOpenTestGenerator && (
-            <button
-              type="button"
-              id="btn-toolbar-test-generator"
-              onClick={onOpenTestGenerator}
-              className="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 transition-all cursor-pointer shrink-0"
-              title="Générer automatiquement des tests unitaires et E2E (Vitest & Playwright)"
-            >
-              <ShieldCheck size={13} className="text-emerald-400" />
-              <span>Tests 1-Clic</span>
-            </button>
-          )}
+                {onOpenDbModeler && (
+                  <button
+                    type="button"
+                    id="btn-toolbar-db-modeler"
+                    onClick={() => {
+                      setIsToolsDropdownOpen(false);
+                      onOpenDbModeler();
+                    }}
+                    className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/70 text-left transition-colors cursor-pointer group"
+                    role="menuitem"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500 dark:text-indigo-400 shrink-0 group-hover:scale-105 transition-transform">
+                      <Database size={16} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs font-semibold text-slate-800 dark:text-white">Studio BDD Supabase</div>
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                        Tables relationnelles, clés & RLS
+                      </div>
+                    </div>
+                  </button>
+                )}
 
-          {/* Bouton Mode Équipe (#7) */}
-          {onOpenTeamCollab && (
-            <button
-              type="button"
-              id="btn-toolbar-team-collab"
-              onClick={onOpenTeamCollab}
-              className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-purple-300 hover:text-white bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 transition-all cursor-pointer shrink-0 shadow-sm shadow-purple-500/10"
-              title="Ouvrir la session de collaboration multijoueur en temps réel"
-            >
-              <Users size={13} className="text-purple-400" />
-              <span>Équipe</span>
-            </button>
-          )}
+                {onOpenVoiceLive && (
+                  <button
+                    type="button"
+                    id="btn-toolbar-voice-live"
+                    onClick={() => {
+                      setIsToolsDropdownOpen(false);
+                      onOpenVoiceLive();
+                    }}
+                    className="flex items-center gap-3 p-2 rounded-xl hover:bg-cyan-500/10 text-left transition-colors cursor-pointer group"
+                    role="menuitem"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0 group-hover:scale-105 transition-transform">
+                      <Mic size={16} className="animate-pulse" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs font-semibold text-cyan-600 dark:text-cyan-300 flex items-center gap-1.5">
+                        <span>Mode Vocal Live</span>
+                        <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-cyan-500/20 text-cyan-400 font-mono font-bold">
+                          LIVE
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                        Conversation vocale mains libres
+                      </div>
+                    </div>
+                  </button>
+                )}
+
+                {onOpenTestGenerator && (
+                  <button
+                    type="button"
+                    id="btn-toolbar-test-generator"
+                    onClick={() => {
+                      setIsToolsDropdownOpen(false);
+                      onOpenTestGenerator();
+                    }}
+                    className="flex items-center gap-3 p-2 rounded-xl hover:bg-emerald-500/10 text-left transition-colors cursor-pointer group"
+                    role="menuitem"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 dark:text-emerald-400 shrink-0 group-hover:scale-105 transition-transform">
+                      <ShieldCheck size={16} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs font-semibold text-slate-800 dark:text-white">Tests 1-Clic</div>
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                        Suites Vitest & Playwright
+                      </div>
+                    </div>
+                  </button>
+                )}
+
+                {onOpenTeamCollab && (
+                  <button
+                    type="button"
+                    id="btn-toolbar-team-collab"
+                    onClick={() => {
+                      setIsToolsDropdownOpen(false);
+                      onOpenTeamCollab();
+                    }}
+                    className="flex items-center gap-3 p-2 rounded-xl hover:bg-purple-500/10 text-left transition-colors cursor-pointer group"
+                    role="menuitem"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400 shrink-0 group-hover:scale-105 transition-transform">
+                      <Users size={16} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs font-semibold text-purple-600 dark:text-purple-300 flex items-center gap-1.5">
+                        <span>Mode Équipe</span>
+                        <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-purple-500/20 text-purple-400 font-mono font-bold">
+                          MULTI
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                        Curseurs en direct & chat d'équipe
+                      </div>
+                    </div>
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Bouton nouveau fichier */}
           <button

@@ -143,9 +143,13 @@ export function CloudDeployModal({
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200"
+      onClick={onClose}
+      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200 cursor-pointer"
     >
-      <div className="relative w-full max-w-xl bg-white dark:bg-[#0c0d1e] border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-xl bg-white dark:bg-[#0c0d1e] border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden cursor-default"
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-white/8 bg-slate-50/80 dark:bg-surface-900/40">
           <div className="flex items-center gap-2.5">

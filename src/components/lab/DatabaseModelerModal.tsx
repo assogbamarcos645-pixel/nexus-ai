@@ -6,7 +6,7 @@
  * puis de générer instantanément le script SQL PostgreSQL/Supabase et les types TypeScript.
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Database,
   Plus,
@@ -62,6 +62,15 @@ export function DatabaseModelerModal({
   const [codeSubTab, setCodeSubTab] = useState<'sql' | 'typescript' | 'client'>('sql');
   const [copied, setCopied] = useState(false);
   const [injectedSuccess, setInjectedSuccess] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -197,13 +206,13 @@ export function DatabaseModelerModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 cursor-pointer"
       role="dialog"
       aria-modal="true"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-5xl h-[88vh] flex flex-col rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl text-slate-100 overflow-hidden"
+        className="relative w-full max-w-6xl w-[96vw] h-[90vh] flex flex-col rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl text-slate-100 overflow-hidden cursor-default"
         onClick={(e) => e.stopPropagation()}
       >
         {/* En-tête */}
@@ -424,19 +433,19 @@ export function DatabaseModelerModal({
                     </div>
                   </div>
 
-                  {/* Liste des colonnes */}
-                  <div className="flex-1 overflow-y-auto mt-4 scrollbar-thin">
-                    <table className="w-full text-left border-collapse text-xs">
+                  {/* Liste des colonnes avec défilement horizontal fluide pour éviter tout écrasement */}
+                  <div className="flex-1 overflow-x-auto overflow-y-auto mt-4 scrollbar-thin border border-slate-800/80 rounded-xl bg-slate-950/40 p-3">
+                    <table className="min-w-[780px] w-full text-left border-collapse text-xs">
                       <thead>
                         <tr className="border-b border-slate-800 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-                          <th className="pb-2">Nom du champ</th>
-                          <th className="pb-2">Type</th>
-                          <th className="pb-2 text-center">Clé (PK)</th>
-                          <th className="pb-2 text-center">Requis</th>
-                          <th className="pb-2 text-center">Unique</th>
-                          <th className="pb-2">Valeur par défaut</th>
-                          <th className="pb-2">Relation (Clé étrangère)</th>
-                          <th className="pb-2 text-right">Action</th>
+                          <th className="pb-2 min-w-[150px]">Nom du champ</th>
+                          <th className="pb-2 min-w-[170px]">Type</th>
+                          <th className="pb-2 text-center min-w-[65px]">Clé (PK)</th>
+                          <th className="pb-2 text-center min-w-[65px]">Requis</th>
+                          <th className="pb-2 text-center min-w-[65px]">Unique</th>
+                          <th className="pb-2 min-w-[140px]">Valeur par défaut</th>
+                          <th className="pb-2 min-w-[160px]">Relation (Clé étrangère)</th>
+                          <th className="pb-2 text-right min-w-[60px]">Action</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-800/60 font-mono">
