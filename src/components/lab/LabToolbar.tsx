@@ -31,6 +31,8 @@ import {
   X,
   Rocket,
   Database,
+  Mic,
+  ShieldCheck,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import type { LabProject, LabFile, LabTab, LabLayoutMode } from '@/types/lab';
@@ -62,6 +64,9 @@ interface LabToolbarProps {
   onOpenCloudDeploy?: () => void;
   onOpenTemplateHub?: () => void;
   onOpenDbModeler?: () => void;
+  onOpenVoiceLive?: () => void;
+  onOpenTestGenerator?: () => void;
+  onOpenTeamCollab?: () => void;
   snapshotCount?: number;
   isDevAssistantOpen?: boolean;
   onToggleDevAssistant: () => void;
@@ -94,6 +99,9 @@ export function LabToolbar({
   onOpenCloudDeploy,
   onOpenTemplateHub,
   onOpenDbModeler,
+  onOpenVoiceLive,
+  onOpenTestGenerator,
+  onOpenTeamCollab,
   snapshotCount = 0,
   isDevAssistantOpen = false,
   onToggleDevAssistant,
@@ -263,6 +271,48 @@ export function LabToolbar({
             >
               <Database size={13} className="text-indigo-500 dark:text-indigo-400" />
               <span>Studio BDD</span>
+            </button>
+          )}
+
+          {/* Bouton Voice Live (#5) */}
+          {onOpenVoiceLive && (
+            <button
+              type="button"
+              id="btn-toolbar-voice-live"
+              onClick={onOpenVoiceLive}
+              className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-cyan-300 hover:text-white bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 transition-all cursor-pointer shrink-0 shadow-sm shadow-cyan-500/10"
+              title="Lancer la conversation vocale temps réel avec l'IA"
+            >
+              <Mic size={13} className="text-cyan-400 animate-pulse" />
+              <span>Vocal Live</span>
+            </button>
+          )}
+
+          {/* Bouton Tests 1-Clic (#6) */}
+          {onOpenTestGenerator && (
+            <button
+              type="button"
+              id="btn-toolbar-test-generator"
+              onClick={onOpenTestGenerator}
+              className="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 transition-all cursor-pointer shrink-0"
+              title="Générer automatiquement des tests unitaires et E2E (Vitest & Playwright)"
+            >
+              <ShieldCheck size={13} className="text-emerald-400" />
+              <span>Tests 1-Clic</span>
+            </button>
+          )}
+
+          {/* Bouton Mode Équipe (#7) */}
+          {onOpenTeamCollab && (
+            <button
+              type="button"
+              id="btn-toolbar-team-collab"
+              onClick={onOpenTeamCollab}
+              className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-purple-300 hover:text-white bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 transition-all cursor-pointer shrink-0 shadow-sm shadow-purple-500/10"
+              title="Ouvrir la session de collaboration multijoueur en temps réel"
+            >
+              <Users size={13} className="text-purple-400" />
+              <span>Équipe</span>
             </button>
           )}
 
@@ -700,6 +750,48 @@ export function LabToolbar({
                 >
                   <Database size={16} className="text-indigo-400" />
                   <span>Studio BDD</span>
+                </button>
+              )}
+
+              {onOpenVoiceLive && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    onOpenVoiceLive();
+                  }}
+                  className="flex items-center gap-2 p-2.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 text-xs font-semibold cursor-pointer transition-colors"
+                >
+                  <Mic size={16} className="text-cyan-400" />
+                  <span>Mode Vocal Live</span>
+                </button>
+              )}
+
+              {onOpenTestGenerator && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    onOpenTestGenerator();
+                  }}
+                  className="flex items-center gap-2 p-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 text-xs font-semibold cursor-pointer transition-colors"
+                >
+                  <ShieldCheck size={16} className="text-emerald-400" />
+                  <span>Tests Vitest & E2E</span>
+                </button>
+              )}
+
+              {onOpenTeamCollab && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    onOpenTeamCollab();
+                  }}
+                  className="flex items-center gap-2 p-2.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 text-xs font-semibold cursor-pointer transition-colors"
+                >
+                  <Users size={16} className="text-purple-400" />
+                  <span>Mode Équipe</span>
                 </button>
               )}
 

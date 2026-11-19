@@ -28,7 +28,11 @@ import { GitHubExportModal } from './GitHubExportModal';
 import { CloudDeployModal } from './CloudDeployModal';
 import { TemplateHubModal } from './TemplateHubModal';
 import { DatabaseModelerModal } from './DatabaseModelerModal';
+import { VoiceLiveModal } from '@/components/voice/VoiceLiveModal';
+import { TestGeneratorModal } from './TestGeneratorModal';
+import { TeamCollaborationDrawer } from './TeamCollaborationDrawer';
 import { injectSchemaIntoProject } from '@/services/lab/databaseModelerService';
+import { injectTestSuiteIntoProject, type GeneratedTestSuite } from '@/services/lab/testGeneratorService';
 import type { DbSchema } from '@/types/databaseModeler';
 import type { DevProposal, LabLayoutMode } from '@/types/lab';
 import { Check, Info, AlertCircle, X, Sparkles, Plus, FolderPlus } from 'lucide-react';
@@ -74,6 +78,9 @@ export function NexusLab() {
   const [isCloudDeployOpen, setIsCloudDeployOpen] = useState(false);
   const [isTemplateHubOpen, setIsTemplateHubOpen] = useState(false);
   const [isDbModelerOpen, setIsDbModelerOpen] = useState(false);
+  const [isVoiceLiveOpen, setIsVoiceLiveOpen] = useState(false);
+  const [isTestGeneratorOpen, setIsTestGeneratorOpen] = useState(false);
+  const [isTeamCollabOpen, setIsTeamCollabOpen] = useState(false);
   const [isDevAssistantOpen, setIsDevAssistantOpen] = useState(false);
   const [isSwarmOpen, setIsSwarmOpen] = useState(false);
   const [showPreview, setShowPreview] = useState(true);
@@ -144,6 +151,12 @@ export function NexusLab() {
     updateProjectFiles(updated.files);
   };
 
+  const handleInjectTestSuite = (suite: GeneratedTestSuite) => {
+    if (!activeProjectWithDrafts) return;
+    const updated = injectTestSuiteIntoProject(activeProjectWithDrafts, suite);
+    updateProjectFiles(updated.files);
+  };
+
   return (
     <div
       id="nexus-lab-root"
@@ -204,6 +217,9 @@ export function NexusLab() {
           onOpenCloudDeploy={() => setIsCloudDeployOpen(true)}
           onOpenTemplateHub={() => setIsTemplateHubOpen(true)}
           onOpenDbModeler={() => setIsDbModelerOpen(true)}
+          onOpenVoiceLive={() => setIsVoiceLiveOpen(true)}
+          onOpenTestGenerator={() => setIsTestGeneratorOpen(true)}
+          onOpenTeamCollab={() => setIsTeamCollabOpen(true)}
           onSelectProject={(id) => {
             setActiveProjectId(id);
             setActiveTab('editor');
@@ -503,6 +519,28 @@ export function NexusLab() {
         onClose={() => setIsDbModelerOpen(false)}
         activeProject={activeProjectWithDrafts}
         onInjectIntoProject={handleInjectSchema}
+      />
+
+      {/* Mode Conversation Vocale Bidirectionnelle Live (#5) */}
+      <VoiceLiveModal
+        isOpen={isVoiceLiveOpen}
+        onClose={() => setIsVoiceLiveOpen(false)}
+        contextPrompt={activeFile ? `Fichier actuellement ouvert : ${activeFile.path}` : undefined}
+      />
+
+      {/* Générateur de Tests Automatiques 1-Clic (#6) */}
+      <TestGeneratorModal
+        isOpen={isTestGeneratorOpen}
+        onClose={() => setIsTestGeneratorOpen(false)}
+        project={activeProjectWithDrafts || activeProject}
+        onInjectAndRun={handleInjectTestSuite}
+      />
+
+      {/* Mode Équipe & Collaboration Multijoueur (#7) */}
+      <TeamCollaborationDrawer
+        isOpen={isTeamCollabOpen}
+        onClose={() => setIsTeamCollabOpen(false)}
+        activeFilePath={activeFile?.path}
       />
     </div>
   );
