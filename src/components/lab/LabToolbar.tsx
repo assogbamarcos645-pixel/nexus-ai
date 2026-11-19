@@ -151,7 +151,7 @@ export function LabToolbar({
         isToolsDropdownOpen ? 'relative z-50' : 'relative z-30',
       )}
     >
-      <div className="flex items-center justify-between md:grid md:grid-cols-[auto_auto_1fr] lg:grid-cols-[1fr_auto_1fr] gap-1.5 sm:gap-3 w-full min-w-0">
+      <div className="flex items-center justify-between gap-1.5 sm:gap-3 w-full min-w-0">
         {/* Zone 1 (Gauche) : Sélecteur de projet & Badge (Largeur contrôlée sans débordement) */}
         <div className="flex items-center gap-1.5 min-w-0 justify-self-start shrink">
           {/* Bouton Toggle Explorer */}
@@ -280,7 +280,7 @@ export function LabToolbar({
             <span>Nouveau</span>
           </button>
 
-          {/* Menu Déroulant "Outils Pro" regroupant Modèles, Studio BDD, Vocal Live, Tests & Équipe */}
+          {/* Menu "Outils Pro" regroupant Modèles, Studio BDD, Vocal Live, Tests & Équipe */}
           <div className="relative shrink-0" ref={toolsDropdownRef}>
             <button
               type="button"
@@ -288,7 +288,7 @@ export function LabToolbar({
               onClick={() => setIsToolsDropdownOpen((prev) => !prev)}
               aria-expanded={isToolsDropdownOpen}
               className={cn(
-                'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 border shadow-xs',
+                'flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 border shadow-xs',
                 isToolsDropdownOpen
                   ? 'bg-gradient-to-r from-nexus-600 to-indigo-600 text-white border-nexus-400 shadow-[0_0_18px_rgba(124,13,244,0.4)] ring-2 ring-nexus-400/30'
                   : 'bg-white/90 dark:bg-white/8 text-slate-800 dark:text-white/90 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/80 dark:hover:bg-white/12 border-slate-300 dark:border-white/15',
@@ -303,221 +303,14 @@ export function LabToolbar({
                 5
               </span>
               <ChevronDown
-                size={13}
+                size={12}
                 className={cn(
                   'transition-transform duration-200 text-slate-400 dark:text-slate-300',
                   isToolsDropdownOpen && 'rotate-180 text-white',
                 )}
               />
             </button>
-
-            {isToolsDropdownOpen && (
-              <>
-                {/* Bouclier transparent de clic extérieur qui intercepte aussi les clics au-dessus des iframes et de l'éditeur */}
-                <div
-                  className="fixed inset-0 z-40 bg-black/25 backdrop-blur-[1px] animate-in fade-in duration-100"
-                  onClick={() => setIsToolsDropdownOpen(false)}
-                />
-
-                <div
-                  className="absolute left-0 mt-2 w-84 sm:w-96 rounded-2xl bg-white dark:bg-[#0c0e22] border-2 border-slate-200 dark:border-indigo-500/40 shadow-[0_25px_60px_rgba(0,0,0,0.35)] dark:shadow-[0_25px_60px_rgba(0,0,0,0.85)] p-2.5 z-50 flex flex-col gap-1.5 animate-in fade-in slide-in-from-top-2 duration-150 ring-1 ring-black/5 dark:ring-white/10"
-                  role="menu"
-                >
-                  {/* En-tête du menu */}
-                  <div className="px-3 py-2 border-b border-slate-100 dark:border-white/8 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Sparkles size={14} className="text-nexus-500 dark:text-cyan-400" />
-                      <span className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-white">
-                        Suite d'Ingénierie NEXUS
-                      </span>
-                    </div>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-300 font-mono font-semibold border border-cyan-500/20">
-                      5 Outils Actifs
-                    </span>
-                  </div>
-
-                  {/* 1. Hub de Modèles */}
-                  {onOpenTemplateHub && (
-                    <button
-                      type="button"
-                      id="btn-toolbar-template-hub"
-                      onClick={() => {
-                        setIsToolsDropdownOpen(false);
-                        onOpenTemplateHub();
-                      }}
-                      className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-100/90 dark:hover:bg-white/8 text-left transition-all cursor-pointer group border border-transparent hover:border-slate-200 dark:hover:border-white/10"
-                      role="menuitem"
-                    >
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500/20 to-blue-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-500 dark:text-cyan-400 shrink-0 group-hover:scale-105 transition-transform shadow-xs">
-                        <Sparkles size={18} />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-300 transition-colors">
-                            Hub de Modèles Modernes
-                          </span>
-                          <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-cyan-500/15 text-cyan-600 dark:text-cyan-300 font-mono font-bold">
-                            6 MODÈLES
-                          </span>
-                        </div>
-                        <div className="text-[11px] text-slate-600 dark:text-slate-300 line-clamp-1 mt-0.5">
-                          SaaS, E-Commerce, Portfolios, Apps IA prêtes à cloner
-                        </div>
-                      </div>
-                      <ChevronRight size={15} className="text-slate-400 group-hover:text-cyan-400 group-hover:translate-x-0.5 transition-all shrink-0" />
-                    </button>
-                  )}
-
-                  {/* 2. Studio BDD */}
-                  {onOpenDbModeler && (
-                    <button
-                      type="button"
-                      id="btn-toolbar-db-modeler"
-                      onClick={() => {
-                        setIsToolsDropdownOpen(false);
-                        onOpenDbModeler();
-                      }}
-                      className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-100/90 dark:hover:bg-white/8 text-left transition-all cursor-pointer group border border-transparent hover:border-slate-200 dark:hover:border-white/10"
-                      role="menuitem"
-                    >
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-500 dark:text-indigo-400 shrink-0 group-hover:scale-105 transition-transform shadow-xs">
-                        <Database size={18} />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors">
-                            Studio BDD Supabase
-                          </span>
-                          <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-indigo-500/15 text-indigo-600 dark:text-indigo-300 font-mono font-bold">
-                            SQL & RLS
-                          </span>
-                        </div>
-                        <div className="text-[11px] text-slate-600 dark:text-slate-300 line-clamp-1 mt-0.5">
-                          Conception tables relationnelles, clés étrangères & migrations
-                        </div>
-                      </div>
-                      <ChevronRight size={15} className="text-slate-400 group-hover:text-indigo-400 group-hover:translate-x-0.5 transition-all shrink-0" />
-                    </button>
-                  )}
-
-                  {/* 3. Mode Vocal Live */}
-                  {onOpenVoiceLive && (
-                    <button
-                      type="button"
-                      id="btn-toolbar-voice-live"
-                      onClick={() => {
-                        setIsToolsDropdownOpen(false);
-                        onOpenVoiceLive();
-                      }}
-                      className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-cyan-500/10 text-left transition-all cursor-pointer group border border-transparent hover:border-cyan-500/30"
-                      role="menuitem"
-                    >
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500/20 to-teal-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400 shrink-0 group-hover:scale-105 transition-transform shadow-xs">
-                        <Mic size={18} className="animate-pulse" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-cyan-600 dark:text-cyan-300">
-                            Mode Vocal Live
-                          </span>
-                          <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-cyan-500/20 text-cyan-400 font-mono font-bold flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
-                            LIVE
-                          </span>
-                        </div>
-                        <div className="text-[11px] text-slate-600 dark:text-slate-300 line-clamp-1 mt-0.5">
-                          Discussion vocale bidirectionnelle fluide avec l'IA
-                        </div>
-                      </div>
-                      <ChevronRight size={15} className="text-cyan-400 group-hover:translate-x-0.5 transition-all shrink-0" />
-                    </button>
-                  )}
-
-                  {/* 4. Tests 1-Clic */}
-                  {onOpenTestGenerator && (
-                    <button
-                      type="button"
-                      id="btn-toolbar-test-generator"
-                      onClick={() => {
-                        setIsToolsDropdownOpen(false);
-                        onOpenTestGenerator();
-                      }}
-                      className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-emerald-500/10 text-left transition-all cursor-pointer group border border-transparent hover:border-emerald-500/30"
-                      role="menuitem"
-                    >
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-500 dark:text-emerald-400 shrink-0 group-hover:scale-105 transition-transform shadow-xs">
-                        <ShieldCheck size={18} />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-300 transition-colors">
-                            Tests Automatisés 1-Clic
-                          </span>
-                          <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 font-mono font-bold">
-                            VITEST & E2E
-                          </span>
-                        </div>
-                        <div className="text-[11px] text-slate-600 dark:text-slate-300 line-clamp-1 mt-0.5">
-                          Génération instantanée de suites unitaires & Playwright
-                        </div>
-                      </div>
-                      <ChevronRight size={15} className="text-slate-400 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all shrink-0" />
-                    </button>
-                  )}
-
-                  {/* 5. Mode Équipe */}
-                  {onOpenTeamCollab && (
-                    <button
-                      type="button"
-                      id="btn-toolbar-team-collab"
-                      onClick={() => {
-                        setIsToolsDropdownOpen(false);
-                        onOpenTeamCollab();
-                      }}
-                      className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-purple-500/10 text-left transition-all cursor-pointer group border border-transparent hover:border-purple-500/30"
-                      role="menuitem"
-                    >
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-500/20 to-pink-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400 shrink-0 group-hover:scale-105 transition-transform shadow-xs">
-                        <Users size={18} />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-purple-600 dark:text-purple-300">
-                            Mode Équipe Multijoueur
-                          </span>
-                          <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-purple-500/20 text-purple-400 font-mono font-bold">
-                            PAIR CODE
-                          </span>
-                        </div>
-                        <div className="text-[11px] text-slate-600 dark:text-slate-300 line-clamp-1 mt-0.5">
-                          Collaboration en direct, curseurs partagés & copilote IA
-                        </div>
-                      </div>
-                      <ChevronRight size={15} className="text-purple-400 group-hover:translate-x-0.5 transition-all shrink-0" />
-                    </button>
-                  )}
-
-                  {/* Pied du menu */}
-                  <div className="px-3 py-2 border-t border-slate-100 dark:border-white/8 bg-slate-50/80 dark:bg-white/4 rounded-b-xl flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-                    <span>⚡ Intégré directement dans NEXUS LAB</span>
-                    <span>Échap pour fermer</span>
-                  </div>
-                </div>
-              </>
-            )}
           </div>
-
-          {/* Bouton nouveau fichier */}
-          <button
-            type="button"
-            id="btn-toolbar-new-file"
-            onClick={onNewFileClick}
-            className="hidden 2xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white bg-slate-100/80 dark:bg-white/5 hover:bg-slate-200/80 dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/8 transition-all cursor-pointer shrink-0"
-            title="Ajouter un fichier"
-          >
-            <FilePlus size={13} className="text-cyan-600 dark:text-cyan-400" />
-            <span>Fichier</span>
-          </button>
 
           {/* Bouton Sauvegarder (avec dot indicateur tactile) */}
           <button
@@ -526,7 +319,7 @@ export function LabToolbar({
             onClick={onSave}
             disabled={!hasUnsavedChanges || isSaving}
             className={cn(
-              'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer shrink-0',
+              'flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer shrink-0',
               hasUnsavedChanges
                 ? 'bg-nexus-600 text-white hover:bg-nexus-500 shadow-[0_0_12px_rgba(124,13,244,0.4)]'
                 : 'bg-slate-100 dark:bg-white/4 text-slate-400 dark:text-white/30 border border-slate-200 dark:border-white/6 cursor-not-allowed',
@@ -534,9 +327,9 @@ export function LabToolbar({
             title="Enregistrer (Ctrl+S)"
           >
             <Save size={13} />
-            <span className="hidden lg:inline">{isSaving ? '...' : 'Enregistrer'}</span>
+            <span className="hidden xl:inline">{isSaving ? '...' : 'Enregistrer'}</span>
             {hasUnsavedChanges && (
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse lg:hidden" />
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse xl:hidden" />
             )}
           </button>
 
@@ -546,7 +339,7 @@ export function LabToolbar({
               type="button"
               id="btn-toolbar-deploy-cloud"
               onClick={onOpenCloudDeploy}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-gradient-to-r from-cyan-500 via-indigo-600 to-purple-600 hover:from-cyan-400 hover:to-purple-500 shadow-md shadow-cyan-500/20 transition-all cursor-pointer shrink-0"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-cyan-500 via-indigo-600 to-purple-600 hover:from-cyan-400 hover:to-purple-500 shadow-md shadow-cyan-500/20 transition-all cursor-pointer shrink-0"
               title="Déployer ce projet en 1 clic sur Vercel, Netlify ou générer un HTML autonome"
             >
               <Rocket size={13} className="text-white" />
@@ -554,44 +347,34 @@ export function LabToolbar({
             </button>
           )}
 
-          {/* Bouton Exporter ZIP */}
+          {/* Bouton Assistant IA NEXUS DEV */}
           <button
             type="button"
-            id="btn-toolbar-export-zip"
-            onClick={onExportZip}
-            disabled={isExporting}
-            className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white bg-slate-100/80 dark:bg-white/5 hover:bg-slate-200/80 dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/8 transition-all cursor-pointer shrink-0"
-            title="Exporter tout le projet sous format archive ZIP"
+            id="btn-toolbar-nexus-dev"
+            onClick={onToggleDevAssistant}
+            className={cn(
+              'flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-white transition-all cursor-pointer shrink-0',
+              isDevAssistantOpen
+                ? 'bg-nexus-700 border border-cyan-400 ring-2 ring-cyan-400/40 shadow-[0_0_18px_rgba(6,182,212,0.5)]'
+                : 'bg-gradient-to-r from-nexus-600 to-cyan-600 hover:from-nexus-500 hover:to-cyan-500 shadow-[0_0_12px_rgba(6,182,212,0.35)]',
+            )}
+            title={isDevAssistantOpen ? "Fermer l'assistant IA NEXUS DEV" : "Ouvrir l'assistant IA NEXUS DEV"}
           >
-            <Download size={13} className="text-emerald-500 dark:text-emerald-400" />
-            <span className="hidden 2xl:inline">{isExporting ? '...' : 'Export ZIP'}</span>
+            <Sparkles size={13} className="text-cyan-200" />
+            <span className="hidden xl:inline">Assistant IA</span>
           </button>
 
-          {/* Bouton Export GitHub One-Click */}
-          {onOpenGitHubExport && (
-            <button
-              type="button"
-              id="btn-toolbar-export-github"
-              onClick={onOpenGitHubExport}
-              className="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white bg-slate-100/80 dark:bg-white/5 hover:bg-slate-200/80 dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/8 transition-all cursor-pointer shrink-0"
-              title="Exporter directement le projet sur un dépôt GitHub"
-            >
-              <FolderGit2 size={13} className="text-purple-600 dark:text-purple-400" />
-              <span className="hidden 2xl:inline">GitHub</span>
-            </button>
-          )}
-
-          {/* Bouton Historique & Snapshots */}
+          {/* Actions secondaires sur écran 2XL (≥ 1536px) */}
           {onOpenHistory && (
             <button
               type="button"
               id="btn-toolbar-history"
               onClick={onOpenHistory}
-              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white bg-slate-100/80 dark:bg-white/5 hover:bg-slate-200/80 dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/8 transition-all cursor-pointer shrink-0"
+              className="hidden 2xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white bg-slate-100/80 dark:bg-white/5 hover:bg-slate-200/80 dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/8 transition-all cursor-pointer shrink-0"
               title="Historique des versions et instantanés (Rollback)"
             >
               <History size={13} className="text-amber-500 dark:text-amber-400" />
-              <span className="hidden xl:inline">Historique</span>
+              <span>Historique</span>
               {snapshotCount > 0 && (
                 <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-amber-500/20 text-amber-700 dark:text-amber-300 font-semibold">
                   {snapshotCount}
@@ -600,7 +383,42 @@ export function LabToolbar({
             </button>
           )}
 
-          {/* Bouton Réinitialiser la démo */}
+          <button
+            type="button"
+            id="btn-toolbar-export-zip"
+            onClick={onExportZip}
+            disabled={isExporting}
+            className="hidden 2xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white bg-slate-100/80 dark:bg-white/5 hover:bg-slate-200/80 dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/8 transition-all cursor-pointer shrink-0"
+            title="Exporter tout le projet sous format archive ZIP"
+          >
+            <Download size={13} className="text-emerald-500 dark:text-emerald-400" />
+            <span>Export ZIP</span>
+          </button>
+
+          {onOpenGitHubExport && (
+            <button
+              type="button"
+              id="btn-toolbar-export-github"
+              onClick={onOpenGitHubExport}
+              className="hidden 2xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white bg-slate-100/80 dark:bg-white/5 hover:bg-slate-200/80 dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/8 transition-all cursor-pointer shrink-0"
+              title="Exporter directement le projet sur un dépôt GitHub"
+            >
+              <FolderGit2 size={13} className="text-purple-600 dark:text-purple-400" />
+              <span>GitHub</span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            id="btn-toolbar-new-file"
+            onClick={onNewFileClick}
+            className="hidden 2xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white bg-slate-100/80 dark:bg-white/5 hover:bg-slate-200/80 dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/8 transition-all cursor-pointer shrink-0"
+            title="Ajouter un fichier"
+          >
+            <FilePlus size={13} className="text-cyan-600 dark:text-cyan-400" />
+            <span>Fichier</span>
+          </button>
+
           <button
             type="button"
             id="btn-toolbar-reset-demo"
@@ -613,39 +431,20 @@ export function LabToolbar({
                 onResetDemo();
               }
             }}
-            className="hidden 2xl:flex items-center p-1.5 rounded-lg text-xs text-slate-400 dark:text-white/40 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-white/5 transition-all cursor-pointer shrink-0"
+            className="hidden 2xl:flex items-center p-1.5 rounded-xl text-xs text-slate-400 dark:text-white/40 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-white/5 transition-all cursor-pointer shrink-0"
             title="Réinitialiser les projets de démonstration"
             aria-label="Réinitialiser la démo"
           >
             <RotateCcw size={13} />
           </button>
 
-          {/* Bouton Assistant IA NEXUS DEV */}
-          <button
-            type="button"
-            id="btn-toolbar-nexus-dev"
-            onClick={onToggleDevAssistant}
-            className={cn(
-              'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-white transition-all cursor-pointer shrink-0',
-              isDevAssistantOpen
-                ? 'bg-nexus-700 border border-cyan-400 ring-2 ring-cyan-400/40 shadow-[0_0_18px_rgba(6,182,212,0.5)]'
-                : 'bg-gradient-to-r from-nexus-600 to-cyan-600 hover:from-nexus-500 hover:to-cyan-500 shadow-[0_0_12px_rgba(6,182,212,0.35)]',
-            )}
-            title={isDevAssistantOpen ? "Fermer l'assistant IA NEXUS DEV" : "Ouvrir l'assistant IA NEXUS DEV"}
-          >
-            <Sparkles size={13} className="text-cyan-200" />
-            <span className="inline lg:hidden font-medium text-[11px]">Assistant IA</span>
-            <span className="hidden lg:inline">Assistant IA NEXUS DEV</span>
-          </button>
-
-          {/* Bouton Multi-Agents Swarm (Équipe Autonome) */}
           {onToggleSwarm && (
             <button
               type="button"
               id="btn-toolbar-nexus-swarm"
               onClick={onToggleSwarm}
               className={cn(
-                'flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-semibold text-white transition-all cursor-pointer shrink-0',
+                'hidden 2xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-white transition-all cursor-pointer shrink-0',
                 isSwarmOpen
                   ? 'bg-nexus-700 border border-indigo-400 ring-2 ring-indigo-400/40 shadow-[0_0_18px_rgba(124,13,244,0.5)]'
                   : 'bg-gradient-to-r from-nexus-600 via-indigo-600 to-cyan-600 hover:opacity-90 shadow-[0_0_12px_rgba(124,13,244,0.35)]',
@@ -653,23 +452,234 @@ export function LabToolbar({
               title={isSwarmOpen ? "Fermer le Swarm Multi-Agents" : "Ouvrir le Swarm Multi-Agents (Équipe Autonome)"}
             >
               <Users size={13} className="text-nexus-200" />
-              <span className="hidden sm:inline">Swarm</span>
+              <span>Swarm</span>
             </button>
           )}
 
-          {/* Bouton Plus d'actions (...) sur Mobile */}
+          {/* Bouton Plus d'actions (⋯) sur tous les écrans < 2XL : garantit 0 collision */}
           <button
             type="button"
-            id="btn-toolbar-more-mobile"
-            onClick={() => setIsMobileMenuOpen((v) => !v)}
-            className="flex sm:hidden items-center justify-center p-1.5 rounded-lg text-slate-600 hover:text-slate-900 dark:text-white/70 dark:hover:text-white bg-slate-100/80 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 transition-colors cursor-pointer shrink-0"
-            title="Toutes les options du projet"
-            aria-label="Menu du projet"
+            id="btn-toolbar-more-actions"
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="flex 2xl:hidden items-center justify-center p-1.5 px-2 rounded-xl text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white bg-slate-100/90 hover:bg-slate-200/90 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/10 transition-colors cursor-pointer shrink-0 shadow-xs"
+            title="Toutes les options du projet (Historique, Exports, Fichiers...)"
+            aria-label="Toutes les options du projet"
           >
-            <MoreHorizontal size={14} />
+            <MoreHorizontal size={15} />
+            {snapshotCount > 0 && (
+              <span className="ml-1 w-1.5 h-1.5 rounded-full bg-amber-400" />
+            )}
           </button>
         </div>
       </div>
+
+      {/* Popover Centré Haute Définition pour les Outils Pro (Zero Collision, Haute Visibilité) */}
+      {isToolsDropdownOpen && (
+        <div
+          className="fixed inset-0 z-[100] flex items-start justify-center pt-14 sm:pt-20 p-3 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150 cursor-pointer"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setIsToolsDropdownOpen(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-lg rounded-3xl bg-white dark:bg-[#0c0e24] border-2 border-slate-200 dark:border-indigo-500/40 shadow-2xl p-4 flex flex-col gap-2.5 animate-in zoom-in-95 duration-150 cursor-default ring-1 ring-black/5 dark:ring-white/10 max-h-[85vh] overflow-y-auto scrollbar-thin text-slate-900 dark:text-slate-100"
+          >
+            {/* En-tête du modal Outils Pro */}
+            <div className="px-2 py-2 border-b border-slate-100 dark:border-white/8 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 text-white shadow-md shadow-cyan-500/20">
+                  <Sparkles size={18} />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+                    Suite d'Ingénierie NEXUS • Outils Pro
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    5 modules avancés pour concevoir, tester et collaborer
+                  </p>
+                </div>
+              </div>
+              <ModalCloseButton
+                onClick={() => setIsToolsDropdownOpen(false)}
+                label="Fermer"
+                title="Fermer (Échap)"
+                compact
+              />
+            </div>
+
+            {/* Liste des 5 outils pro avec cartes spacieuses */}
+            <div className="flex flex-col gap-2 pt-1">
+              {/* 1. Hub de Modèles */}
+              {onOpenTemplateHub && (
+                <button
+                  type="button"
+                  id="btn-toolbar-template-hub"
+                  onClick={() => {
+                    setIsToolsDropdownOpen(false);
+                    onOpenTemplateHub();
+                  }}
+                  className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-100/90 dark:hover:bg-white/8 text-left transition-all cursor-pointer group border border-slate-100 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/15 shadow-xs"
+                  role="menuitem"
+                >
+                  <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-cyan-500/20 to-blue-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-500 dark:text-cyan-400 shrink-0 group-hover:scale-105 transition-transform shadow-xs">
+                    <Sparkles size={20} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-300 transition-colors">
+                        Hub de Modèles Modernes
+                      </span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-600 dark:text-cyan-300 font-mono font-bold">
+                        6 MODÈLES
+                      </span>
+                    </div>
+                    <div className="text-xs text-slate-600 dark:text-slate-300 line-clamp-1 mt-0.5">
+                      SaaS, E-Commerce, Portfolios, Apps IA prêtes à cloner
+                    </div>
+                  </div>
+                  <ChevronRight size={16} className="text-slate-400 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all shrink-0" />
+                </button>
+              )}
+
+              {/* 2. Studio BDD */}
+              {onOpenDbModeler && (
+                <button
+                  type="button"
+                  id="btn-toolbar-db-modeler"
+                  onClick={() => {
+                    setIsToolsDropdownOpen(false);
+                    onOpenDbModeler();
+                  }}
+                  className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-100/90 dark:hover:bg-white/8 text-left transition-all cursor-pointer group border border-slate-100 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/15 shadow-xs"
+                  role="menuitem"
+                >
+                  <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-500 dark:text-indigo-400 shrink-0 group-hover:scale-105 transition-transform shadow-xs">
+                    <Database size={20} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors">
+                        Studio BDD Supabase
+                      </span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-600 dark:text-indigo-300 font-mono font-bold">
+                        SQL & RLS
+                      </span>
+                    </div>
+                    <div className="text-xs text-slate-600 dark:text-slate-300 line-clamp-1 mt-0.5">
+                      Conception tables relationnelles, clés étrangères & migrations
+                    </div>
+                  </div>
+                  <ChevronRight size={16} className="text-slate-400 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all shrink-0" />
+                </button>
+              )}
+
+              {/* 3. Mode Vocal Live */}
+              {onOpenVoiceLive && (
+                <button
+                  type="button"
+                  id="btn-toolbar-voice-live"
+                  onClick={() => {
+                    setIsToolsDropdownOpen(false);
+                    onOpenVoiceLive();
+                  }}
+                  className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-cyan-500/10 text-left transition-all cursor-pointer group border border-transparent hover:border-cyan-500/30 shadow-xs"
+                  role="menuitem"
+                >
+                  <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-cyan-500/20 to-teal-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400 shrink-0 group-hover:scale-105 transition-transform shadow-xs">
+                    <Mic size={20} className="animate-pulse" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs sm:text-sm font-bold text-cyan-600 dark:text-cyan-300">
+                        Mode Vocal Live
+                      </span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400 font-mono font-bold flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
+                        LIVE
+                      </span>
+                    </div>
+                    <div className="text-xs text-slate-600 dark:text-slate-300 line-clamp-1 mt-0.5">
+                      Discussion vocale bidirectionnelle fluide avec l'IA
+                    </div>
+                  </div>
+                  <ChevronRight size={16} className="text-cyan-400 group-hover:translate-x-1 transition-all shrink-0" />
+                </button>
+              )}
+
+              {/* 4. Tests 1-Clic */}
+              {onOpenTestGenerator && (
+                <button
+                  type="button"
+                  id="btn-toolbar-test-generator"
+                  onClick={() => {
+                    setIsToolsDropdownOpen(false);
+                    onOpenTestGenerator();
+                  }}
+                  className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-emerald-500/10 text-left transition-all cursor-pointer group border border-transparent hover:border-emerald-500/30 shadow-xs"
+                  role="menuitem"
+                >
+                  <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-500 dark:text-emerald-400 shrink-0 group-hover:scale-105 transition-transform shadow-xs">
+                    <ShieldCheck size={20} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-300 transition-colors">
+                        Tests Automatisés 1-Clic
+                      </span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 font-mono font-bold">
+                        VITEST & E2E
+                      </span>
+                    </div>
+                    <div className="text-xs text-slate-600 dark:text-slate-300 line-clamp-1 mt-0.5">
+                      Génération instantanée de suites unitaires & Playwright
+                    </div>
+                  </div>
+                  <ChevronRight size={16} className="text-slate-400 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all shrink-0" />
+                </button>
+              )}
+
+              {/* 5. Mode Équipe */}
+              {onOpenTeamCollab && (
+                <button
+                  type="button"
+                  id="btn-toolbar-team-collab"
+                  onClick={() => {
+                    setIsToolsDropdownOpen(false);
+                    onOpenTeamCollab();
+                  }}
+                  className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-purple-500/10 text-left transition-all cursor-pointer group border border-transparent hover:border-purple-500/30 shadow-xs"
+                  role="menuitem"
+                >
+                  <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-purple-500/20 to-pink-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400 shrink-0 group-hover:scale-105 transition-transform shadow-xs">
+                    <Users size={20} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs sm:text-sm font-bold text-purple-600 dark:text-purple-300">
+                        Mode Équipe Multijoueur
+                      </span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 font-mono font-bold">
+                        PAIR CODE
+                      </span>
+                    </div>
+                    <div className="text-xs text-slate-600 dark:text-slate-300 line-clamp-1 mt-0.5">
+                      Collaboration en direct, curseurs partagés & copilote IA
+                    </div>
+                  </div>
+                  <ChevronRight size={16} className="text-purple-400 group-hover:translate-x-1 transition-all shrink-0" />
+                </button>
+              )}
+            </div>
+
+            {/* Pied du modal */}
+            <div className="px-3 py-2.5 border-t border-slate-100 dark:border-white/8 bg-slate-50/80 dark:bg-white/4 rounded-2xl flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mt-1">
+              <span>⚡ Cliquez sur un outil pour ouvrir son interface dédiée</span>
+              <span className="font-mono text-[11px]">Échap pour fermer</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Barre d'onglets complète et réactive (Mobile, Tablette et PC) */}
       <nav
