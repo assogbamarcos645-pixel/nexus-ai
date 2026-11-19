@@ -1,5 +1,5 @@
 // NEXUS AI — Service Worker PWA (Offline & Asset Cache)
-const CACHE_NAME = 'nexus-ai-v3-3d-icons';
+const CACHE_NAME = 'nexus-ai-v4-futuristic-icon';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
