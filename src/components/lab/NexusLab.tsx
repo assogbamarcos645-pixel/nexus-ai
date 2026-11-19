@@ -31,6 +31,7 @@ import { DatabaseModelerModal } from './DatabaseModelerModal';
 import { VoiceLiveModal } from '@/components/voice/VoiceLiveModal';
 import { TestGeneratorModal } from './TestGeneratorModal';
 import { TeamCollaborationDrawer } from './TeamCollaborationDrawer';
+import { ExternalAutomationModal } from './ExternalAutomationModal';
 import { injectSchemaIntoProject } from '@/services/lab/databaseModelerService';
 import { injectTestSuiteIntoProject, type GeneratedTestSuite } from '@/services/lab/testGeneratorService';
 import type { DbSchema } from '@/types/databaseModeler';
@@ -81,6 +82,7 @@ export function NexusLab() {
   const [isVoiceLiveOpen, setIsVoiceLiveOpen] = useState(false);
   const [isTestGeneratorOpen, setIsTestGeneratorOpen] = useState(false);
   const [isTeamCollabOpen, setIsTeamCollabOpen] = useState(false);
+  const [isAutomationOpen, setIsAutomationOpen] = useState(false);
   const [isDevAssistantOpen, setIsDevAssistantOpen] = useState(false);
   const [isSwarmOpen, setIsSwarmOpen] = useState(false);
   const [showPreview, setShowPreview] = useState(true);
@@ -220,6 +222,7 @@ export function NexusLab() {
           onOpenVoiceLive={() => setIsVoiceLiveOpen(true)}
           onOpenTestGenerator={() => setIsTestGeneratorOpen(true)}
           onOpenTeamCollab={() => setIsTeamCollabOpen(true)}
+          onOpenAutomation={() => setIsAutomationOpen(true)}
           onSelectProject={(id) => {
             setActiveProjectId(id);
             setActiveTab('editor');
@@ -541,6 +544,12 @@ export function NexusLab() {
         isOpen={isTeamCollabOpen}
         onClose={() => setIsTeamCollabOpen(false)}
         activeFilePath={activeFile?.path}
+      />
+
+      {/* Automatisation Externe & Webhooks (#8) */}
+      <ExternalAutomationModal
+        isOpen={isAutomationOpen}
+        onClose={() => setIsAutomationOpen(false)}
       />
     </div>
   );

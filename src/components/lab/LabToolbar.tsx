@@ -35,6 +35,7 @@ import {
   Mic,
   ShieldCheck,
   ChevronRight,
+  Radio,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import type { LabProject, LabFile, LabTab, LabLayoutMode } from '@/types/lab';
@@ -69,6 +70,7 @@ interface LabToolbarProps {
   onOpenVoiceLive?: () => void;
   onOpenTestGenerator?: () => void;
   onOpenTeamCollab?: () => void;
+  onOpenAutomation?: () => void;
   snapshotCount?: number;
   isDevAssistantOpen?: boolean;
   onToggleDevAssistant: () => void;
@@ -104,6 +106,7 @@ export function LabToolbar({
   onOpenVoiceLive,
   onOpenTestGenerator,
   onOpenTeamCollab,
+  onOpenAutomation,
   snapshotCount = 0,
   isDevAssistantOpen = false,
   onToggleDevAssistant,
@@ -284,14 +287,14 @@ export function LabToolbar({
                   ? 'bg-gradient-to-r from-nexus-600 to-indigo-600 text-white border-nexus-400 shadow-[0_0_18px_rgba(124,13,244,0.4)] ring-2 ring-nexus-400/30'
                   : 'bg-white/90 dark:bg-white/8 text-slate-800 dark:text-white/90 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/80 dark:hover:bg-white/12 border-slate-300 dark:border-white/15',
               )}
-              title="Outils Pro (5 fonctionnalités d'ingénierie avancée)"
+              title="Outils Pro (6 fonctionnalités d'ingénierie avancée)"
             >
               <div className="w-4 h-4 rounded-md bg-gradient-to-tr from-cyan-400 to-indigo-500 flex items-center justify-center text-white shrink-0 shadow-xs">
                 <Sparkles size={10} />
               </div>
               <span className="hidden sm:inline font-semibold">Outils Pro</span>
               <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold bg-nexus-500/20 text-nexus-600 dark:text-cyan-300 border border-nexus-500/30">
-                5
+                6
               </span>
               <ChevronDown
                 size={12}
@@ -664,6 +667,38 @@ export function LabToolbar({
                     <ChevronRight size={14} className="text-purple-400 group-hover:translate-x-1 transition-all shrink-0" />
                   </button>
                 )}
+
+                {/* 6. Automatisations & Webhooks */}
+                {onOpenAutomation && (
+                  <button
+                    type="button"
+                    id="btn-toolbar-automation"
+                    onClick={() => {
+                      setIsToolsDropdownOpen(false);
+                      onOpenAutomation();
+                    }}
+                    className="w-full flex items-center gap-2.5 p-2 sm:p-2.5 rounded-xl hover:bg-cyan-500/10 text-left transition-all cursor-pointer group border border-transparent hover:border-cyan-500/30 shadow-2xs"
+                    role="menuitem"
+                  >
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-tr from-cyan-500/20 to-purple-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-500 dark:text-cyan-300 shrink-0 group-hover:scale-105 transition-transform shadow-2xs">
+                      <Radio size={18} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs sm:text-[13px] font-bold text-slate-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-300 transition-colors">
+                          Automatisations & Webhooks
+                        </span>
+                        <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-cyan-500/15 text-cyan-600 dark:text-cyan-300 font-mono font-bold">
+                          CRON & API
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-slate-600 dark:text-slate-300 line-clamp-1 mt-0.5">
+                        Routines planifiées, sauvegardes et webhooks Slack, Discord & GitHub
+                      </div>
+                    </div>
+                    <ChevronRight size={14} className="text-slate-400 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all shrink-0" />
+                  </button>
+                )}
               </div>
 
               {/* Pied du modal */}
@@ -985,6 +1020,20 @@ export function LabToolbar({
                   >
                     <Users size={16} className="text-purple-400" />
                     <span>Mode Équipe</span>
+                  </button>
+                )}
+
+                {onOpenAutomation && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      onOpenAutomation();
+                    }}
+                    className="flex items-center gap-2 p-2.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 text-xs font-semibold cursor-pointer transition-colors"
+                  >
+                    <Radio size={16} className="text-cyan-400" />
+                    <span>Automatisations & Webhooks</span>
                   </button>
                 )}
 

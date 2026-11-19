@@ -16,6 +16,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   XCircle,
+  Radio,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import type {
@@ -45,8 +46,9 @@ import { DashboardOverview } from './DashboardOverview';
 import { ProviderCatalog } from './ProviderCatalog';
 import { UsageTracker } from './UsageTracker';
 import { AdvancedSettings } from './AdvancedSettings';
+import { AutomationCenter } from './AutomationCenter';
 
-export type ControlCenterTab = 'dashboard' | 'providers' | 'usage' | 'settings';
+export type ControlCenterTab = 'dashboard' | 'providers' | 'usage' | 'settings' | 'automation';
 
 interface ControlCenterProps {
   onOpenAuth?: () => void;
@@ -263,6 +265,21 @@ export function ControlCenter({ onOpenAuth }: ControlCenterProps) {
             <Sliders size={14} />
             <span>Paramètres avancés</span>
           </button>
+
+          <button
+            type="button"
+            id="tab-btn-automation"
+            onClick={() => setActiveTab('automation')}
+            className={cn(
+              'flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap',
+              activeTab === 'automation'
+                ? 'bg-gradient-to-r from-nexus-600 to-cyan-600 text-white shadow-[0_0_15px_rgba(124,13,244,0.35)]'
+                : 'text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/5',
+            )}
+          >
+            <Radio size={14} className={activeTab === 'automation' ? 'text-cyan-300' : ''} />
+            <span>Automatisations & Webhooks</span>
+          </button>
         </div>
       </div>
 
@@ -327,6 +344,8 @@ export function ControlCenter({ onOpenAuth }: ControlCenterProps) {
                   onSaveSettings={handleSaveSettings}
                 />
               )}
+
+              {activeTab === 'automation' && <AutomationCenter />}
             </>
           )}
         </div>
