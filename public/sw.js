@@ -63,9 +63,32 @@ self.addEventListener('fetch', (event) => {
         return cachedResponse;
       }
 
-      return fetch(event.request).then((networkResponse) => {
-        return networkResponse;
-      });
+      return fetch(event.request)
+        .then((networkResponse) => {
+          if (
+            networkResponse &&
+            networkResponse.status === 200 &&
+            url.origin === self.location.origin &&
+            (url.pathname.startsWith('/assets/') ||
+              url.pathname.endsWith('.js') ||
+              url.pathname.endsWith('.css') ||
+              url.pathname.endsWith('.svg') ||
+              url.pathname.endsWith('.png') ||
+              url.pathname.endsWith('.woff2'))
+          ) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          // Fallback hors-ligne pour la navigation SPA
+          if (event.request.mode === 'navigate') {
+            return caches.match('/index.html');
+          }
+        });
     })
   );
 });
