@@ -100,19 +100,21 @@ export function AppHeader({
   const handleOpenMemories = onOpenMemories ?? (() => setInternalMemoriesOpen(true));
   const handleCloseMemories = onCloseMemories ?? (() => setInternalMemoriesOpen(false));
 
-  // Fermeture du menu profil (clic extérieur / Échap)
+  // Fermeture du menu profil (clic extérieur / touch tactile / Échap)
   useEffect(() => {
     if (!menuOpen) return;
-    const onDown = (e: MouseEvent) => {
+    const onDown = (e: MouseEvent | TouchEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setMenuOpen(false);
     };
     document.addEventListener('mousedown', onDown);
+    document.addEventListener('touchstart', onDown, { passive: true });
     document.addEventListener('keydown', onKey);
     return () => {
       document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('touchstart', onDown);
       document.removeEventListener('keydown', onKey);
     };
   }, [menuOpen]);
@@ -140,7 +142,7 @@ export function AppHeader({
 
   return (
     <>
-      <header className="h-[calc(3.5rem+env(safe-area-inset-top,0px))] sm:h-16 pt-[env(safe-area-inset-top,0px)] px-2.5 sm:px-6 md:px-8 flex items-center justify-between z-20 shrink-0 select-none liquid-glass transition-colors">
+      <header className="h-[calc(3.5rem+env(safe-area-inset-top,0px))] sm:h-16 pt-[env(safe-area-inset-top,0px)] px-2.5 sm:px-6 md:px-8 flex items-center justify-between z-40 shrink-0 select-none liquid-glass transition-colors">
         {/* Partie gauche : Menu tiroir + Titre / Modèle actif mobile */}
         <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
           {onToggleMobileSidebar && (
@@ -190,7 +192,8 @@ export function AppHeader({
           ) : (
             <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
               <h1 className="text-sm sm:text-[15px] font-semibold tracking-tight text-slate-900 dark:text-white truncate">
-                {viewTitle}
+                <span className="sm:hidden">{activeView === 'lab' ? 'Lab' : viewTitle}</span>
+                <span className="hidden sm:inline">{viewTitle}</span>
               </h1>
               <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium tracking-wide bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-sky-300 border border-blue-200/70 dark:border-blue-800/50">
                 {viewTag}
@@ -275,7 +278,7 @@ export function AppHeader({
           <div className="hidden sm:block h-5 w-px bg-slate-200 dark:bg-slate-800" aria-hidden="true" />
 
           {/* Menu profil */}
-          <div className="relative" ref={menuRef}>
+          <div className="relative shrink-0" ref={menuRef}>
             <button
               type="button"
               id="btn-user-profile"
@@ -283,9 +286,9 @@ export function AppHeader({
               aria-haspopup="menu"
               aria-expanded={menuOpen}
               aria-label={fr ? `Menu profil (${displayName})` : `Profile menu (${displayName})`}
-              className="btn-tactile flex items-center gap-1.5 sm:gap-2 p-1 sm:px-2.5 sm:py-1 rounded-full hover:bg-slate-200/60 dark:hover:bg-slate-800/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              className="btn-tactile flex items-center gap-1.5 sm:gap-2 p-0.5 sm:px-2.5 sm:py-1 rounded-full hover:bg-slate-200/60 dark:hover:bg-slate-800/60 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 shrink-0"
             >
-              <span className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-white text-xs font-bold bg-gradient-to-tr from-slate-800 via-slate-700 to-blue-600 ring-2 ring-white dark:ring-slate-800 shadow-sm">
+              <span className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-white text-xs font-bold bg-gradient-to-tr from-slate-800 via-slate-700 to-blue-600 ring-2 ring-white dark:ring-slate-800 shadow-sm shrink-0">
                 {user?.avatarUrl ? (
                   <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" />
                 ) : (
@@ -295,14 +298,20 @@ export function AppHeader({
               <span className="hidden sm:block text-xs font-medium text-slate-700 dark:text-slate-300 max-w-[120px] truncate">
                 {displayName}
               </span>
-              <ChevronDown size={13} className={cn('text-slate-400 dark:text-slate-500 transition-transform duration-200', menuOpen && 'rotate-180')} />
+              <ChevronDown size={13} className={cn('hidden sm:block text-slate-400 dark:text-slate-500 transition-transform duration-200 shrink-0', menuOpen && 'rotate-180')} />
             </button>
 
             {menuOpen && (
-              <div
-                role="menu"
-                className="absolute right-0 top-full mt-2 w-64 max-w-[calc(100vw-1.5rem)] rounded-2xl p-1.5 z-50 bg-white/95 dark:bg-[#12121f]/95 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 shadow-[0_20px_50px_rgba(15,23,42,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.6)] animate-nexus-pop"
-              >
+              <>
+                <div
+                  className="fixed inset-0 z-40 bg-black/20 sm:hidden"
+                  onClick={() => setMenuOpen(false)}
+                  aria-hidden="true"
+                />
+                <div
+                  role="menu"
+                  className="absolute right-0 top-full mt-2 w-64 max-w-[calc(100vw-1.5rem)] rounded-2xl p-1.5 z-50 bg-white/95 dark:bg-[#12121f]/95 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 shadow-[0_20px_50px_rgba(15,23,42,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.6)] animate-nexus-pop"
+                >
                 <div className="px-3 py-2.5 border-b border-slate-100 dark:border-white/[0.06] mb-1">
                   <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{displayName}</p>
                   <p className="text-xs text-slate-500 dark:text-white/45 truncate">
@@ -354,7 +363,8 @@ export function AppHeader({
                   })}
                 </div>
               </div>
-            )}
+            </>
+          )}
           </div>
         </div>
       </header>
