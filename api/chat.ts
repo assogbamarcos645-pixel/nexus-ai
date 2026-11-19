@@ -13,6 +13,34 @@ const CORS_HEADERS = {
   'Access-Control-Max-Age': '86400',
 };
 
+// ── Rate Limiter Edge en mémoire par IP (fenêtre glissante 60s, max 60 req/min) ─
+interface RateLimitBucket {
+  count: number;
+  resetAt: number;
+}
+const rateLimitMap = new Map<string, RateLimitBucket>();
+const MAX_REQUESTS_PER_MINUTE = 60;
+
+function checkRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
+  const now = Date.now();
+  const bucket = rateLimitMap.get(ip);
+  if (!bucket || now > bucket.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + 60_000 });
+    if (rateLimitMap.size > 10_000) {
+      for (const [k, v] of rateLimitMap.entries()) {
+        if (now > v.resetAt) rateLimitMap.delete(k);
+      }
+    }
+    return { allowed: true };
+  }
+  if (bucket.count >= MAX_REQUESTS_PER_MINUTE) {
+    const retryAfter = Math.ceil((bucket.resetAt - now) / 1000);
+    return { allowed: false, retryAfter };
+  }
+  bucket.count += 1;
+  return { allowed: true };
+}
+
 function getAgentSystemPrompt(agentId?: string): string {
   const commonRule = `
 POSTURE & STYLE DE RÉPONSE (STANDARD MODÈLE IA - TYPE CHATGPT, CLAUDE, GEMINI) :
@@ -65,6 +93,37 @@ export default async function handler(req: Request): Promise<Response> {
     );
   }
 
+  // Contrôle de sécurité 1 : Limitation de débit par IP (Anti-DDoS / Anti-Abus)
+  const clientIp =
+    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    req.headers.get('x-real-ip') ||
+    'anonymous';
+  const rateLimitCheck = checkRateLimit(clientIp);
+  if (!rateLimitCheck.allowed) {
+    return new Response(
+      JSON.stringify({
+        message: `Trop de requêtes depuis cette adresse IP. Veuillez patienter ${rateLimitCheck.retryAfter} seconde(s) avant de réessayer.`,
+      }),
+      {
+        status: 429,
+        headers: {
+          ...CORS_HEADERS,
+          'Content-Type': 'application/json',
+          'Retry-After': String(rateLimitCheck.retryAfter || 60),
+        },
+      },
+    );
+  }
+
+  // Contrôle de sécurité 2 : Limitation de la charge utile (Max 10 Mo)
+  const contentLength = req.headers.get('content-length');
+  if (contentLength && parseInt(contentLength, 10) > 10 * 1024 * 1024) {
+    return new Response(
+      JSON.stringify({ message: 'Charge utile trop volumineuse (limite maximale : 10 Mo).' }),
+      { status: 413, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } },
+    );
+  }
+
   try {
     const body = (await req.json().catch(() => ({}))) as any;
     const {
@@ -90,6 +149,30 @@ export default async function handler(req: Request): Promise<Response> {
         JSON.stringify({ message: 'Requête invalide : message vide ou manquant.' }),
         { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } },
       );
+    }
+
+    // Contrôle de sécurité 3 : Plafonnement de la longueur du message utilisateur (Max 8 000 caractères)
+    if (message.length > 8000) {
+      return new Response(
+        JSON.stringify({ message: 'Requête refusée : le message dépasse la limite autorisée de 8 000 caractères.' }),
+        { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } },
+      );
+    }
+
+    // Contrôle de sécurité 4 : Plafonnement du volume total de texte extrait des documents (Max 500 000 caractères)
+    if (Array.isArray(documents)) {
+      let totalDocChars = 0;
+      for (const d of documents) {
+        if (d && typeof d.content === 'string') {
+          totalDocChars += d.content.length;
+        }
+      }
+      if (totalDocChars > 500_000) {
+        return new Response(
+          JSON.stringify({ message: 'Volume de documents trop volumineux pour l’inférence (max 500 000 caractères).' }),
+          { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } },
+        );
+      }
     }
 
     const safeMaxTokens = Math.min(8192, Math.max(128, Number(settings?.maxTokens || 2048)));

@@ -31,6 +31,8 @@ class LocalStorageMock {
 globalThis.window = globalThis;
 // @ts-expect-error Mock minimal
 globalThis.localStorage = new LocalStorageMock();
+// @ts-expect-error Mock minimal
+globalThis.sessionStorage = new LocalStorageMock();
 
 describe('NEXUS LAB — Export Direct vers GitHub (githubExportService)', () => {
   const dummyProject: LabProject = {

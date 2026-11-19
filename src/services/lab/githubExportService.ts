@@ -28,23 +28,69 @@ export interface GitHubExportResult {
 
 const GITHUB_TOKEN_STORAGE_KEY = 'nexus_github_pat_v1';
 
-/**
- * Récupère le token GitHub mémorisé localement.
- */
-export function getSavedGitHubToken(): string {
-  if (typeof window === 'undefined') return '';
-  return localStorage.getItem(GITHUB_TOKEN_STORAGE_KEY) || '';
+function getSessionStorage(): Storage | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    return typeof sessionStorage !== 'undefined'
+      ? sessionStorage
+      : typeof localStorage !== 'undefined'
+        ? localStorage
+        : null;
+  } catch {
+    return null;
+  }
 }
 
 /**
- * Sauvegarde le token GitHub dans le stockage local.
+ * Récupère le token GitHub mémorisé en session sécurisée (sessionStorage).
+ */
+export function getSavedGitHubToken(): string {
+  if (typeof window === 'undefined') return '';
+  // Nettoyage de l'ancien token persistant en localStorage par mesure de sécurité
+  try {
+    if (typeof localStorage !== 'undefined' && localStorage.getItem(GITHUB_TOKEN_STORAGE_KEY)) {
+      const oldToken = localStorage.getItem(GITHUB_TOKEN_STORAGE_KEY);
+      localStorage.removeItem(GITHUB_TOKEN_STORAGE_KEY);
+      const storage = getSessionStorage();
+      if (oldToken && storage) storage.setItem(GITHUB_TOKEN_STORAGE_KEY, oldToken);
+    }
+  } catch {
+    // Ignorer
+  }
+
+  const storage = getSessionStorage();
+  if (!storage) return '';
+  try {
+    return storage.getItem(GITHUB_TOKEN_STORAGE_KEY) || '';
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * Sauvegarde le token GitHub dans la session temporaire (effacé à la fermeture de l'onglet).
  */
 export function saveGitHubToken(token: string): void {
   if (typeof window === 'undefined') return;
-  if (!token.trim()) {
-    localStorage.removeItem(GITHUB_TOKEN_STORAGE_KEY);
-  } else {
-    localStorage.setItem(GITHUB_TOKEN_STORAGE_KEY, token.trim());
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(GITHUB_TOKEN_STORAGE_KEY);
+    }
+  } catch {
+    // Ignorer
+  }
+
+  const storage = getSessionStorage();
+  if (!storage) return;
+
+  try {
+    if (!token.trim()) {
+      storage.removeItem(GITHUB_TOKEN_STORAGE_KEY);
+    } else {
+      storage.setItem(GITHUB_TOKEN_STORAGE_KEY, token.trim());
+    }
+  } catch {
+    // Ignorer
   }
 }
 

@@ -21,6 +21,29 @@ const CORS_HEADERS = {
   'Access-Control-Max-Age': '86400',
 };
 
+// Rate limiter en mémoire par IP pour l'audio (max 30 requêtes par minute)
+interface AudioRateLimitBucket {
+  count: number;
+  resetAt: number;
+}
+const audioRateLimitMap = new Map<string, AudioRateLimitBucket>();
+const MAX_AUDIO_REQUESTS_PER_MINUTE = 30;
+
+function checkAudioRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
+  const now = Date.now();
+  const bucket = audioRateLimitMap.get(ip);
+  if (!bucket || now > bucket.resetAt) {
+    audioRateLimitMap.set(ip, { count: 1, resetAt: now + 60_000 });
+    return { allowed: true };
+  }
+  if (bucket.count >= MAX_AUDIO_REQUESTS_PER_MINUTE) {
+    const retryAfter = Math.ceil((bucket.resetAt - now) / 1000);
+    return { allowed: false, retryAfter };
+  }
+  bucket.count += 1;
+  return { allowed: true };
+}
+
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
   let binary = '';
@@ -43,6 +66,37 @@ export default async function handler(req: Request): Promise<Response> {
     );
   }
 
+  // Contrôle de sécurité : Limitation de débit audio par IP (max 30 req/min)
+  const clientIp =
+    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    req.headers.get('x-real-ip') ||
+    'anonymous';
+  const rateLimitCheck = checkAudioRateLimit(clientIp);
+  if (!rateLimitCheck.allowed) {
+    return new Response(
+      JSON.stringify({
+        error: `Trop de requêtes audio depuis cette adresse IP. Veuillez patienter ${rateLimitCheck.retryAfter} seconde(s).`,
+      }),
+      {
+        status: 429,
+        headers: {
+          ...CORS_HEADERS,
+          'Content-Type': 'application/json',
+          'Retry-After': String(rateLimitCheck.retryAfter || 60),
+        },
+      },
+    );
+  }
+
+  // Contrôle de sécurité : Limitation de taille globale de la requête audio (Max 25 Mo)
+  const contentLength = req.headers.get('content-length');
+  if (contentLength && parseInt(contentLength, 10) > 25 * 1024 * 1024) {
+    return new Response(
+      JSON.stringify({ error: 'Fichier audio trop volumineux (limite maximale : 25 Mo).' }),
+      { status: 413, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } },
+    );
+  }
+
   try {
     const formData = await req.formData().catch(() => null);
     if (!formData) {
@@ -59,6 +113,13 @@ export default async function handler(req: Request): Promise<Response> {
       return new Response(
         JSON.stringify({ error: 'Fichier audio manquant ou invalide.' }),
         { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } },
+      );
+    }
+
+    if (audioFile.size > 25 * 1024 * 1024) {
+      return new Response(
+        JSON.stringify({ error: 'Le fichier audio dépasse la limite maximale autorisée de 25 Mo.' }),
+        { status: 413, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } },
       );
     }
 
