@@ -5,11 +5,11 @@
  * Script d'envoi et de prévisualisation de la campagne d'e-mails pour NEXUS AI v0.4.0.
  *
  * Utilisation :
- *   1. Prévisualisation locale (génère preview-email.html) :
+ *   1. Prévisualisation locale :
  *      node scripts/send-v040-notification.mjs --preview
  *
  *   2. Envoi réel via l'API Resend :
- *      RESEND_API_KEY=re_xxxx node scripts/send-v040-notification.mjs --send
+ *      RESEND_API_KEY=re_xxxx node scripts/send-v040-notification.mjs --send [--to=email@example.com]
  */
 
 import fs from 'fs';
@@ -88,30 +88,57 @@ function getEmailHtml(userName = 'Développeur', appUrl = 'https://nexus-ai.app'
 
 async function main() {
   const args = process.argv.slice(2);
-  const isPreview = args.includes('--preview') || args.length === 0;
   const isSend = args.includes('--send');
-  const apiKey = process.env.RESEND_API_KEY;
+  const apiKey = process.env.RESEND_API_KEY || (args.find((a) => a.startsWith('--api-key=')) || '').replace('--api-key=', '');
+
+  const customToArg = args.find((a) => a.startsWith('--to='));
+  const targetEmail = customToArg ? customToArg.replace('--to=', '') : 'marcosassogba645@gmail.com';
 
   console.log(`[NEXUS NOTIFICATION] Préparation de la notification v${VERSION}...`);
 
-  if (isPreview) {
+  if (!isSend) {
     const previewPath = path.resolve(__dirname, 'preview-email.html');
-    const html = getEmailHtml('Alexandre (Lead Dev)');
+    const html = getEmailHtml('Super Administrateur');
     fs.writeFileSync(previewPath, html, 'utf-8');
     console.log(`✅ Fichier de prévisualisation généré : ${previewPath}`);
     console.log(`👉 Sujet de l'e-mail : "${SUBJECT}"`);
-    console.log(`ℹ️ Ouvrez ce fichier dans votre navigateur pour visualiser le rendu HTML.`);
+    console.log(`ℹ️ Pour déclencher l'envoi réel vers ${targetEmail} :`);
+    console.log(`   node scripts/send-v040-notification.mjs --send --api-key=${apiKey || 're_xxxx'}`);
+    return;
   }
 
-  if (isSend) {
-    if (!apiKey) {
-      console.error('❌ Erreur : Variable RESEND_API_KEY manquante. Définissez-la avant de lancer --send.');
-      process.exit(1);
-    }
-
-    console.log('🚀 Envoi en cours via Resend...');
-    // Logique d'envoi batch Resend
+  if (!apiKey) {
+    console.error('❌ Erreur : Clé RESEND_API_KEY manquante. Passez --api-key=re_... ou définissez la variable d\'environnement.');
+    process.exit(1);
   }
+
+  console.log(`🚀 Envoi de l'e-mail de release à : ${targetEmail}...`);
+
+  const html = getEmailHtml('Super Administrateur');
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: 'NEXUS AI <onboarding@resend.dev>',
+      to: [targetEmail],
+      subject: SUBJECT,
+      html,
+    }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    console.error(`❌ Échec d'envoi Resend (${response.status}) :`, data);
+    process.exit(1);
+  }
+
+  console.log(`✅ Succès ! E-mail envoyé avec succès via Resend.`);
+  console.log(`📧 ID du message Resend : ${data.id}`);
+  console.log(`📬 Vérifiez votre boîte de réception : ${targetEmail}`);
 }
 
 main().catch(console.error);

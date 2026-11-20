@@ -231,7 +231,7 @@ export function generateReleaseNotificationHtml(options: {
 export function getAllUserEmails(): string[] {
   const users = getManagedUsers();
   if (!users || users.length === 0) {
-    return ['marcosassogba645@gmail.com', 'alex.dev@nexus-corp.com'];
+    return ['assogbamarcos645@gmail.com', 'marcosassogba645@gmail.com', 'alex.dev@nexus-corp.com'];
   }
   return users.map((u) => u.email).filter(Boolean);
 }
@@ -258,8 +258,8 @@ export async function sendBroadcastEmail(options: EmailCampaignOptions): Promise
     subject,
     resendApiKey,
     appUrl = 'https://nexus-ai.app',
-    senderName = 'NEXUS AI Team',
-    senderEmail = 'notifications@nexus-ai.app',
+    senderName = 'NEXUS AI',
+    senderEmail = options.senderEmail || 'onboarding@resend.dev',
     customNote,
   } = options;
 
