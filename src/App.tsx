@@ -15,6 +15,7 @@ import { ThemeProvider } from '@/context/ThemeContext';
 import { LocalDataImportBanner } from '@/components/auth/LocalDataImportBanner';
 import { EmailConfirmationToast } from '@/components/auth/EmailConfirmationToast';
 import { UserWelcomeToast } from '@/components/auth/UserWelcomeToast';
+import { GlobalBroadcastBanner } from '@/components/common/GlobalBroadcastBanner';
 import { scheduleMonacoPreload } from '@/services/lab/monacoPreloadService';
 
 const NexusLab = lazy(() =>
@@ -196,6 +197,9 @@ function AppContent() {
           className="pointer-events-none absolute bottom-0 left-1/4 w-[520px] h-[380px] rounded-full bg-gradient-to-tr from-blue-500/40 via-cyan-400/35 to-transparent dark:from-blue-600/40 dark:via-cyan-400/30 dark:to-transparent blur-[70px] animate-nexus-aurora [animation-delay:-6.8s]"
           aria-hidden="true"
         />
+
+        {/* Bannière d'annonce globale broadcast */}
+        <GlobalBroadcastBanner />
 
         {/* En-tête supérieur épuré */}
         <AppHeader

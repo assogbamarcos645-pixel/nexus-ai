@@ -42,6 +42,12 @@ import { cn } from '@/utils/cn';
 import { useAuth } from '@/hooks/useAuth';
 import { ModalCloseButton } from '@/components/ui/ModalCloseButton';
 import { UserInspectionDrawer } from './UserInspectionDrawer';
+import { GatewayTab } from './tabs/GatewayTab';
+import { FinOpsTab } from './tabs/FinOpsTab';
+import { AgentsTab } from './tabs/AgentsTab';
+import { RagTab } from './tabs/RagTab';
+import { SessionsTab } from './tabs/SessionsTab';
+import { BroadcastTab } from './tabs/BroadcastTab';
 import type {
   AdminSecurityConfig,
   AdminAuditEntry,
@@ -101,7 +107,18 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
   const { user } = useAuth();
   const [config, setConfig] = useState<AdminSecurityConfig>(getAdminConfig());
   const [isUnlocked, setIsUnlocked] = useState(isVaultUnlocked());
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'security' | 'audit'>('overview');
+  const [activeTab, setActiveTab] = useState<
+    | 'overview'
+    | 'gateway'
+    | 'finops'
+    | 'agents'
+    | 'rag'
+    | 'users'
+    | 'sessions'
+    | 'security'
+    | 'broadcast'
+    | 'audit'
+  >('overview');
 
   // Authentification & Deverrouillage
   const [emailInput, setEmailInput] = useState('');
@@ -931,45 +948,111 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
             </div>
 
             {/* Barre de navigation d'onglets */}
-            <div className="flex items-center justify-between px-5 py-2.5 bg-slate-100 dark:bg-white/5 border-b border-slate-200 dark:border-white/10 shrink-0 overflow-x-auto">
-              <div className="flex items-center gap-1">
+            <div className="flex items-center justify-between px-4 py-2 bg-slate-100 dark:bg-white/5 border-b border-slate-200 dark:border-white/10 shrink-0 overflow-x-auto gap-2">
+              <div className="flex items-center gap-1 shrink-0">
                 <button
                   type="button"
                   onClick={() => setActiveTab('overview')}
-                  className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
                     activeTab === 'overview'
                       ? 'bg-white dark:bg-white/10 text-amber-600 dark:text-amber-300 shadow-xs'
                       : 'text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
-                  Vue d'ensemble & Moteurs IA
+                  Vue d'ensemble
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('gateway')}
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                    activeTab === 'gateway'
+                      ? 'bg-white dark:bg-white/10 text-blue-500 dark:text-blue-400 shadow-xs'
+                      : 'text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  Passerelle IA
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('finops')}
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                    activeTab === 'finops'
+                      ? 'bg-white dark:bg-white/10 text-emerald-500 dark:text-emerald-400 shadow-xs'
+                      : 'text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  FinOps
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('agents')}
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                    activeTab === 'agents'
+                      ? 'bg-white dark:bg-white/10 text-purple-500 dark:text-purple-400 shadow-xs'
+                      : 'text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  Agents & Prompts
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('rag')}
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                    activeTab === 'rag'
+                      ? 'bg-white dark:bg-white/10 text-teal-500 dark:text-teal-400 shadow-xs'
+                      : 'text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  Base RAG
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTab('users')}
-                  className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
                     activeTab === 'users'
                       ? 'bg-white dark:bg-white/10 text-amber-600 dark:text-amber-300 shadow-xs'
                       : 'text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
-                  Vue Utilisateurs ({managedUsers.length})
+                  Utilisateurs ({managedUsers.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('sessions')}
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                    activeTab === 'sessions'
+                      ? 'bg-white dark:bg-white/10 text-red-500 dark:text-red-400 shadow-xs'
+                      : 'text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  Sessions
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTab('security')}
-                  className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
                     activeTab === 'security'
                       ? 'bg-white dark:bg-white/10 text-amber-600 dark:text-amber-300 shadow-xs'
                       : 'text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
-                  Securite Biometrique & PIN
+                  Sécurité & PIN
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('broadcast')}
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                    activeTab === 'broadcast'
+                      ? 'bg-white dark:bg-white/10 text-indigo-500 dark:text-indigo-400 shadow-xs'
+                      : 'text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  Annonces
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTab('audit')}
-                  className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
                     activeTab === 'audit'
                       ? 'bg-white dark:bg-white/10 text-amber-600 dark:text-amber-300 shadow-xs'
                       : 'text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white'
@@ -1095,8 +1178,20 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
                 </div>
               )}
 
+              {/* Module 1 : Passerelle IA & Routage Dynamique */}
+              {activeTab === 'gateway' && <GatewayTab />}
+
+              {/* Module 2 : FinOps & Plafonds Budgétaires */}
+              {activeTab === 'finops' && <FinOpsTab />}
+
+              {/* Module 3 : Gestionnaire d'Agents Spécialisés & System Prompts */}
+              {activeTab === 'agents' && <AgentsTab />}
+
+              {/* Module 4 : Base de Connaissances RAG Globale */}
+              {activeTab === 'rag' && <RagTab />}
+
               {/* ================================================================
-                 ONGLET 2 : VUE EXHAUSTIVE DE TOUS LES UTILISATEURS
+                 ONGLET : VUE EXHAUSTIVE DE TOUS LES UTILISATEURS
                  ================================================================ */}
               {activeTab === 'users' && (
                 <div className="space-y-4">
@@ -1277,8 +1372,11 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
                 </div>
               )}
 
+              {/* Module 5 : Sessions Actives, Anti-Abus & Outils RGPD */}
+              {activeTab === 'sessions' && <SessionsTab />}
+
               {/* ================================================================
-                 ONGLET 3 : SÉCURITÉ BIOMÉTRIQUE & CODES MAÎTRES
+                 ONGLET : SÉCURITÉ BIOMÉTRIQUE & CODES MAÎTRES
                  ================================================================ */}
               {activeTab === 'security' && (
                 <div className="space-y-4">
@@ -1441,8 +1539,11 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
                 </div>
               )}
 
+              {/* Module 6 : Annonces Globales (Broadcast) & Maintenance Programmée */}
+              {activeTab === 'broadcast' && <BroadcastTab />}
+
               {/* ================================================================
-                 ONGLET 4 : JOURNAL D'AUDIT DE SÉCURITÉ
+                 ONGLET : JOURNAL D'AUDIT DE SÉCURITÉ
                  ================================================================ */}
               {activeTab === 'audit' && (
                 <div className="space-y-3">
