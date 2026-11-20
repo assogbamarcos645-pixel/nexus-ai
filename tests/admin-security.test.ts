@@ -29,6 +29,13 @@ import {
   toggleManagedUserStatus,
   getAdminAuditLogs,
   clearAdminAuditLogs,
+  updateManagedUserQuota,
+  deleteManagedUser,
+  exportUsersDataAsJson,
+  exportUsersDataAsCsv,
+  getSystemFullMetrics,
+  addAllowedAdminEmail,
+  removeAllowedAdminEmail,
 } from '../src/services/admin/adminSecurityService.ts';
 
 // Mock localStorage et sessionStorage en mémoire pour l'environnement Node.js
@@ -172,5 +179,58 @@ describe('NEXUS AI — Espace Super-Admin & Securite Biometrique', () => {
 
     clearAdminAuditLogs();
     assert.equal(getAdminAuditLogs().length, 0);
+  });
+
+  test('Gere les quotas, suppressions et exports de donnees utilisateurs', () => {
+    const initialUsers = getManagedUsers();
+    assert.ok(initialUsers.length >= 2);
+
+    // Mise a jour de quota
+    const successQuota = updateManagedUserQuota('user-demo-guest', 500000);
+    assert.equal(successQuota, true);
+    const updatedUsers = getManagedUsers();
+    const guest = updatedUsers.find((u) => u.id === 'user-demo-guest');
+    assert.equal(guest?.tokenQuotaLimit, 500000);
+
+    // Export JSON
+    const jsonExport = exportUsersDataAsJson();
+    assert.ok(jsonExport.includes('marcosassogba645@gmail.com'));
+    assert.ok(jsonExport.includes('user-demo-guest'));
+
+    // Export CSV
+    const csvExport = exportUsersDataAsCsv();
+    assert.ok(csvExport.includes('ID,Nom,Email,Role,Statut'));
+    assert.ok(csvExport.includes('user-demo-guest'));
+
+    // Suppression d un utilisateur ordinaire
+    const successDelete = deleteManagedUser('user-demo-guest');
+    assert.equal(successDelete, true);
+    const remainingUsers = getManagedUsers();
+    assert.equal(remainingUsers.find((u) => u.id === 'user-demo-guest'), undefined);
+
+    // Impossible de supprimer le Super-Admin principal
+    const failDeleteAdmin = deleteManagedUser('user-super-admin-01');
+    assert.equal(failDeleteAdmin, false);
+  });
+
+  test('Gere la whitelist des emails administrateurs et la telemetrie systeme globale', () => {
+    // Ajout et suppression d email autorise
+    const added = addAllowedAdminEmail('co-admin@nexus.ai');
+    assert.equal(added, true);
+    assert.equal(isEmailAuthorizedAdmin('co-admin@nexus.ai'), true);
+
+    const removed = removeAllowedAdminEmail('co-admin@nexus.ai');
+    assert.equal(removed, true);
+    assert.equal(isEmailAuthorizedAdmin('co-admin@nexus.ai'), false);
+
+    // Ne peut pas supprimer l email principal
+    const removedPrimary = removeAllowedAdminEmail('marcosassogba645@gmail.com');
+    assert.equal(removedPrimary, false);
+
+    // Metriques completes du systeme
+    const metrics = getSystemFullMetrics();
+    assert.ok(metrics.totalUsersCount >= 1);
+    assert.ok(metrics.providersHealth.length >= 3);
+    assert.equal(typeof metrics.systemUptimeHours, 'number');
   });
 });
