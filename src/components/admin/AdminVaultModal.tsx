@@ -81,6 +81,21 @@ interface AdminVaultModalProps {
   onClose: () => void;
 }
 
+const KEYPAD_MATRIX: Array<{ key: string; sub: string }> = [
+  { key: '1', sub: '' },
+  { key: '2', sub: 'ABC' },
+  { key: '3', sub: 'DEF' },
+  { key: '4', sub: 'GHI' },
+  { key: '5', sub: 'JKL' },
+  { key: '6', sub: 'MNO' },
+  { key: '7', sub: 'PQRS' },
+  { key: '8', sub: 'TUV' },
+  { key: '9', sub: 'WXYZ' },
+  { key: 'clear', sub: 'RESET' },
+  { key: '0', sub: '+' },
+  { key: 'backspace', sub: 'DEL' },
+];
+
 export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
   const { user } = useAuth();
   const [config, setConfig] = useState<AdminSecurityConfig>(getAdminConfig());
@@ -438,7 +453,12 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-5xl bg-white dark:bg-[#090a18] border border-amber-500/30 rounded-3xl shadow-[0_0_60px_rgba(245,158,11,0.25)] flex flex-col max-h-[94vh] overflow-hidden cursor-default text-xs"
+        className={cn(
+          'relative w-full transition-all duration-300 flex flex-col overflow-hidden cursor-default text-xs',
+          !isUnlocked
+            ? 'max-w-md sm:max-w-lg bg-[#060814]/98 text-white border-2 border-amber-500/40 rounded-3xl shadow-[0_0_80px_rgba(245,158,11,0.35)] backdrop-blur-2xl'
+            : 'max-w-5xl bg-white dark:bg-[#090a18] border border-amber-500/30 rounded-3xl shadow-[0_0_60px_rgba(245,158,11,0.25)] max-h-[94vh]',
+        )}
       >
         {/* Toast interne */}
         {successToast && (
@@ -448,78 +468,128 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
           </div>
         )}
 
-        {/* En-tete Super-Admin */}
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-200 dark:border-white/10 bg-gradient-to-r from-amber-500/15 via-slate-100 dark:via-white/5 to-transparent shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 via-amber-600 to-amber-700 flex items-center justify-center text-white shadow-md shadow-amber-500/30 shrink-0">
-              <Shield size={18} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="font-bold text-sm text-slate-900 dark:text-white">
-                  Espace Super-Admin & Observabilite Totale
-                </h2>
-                <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 font-mono text-[10px] font-bold uppercase tracking-wider">
-                  Controle Absolu
-                </span>
+        {/* ─── EN-TÊTE : PORTE BLINDÉE vs COCKPIT DÉVERROUILLÉ ─── */}
+        {!isUnlocked ? (
+          /* ====================================================================
+             EN-TÊTE PORTE DU COFFRE (VAULT ENTRANCE)
+             ==================================================================== */
+          <div className="relative flex items-center justify-between px-5 py-3.5 border-b border-amber-500/20 bg-gradient-to-r from-amber-500/15 via-white/5 to-cyan-500/15 shrink-0">
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent animate-pulse" />
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-700 flex items-center justify-center text-white shadow-md shadow-amber-500/30 shrink-0">
+                <Shield size={16} />
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-white/60">
-                Gouvernance globale des utilisateurs, telemetrie en temps reel et securite biometrique.
-              </p>
+              <div className="text-left">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono font-bold text-xs tracking-wider text-amber-400">
+                    NEXUS VAULT
+                  </span>
+                  <span className="text-[10px] text-white/40 font-mono">//</span>
+                  <span className="px-1.5 py-0.2 rounded-md bg-amber-500/20 text-amber-300 font-mono text-[9px] font-bold uppercase tracking-wider">
+                    Clairance Niveau 5
+                  </span>
+                </div>
+                <p className="text-[10px] text-white/50 font-mono">
+                  ACCES STRICTEMENT RESERVE AU PROPRIETAIRE
+                </p>
+              </div>
             </div>
+            <ModalCloseButton onClick={onClose} />
           </div>
-          <ModalCloseButton onClick={onClose} />
-        </div>
+        ) : (
+          /* ====================================================================
+             EN-TÊTE COCKPIT SUPER-ADMIN DÉVERROUILLÉ
+             ==================================================================== */
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-200 dark:border-white/10 bg-gradient-to-r from-amber-500/15 via-slate-100 dark:via-white/5 to-transparent shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 via-amber-600 to-amber-700 flex items-center justify-center text-white shadow-md shadow-amber-500/30 shrink-0">
+                <Shield size={18} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="font-bold text-sm text-slate-900 dark:text-white">
+                    Espace Super-Admin & Observabilite Totale
+                  </h2>
+                  <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 font-mono text-[10px] font-bold uppercase tracking-wider">
+                    Controle Absolu
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 dark:text-white/60">
+                  Gouvernance globale des utilisateurs, telemetrie en temps reel et securite biometrique.
+                </p>
+              </div>
+            </div>
+            <ModalCloseButton onClick={onClose} />
+          </div>
+        )}
 
         {/* CONTENU : Écran Verrouillé vs Cockpit Déverrouillé */}
         {!isUnlocked ? (
           /* ====================================================================
-             ÉCRAN DE CONNEXION CYBERNÉTIQUE SUPER-ADMIN
+             ÉCRAN DE CONNEXION CYBERNÉTIQUE HAUTE SÉCURITÉ
              ==================================================================== */
-          <div className="p-4 sm:p-6 md:p-8 overflow-y-auto space-y-5 flex flex-col items-center justify-center text-center max-w-lg mx-auto w-full">
-            {/* Emblème Cadenas & Halo Holographique */}
-            <div className="relative">
-              <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-3xl bg-gradient-to-tr from-amber-500/20 via-amber-500/10 to-transparent border-2 border-amber-500/40 flex items-center justify-center text-amber-500 shadow-[0_0_35px_rgba(245,158,11,0.25)]">
-                <Lock size={34} />
-              </div>
-              <div className="absolute -bottom-1.5 -right-1.5 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-900 border-2 border-cyan-400 flex items-center justify-center text-cyan-400 shadow-md">
-                <Fingerprint size={15} />
+          <div className="relative p-5 sm:p-7 overflow-y-auto space-y-5 flex flex-col items-center justify-center text-center w-full">
+            {/* Coins HUD Graphiques Sci-Fi */}
+            <div className="absolute top-2.5 left-2.5 w-3 h-3 border-t-2 border-l-2 border-amber-500/60 pointer-events-none" />
+            <div className="absolute top-2.5 right-2.5 w-3 h-3 border-t-2 border-r-2 border-amber-500/60 pointer-events-none" />
+            <div className="absolute bottom-2.5 left-2.5 w-3 h-3 border-b-2 border-l-2 border-amber-500/60 pointer-events-none" />
+            <div className="absolute bottom-2.5 right-2.5 w-3 h-3 border-b-2 border-r-2 border-amber-500/60 pointer-events-none" />
+
+            {/* Arrière-plan subtil Matrix Grid */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(245,158,11,0.12),transparent_70%)] pointer-events-none" />
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none" />
+
+            {/* Emblème Holographique à Double Anneau Rotatif */}
+            <div className="relative z-10 my-1">
+              {/* Pulsation lumineuse externe */}
+              <div className="absolute -inset-4 rounded-full bg-amber-500/15 blur-xl animate-pulse pointer-events-none" />
+              {/* Anneau externe doré rotatif */}
+              <div className="absolute -inset-2.5 rounded-full border border-dashed border-amber-500/50 animate-spin [animation-duration:16s] pointer-events-none" />
+              {/* Anneau interne cyan contre-rotatif */}
+              <div className="absolute -inset-1 rounded-full border border-cyan-400/40 animate-spin [animation-duration:12s] [animation-direction:reverse] pointer-events-none" />
+
+              {/* Coeur central en obsidienne */}
+              <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-gradient-to-tr from-slate-950 via-[#0d1226] to-slate-900 border-2 border-amber-400/60 flex items-center justify-center text-amber-400 shadow-[0_0_35px_rgba(245,158,11,0.4)]">
+                <Lock size={32} className="drop-shadow-[0_0_10px_rgba(251,191,36,0.8)]" />
+                <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-slate-950 border-2 border-cyan-400 flex items-center justify-center text-cyan-400 shadow-md">
+                  <Fingerprint size={13} />
+                </div>
               </div>
             </div>
 
-            {/* Titre & Accréditation */}
-            <div className="space-y-1">
-              <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+            {/* Titre & Sous-titre Technologique */}
+            <div className="relative z-10 space-y-1">
+              <h3 className="text-base sm:text-lg font-bold text-white tracking-wide">
                 Portail d Acces Super-Admin
               </h3>
-              <p className="text-slate-500 dark:text-white/70 text-xs max-w-sm mx-auto leading-relaxed">
-                Espace protege sous triple facteur de securite. Reserve au proprietaire et createur de NEXUS AI.
+              <p className="text-white/60 text-[11px] max-w-xs mx-auto leading-relaxed">
+                Verrouillage triple facteur FIDO2 & SHA-256. Reserve au proprietaire et createur de NEXUS AI.
               </p>
             </div>
 
-            {/* Carte d'Identité Officielle du Propriétaire */}
-            <div className="w-full p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-slate-100 dark:via-white/5 to-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-3 text-left shadow-xs">
+            {/* Carte Passeport d'Identité Super-Admin */}
+            <div className="relative z-10 w-full p-3 rounded-2xl bg-white/[0.04] border border-amber-500/30 flex items-center justify-between gap-3 text-left backdrop-blur-md shadow-inner">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="relative shrink-0">
-                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-600 via-amber-500 to-amber-400 p-0.5 shadow-sm shadow-amber-500/30">
-                    <div className="w-full h-full rounded-[14px] bg-slate-900 flex items-center justify-center font-bold text-sm text-amber-400">
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-600 via-amber-500 to-amber-400 p-0.5 shadow-sm shadow-amber-500/40">
+                    <div className="w-full h-full rounded-[14px] bg-slate-950 flex items-center justify-center font-bold text-sm text-amber-400 font-mono">
                       M
                     </div>
                   </div>
-                  <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900 flex items-center justify-center text-white">
+                  <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-slate-950 flex items-center justify-center text-white">
                     <Check size={8} strokeWidth={3} />
                   </div>
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="font-bold text-slate-900 dark:text-white text-xs truncate">
+                    <span className="font-bold text-white text-xs truncate">
                       Marcos Assogba
                     </span>
-                    <span className="px-1.5 py-0.2 rounded-md bg-amber-500/20 text-amber-700 dark:text-amber-300 font-mono text-[9px] font-bold uppercase tracking-wider">
+                    <span className="px-1.5 py-0.2 rounded-md bg-amber-500/20 text-amber-300 font-mono text-[9px] font-bold uppercase tracking-wider">
                       Proprietaire
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-500 dark:text-white/60 truncate font-mono">
+                  <p className="text-[11px] text-white/60 truncate font-mono mt-0.5">
                     {emailInput}
                   </p>
                 </div>
@@ -528,16 +598,16 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
               <button
                 type="button"
                 onClick={() => setIsEditingEmail(!isEditingEmail)}
-                className="px-2.5 py-1 rounded-lg bg-slate-200/80 hover:bg-slate-300 dark:bg-white/10 dark:hover:bg-white/15 text-slate-700 dark:text-white/80 text-[10px] font-medium transition-colors shrink-0 cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white/80 text-[10px] font-medium transition-colors shrink-0 cursor-pointer border border-white/10"
               >
-                {isEditingEmail ? 'Valider' : 'Changer'}
+                {isEditingEmail ? 'Fermer' : 'Changer'}
               </button>
             </div>
 
             {/* Saisie d'email personnalisé si activée */}
             {isEditingEmail && (
-              <div className="w-full space-y-2 text-left animate-in fade-in duration-150">
-                <label className="block text-[11px] font-semibold text-slate-700 dark:text-white/80">
+              <div className="relative z-10 w-full space-y-1.5 text-left animate-in fade-in duration-150">
+                <label className="block text-[11px] font-semibold text-white/80">
                   Adresse e-mail administrateur autorisee :
                 </label>
                 <div className="flex gap-2">
@@ -546,12 +616,12 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
                     value={emailInput}
                     onChange={(e) => setEmailInput(e.target.value)}
                     placeholder="marcosassogba645@gmail.com"
-                    className="flex-1 px-3 py-2 bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl text-slate-900 dark:text-white font-mono text-xs focus:outline-none focus:border-amber-500"
+                    className="flex-1 px-3 py-2 bg-white/5 border border-white/15 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-amber-500"
                   />
                   <button
                     type="button"
                     onClick={() => setIsEditingEmail(false)}
-                    className="px-3 py-2 rounded-xl bg-amber-500 text-white font-bold text-xs cursor-pointer shadow-xs"
+                    className="px-3 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs cursor-pointer shadow-xs transition-colors"
                   >
                     OK
                   </button>
@@ -560,7 +630,7 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
             )}
 
             {/* Sélecteur d'onglets de connexion : Biométrie vs Code PIN */}
-            <div className="w-full flex items-center p-1 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+            <div className="relative z-10 w-full flex items-center p-1 rounded-2xl bg-white/[0.04] border border-white/10">
               <button
                 type="button"
                 onClick={() => {
@@ -570,8 +640,8 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
                 className={cn(
                   'flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer',
                   loginMode === 'biometric'
-                    ? 'bg-cyan-500 text-white shadow-md shadow-cyan-500/25'
-                    : 'text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white',
+                    ? 'bg-gradient-to-r from-cyan-600 to-cyan-500 text-white shadow-md shadow-cyan-500/30'
+                    : 'text-white/60 hover:text-white',
                 )}
               >
                 <Fingerprint size={15} />
@@ -586,24 +656,24 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
                 className={cn(
                   'flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer',
                   loginMode === 'pin'
-                    ? 'bg-amber-500 text-white shadow-md shadow-amber-500/25'
-                    : 'text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white',
+                    ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/30'
+                    : 'text-white/60 hover:text-white',
                 )}
               >
                 <Key size={14} />
-                <span>Code PIN & Pave Tactile</span>
+                <span>Code PIN & Pave</span>
               </button>
             </div>
 
-            {/* Bloc d'avertissement de temporisation anti brute-force */}
+            {/* Alerte de verrouillage temporaire anti brute-force */}
             {lockoutTimer > 0 && (
-              <div className="w-full p-4 rounded-2xl bg-red-500/15 border-2 border-red-500/40 text-red-600 dark:text-red-400 flex items-center gap-3 text-left">
-                <Clock size={24} className="shrink-0 animate-spin text-red-500" />
+              <div className="relative z-10 w-full p-4 rounded-2xl bg-red-500/15 border-2 border-red-500/50 text-red-300 flex items-center gap-3 text-left">
+                <Clock size={24} className="shrink-0 animate-spin text-red-400" />
                 <div className="text-xs">
-                  <p className="font-bold">Securite Anti-Intrusion Active</p>
+                  <p className="font-bold text-red-200">Securite Anti-Intrusion Active</p>
                   <p className="text-[11px] opacity-90 mt-0.5">
                     Acces temporairement verrouille suite a plusieurs echecs. Reessayez dans{' '}
-                    <span className="font-mono font-bold text-sm text-red-500">{lockoutTimer}s</span>.
+                    <span className="font-mono font-bold text-sm text-red-400">{lockoutTimer}s</span>.
                   </p>
                 </div>
               </div>
@@ -611,63 +681,69 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
 
             {/* Message d'erreur d'authentification */}
             {authError && lockoutTimer === 0 && (
-              <div className="w-full p-3 rounded-xl bg-red-500/15 border border-red-500/30 text-red-600 dark:text-red-400 flex items-center gap-2 text-left text-xs animate-in fade-in duration-150">
-                <ShieldAlert size={16} className="shrink-0" />
+              <div className="relative z-10 w-full p-3 rounded-xl bg-red-500/15 border border-red-500/40 text-red-300 flex items-center gap-2 text-left text-xs animate-in fade-in duration-150">
+                <ShieldAlert size={16} className="shrink-0 text-red-400" />
                 <span>{authError}</span>
               </div>
             )}
 
             {/* ─── ONGLET 1 : RECONNAISSANCE BIOMÉTRIQUE ─── */}
             {loginMode === 'biometric' && (
-              <div className="w-full py-2 flex flex-col items-center justify-center space-y-4 animate-in fade-in duration-150">
-                {/* Grand Scanner Interactif Tactile */}
-                <button
-                  type="button"
-                  onClick={handleBiometricDirectUnlock}
-                  disabled={isVerifyingBio || lockoutTimer > 0}
-                  className="group relative w-28 h-28 sm:w-32 sm:h-32 rounded-full p-1 bg-gradient-to-tr from-cyan-500 via-blue-500 to-indigo-600 flex items-center justify-center shadow-[0_0_35px_rgba(6,182,212,0.35)] hover:shadow-[0_0_50px_rgba(6,182,212,0.55)] transition-all cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <div className="w-full h-full rounded-full bg-slate-950 flex flex-col items-center justify-center relative overflow-hidden">
-                    <div className="absolute inset-0 rounded-full border border-cyan-500/20 animate-ping opacity-30" />
-                    <div className="absolute inset-1 rounded-full border border-dashed border-cyan-400/40 animate-spin [animation-duration:12s]" />
+              <div className="relative z-10 w-full py-2 flex flex-col items-center justify-center space-y-4 animate-in fade-in duration-150">
+                {/* Grand Scanner Biométrique Tactile & Balayage Laser */}
+                <div className="relative my-2">
+                  <button
+                    type="button"
+                    onClick={handleBiometricDirectUnlock}
+                    disabled={isVerifyingBio || lockoutTimer > 0}
+                    className="group relative w-32 h-32 rounded-full p-1.5 bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-600 flex items-center justify-center shadow-[0_0_40px_rgba(6,182,212,0.4)] hover:shadow-[0_0_65px_rgba(6,182,212,0.7)] transition-all cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {/* Anneau radar externe rotatif */}
+                    <div className="absolute -inset-2.5 rounded-full border border-dashed border-cyan-400/40 animate-spin [animation-duration:14s] pointer-events-none" />
+                    <div className="absolute -inset-5 rounded-full border border-cyan-500/20 animate-pulse pointer-events-none" />
 
-                    {isVerifyingBio ? (
-                      <RefreshCw size={38} className="text-cyan-400 animate-spin" />
-                    ) : (
-                      <Fingerprint
-                        size={44}
-                        className="text-cyan-400 group-hover:scale-110 transition-transform duration-200"
-                      />
-                    )}
-                  </div>
-                </button>
+                    <div className="w-full h-full rounded-full bg-[#0a0d1d] flex flex-col items-center justify-center relative overflow-hidden">
+                      {/* Ligne de balayage laser néon */}
+                      <div className="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_12px_#22d3ee] animate-pulse" />
+
+                      {isVerifyingBio ? (
+                        <RefreshCw size={42} className="text-cyan-400 animate-spin" />
+                      ) : (
+                        <Fingerprint
+                          size={50}
+                          className="text-cyan-400 group-hover:scale-110 group-hover:text-cyan-300 transition-all duration-300 drop-shadow-[0_0_14px_rgba(34,211,238,0.7)]"
+                        />
+                      )}
+                    </div>
+                  </button>
+                </div>
 
                 <div className="text-center space-y-1">
-                  <p className="font-semibold text-xs text-slate-800 dark:text-white">
+                  <p className="font-semibold text-xs text-white">
                     {isVerifyingBio
-                      ? 'Numerisation biométrique en cours...'
-                      : 'Appuyez pour scanner votre empreinte digitale'}
+                      ? 'Numerisation de l empreinte en cours...'
+                      : 'Appuyez sur le scanner pour vous authentifier'}
                   </p>
-                  <p className="text-[11px] text-slate-500 dark:text-white/60">
+                  <p className="text-[11px] text-white/60">
                     Prend en charge Windows Hello, Touch ID, Face ID et capteurs d empreinte mobiles.
                   </p>
                 </div>
 
                 {isBiometricsSupported() && !config.biometricEnabled && (
-                  <div className="w-full p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/25 flex items-center justify-between gap-3 text-left">
+                  <div className="w-full p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-between gap-3 text-left">
                     <div className="min-w-0">
-                      <p className="font-bold text-xs text-cyan-800 dark:text-cyan-300">
+                      <p className="font-bold text-xs text-cyan-300">
                         Capteur detecte sur cet appareil
                       </p>
-                      <p className="text-[10px] text-slate-500 dark:text-cyan-200/70">
-                        Associez l empreinte de ce terminal pour des connexions futures en 1 clic.
+                      <p className="text-[10px] text-cyan-200/70">
+                        Associez l empreinte de ce terminal pour des ouvertures futures en 1 clic.
                       </p>
                     </div>
                     <button
                       type="button"
                       onClick={handleEnrollBiometrics}
                       disabled={isVerifyingBio || lockoutTimer > 0}
-                      className="px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-[11px] shrink-0 cursor-pointer shadow-xs disabled:opacity-50"
+                      className="px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-[11px] shrink-0 cursor-pointer shadow-xs disabled:opacity-50 transition-colors"
                     >
                       {isVerifyingBio ? 'Scan...' : 'Enregistrer'}
                     </button>
@@ -677,18 +753,18 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
                 <button
                   type="button"
                   onClick={() => setLoginMode('pin')}
-                  className="text-[11px] text-slate-500 dark:text-white/50 hover:text-amber-500 dark:hover:text-amber-400 font-medium transition-colors flex items-center gap-1.5 pt-1 cursor-pointer"
+                  className="text-[11px] text-white/50 hover:text-amber-400 font-medium transition-colors flex items-center gap-1.5 pt-1 cursor-pointer"
                 >
                   <Key size={13} />
-                  <span>Utiliser le code PIN maitre secret</span>
+                  <span>Basculer sur le code PIN maitre</span>
                 </button>
               </div>
             )}
 
             {/* ─── ONGLET 2 : CODE PIN & PAVÉ TACTILE NUMÉRIQUE ─── */}
             {loginMode === 'pin' && (
-              <form onSubmit={handleUnlockWithPinAndEmail} className="w-full space-y-3.5 text-left animate-in fade-in duration-150">
-                {/* Pastilles PIN Lumineuses (PIN Dots) */}
+              <form onSubmit={handleUnlockWithPinAndEmail} className="relative z-10 w-full space-y-3.5 text-left animate-in fade-in duration-150">
+                {/* Pastilles PIN Lumineuses (PIN Dots) Stylisées en Cristaux de Sécurité */}
                 <div className="flex flex-col items-center justify-center space-y-2 py-1">
                   <div className="flex items-center justify-center gap-3">
                     {[0, 1, 2, 3, 4, 5].map((idx) => {
@@ -697,17 +773,19 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
                         <div
                           key={idx}
                           className={cn(
-                            'w-3.5 h-3.5 rounded-full transition-all duration-150',
+                            'w-4 h-4 rounded-full transition-all duration-200 flex items-center justify-center',
                             isFilled
-                              ? 'bg-amber-400 shadow-[0_0_12px_rgba(251,191,36,0.9)] scale-110'
-                              : 'border-2 border-slate-300 dark:border-white/20 bg-transparent',
+                              ? 'bg-gradient-to-tr from-amber-500 to-amber-300 shadow-[0_0_16px_rgba(245,158,11,0.95)] scale-115 border-2 border-amber-200'
+                              : 'border-2 border-white/20 bg-white/[0.04]',
                           )}
-                        />
+                        >
+                          {isFilled && <div className="w-1.5 h-1.5 rounded-full bg-slate-950" />}
+                        </div>
                       );
                     })}
                   </div>
-                  <span className="text-[10px] text-slate-400 dark:text-white/45">
-                    {config.isPinConfigured ? 'Code PIN securise SHA-256' : 'PIN usine initial : 0000'}
+                  <span className="text-[10px] text-white/45 font-mono">
+                    {config.isPinConfigured ? 'Code PIN protege par SHA-256' : 'PIN usine initial : 0000'}
                   </span>
                 </div>
 
@@ -720,58 +798,67 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
                       if (lockoutTimer > 0) return;
                       setPinInput(e.target.value.replace(/[^0-9]/g, ''));
                     }}
-                    placeholder="Saisissez ou tapez votre PIN..."
+                    placeholder="Tapez votre code PIN..."
                     disabled={lockoutTimer > 0}
                     maxLength={12}
-                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl text-center text-slate-900 dark:text-white font-mono text-sm tracking-widest focus:outline-none focus:border-amber-500 disabled:opacity-50"
+                    className="w-full px-4 py-2.5 bg-white/5 border border-white/15 rounded-xl text-center text-white font-mono text-sm tracking-widest focus:outline-none focus:border-amber-400 disabled:opacity-50"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPin(!showPin)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer p-1"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white cursor-pointer p-1"
                   >
                     {showPin ? <EyeOff size={15} /> : <Eye size={15} />}
                   </button>
                 </div>
 
-                {/* Pavé Numérique Virtuel Tactile (Idéal pour mobile, tablette et PWA) */}
+                {/* Pavé Numérique Virtuel Haute Fidélité (Mobile, Tablette & Desktop) */}
                 <div className="grid grid-cols-3 gap-2 pt-1 max-w-[280px] mx-auto w-full">
-                  {['1', '2', '3', '4', '5', '6', '7', '8', '9', 'clear', '0', 'backspace'].map((keyVal) => {
-                    if (keyVal === 'clear') {
+                  {KEYPAD_MATRIX.map((item) => {
+                    if (item.key === 'clear') {
                       return (
                         <button
-                          key={keyVal}
+                          key={item.key}
                           type="button"
                           onClick={() => handleKeypadPress('clear')}
                           disabled={lockoutTimer > 0 || pinInput.length === 0}
-                          className="h-11 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-amber-600 dark:text-amber-400 font-bold text-xs flex items-center justify-center transition-all active:scale-95 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed border border-slate-200/60 dark:border-white/5"
+                          className="h-12 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 font-bold text-xs flex flex-col items-center justify-center transition-all active:scale-95 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed border border-amber-500/30"
                         >
-                          C
+                          <span>C</span>
+                          <span className="text-[8px] font-mono opacity-60">EFFACER</span>
                         </button>
                       );
                     }
-                    if (keyVal === 'backspace') {
+                    if (item.key === 'backspace') {
                       return (
                         <button
-                          key={keyVal}
+                          key={item.key}
                           type="button"
                           onClick={() => handleKeypadPress('backspace')}
                           disabled={lockoutTimer > 0 || pinInput.length === 0}
-                          className="h-11 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-white/70 flex items-center justify-center transition-all active:scale-95 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed border border-slate-200/60 dark:border-white/5"
+                          className="h-12 rounded-xl bg-white/5 hover:bg-white/10 text-white/70 flex flex-col items-center justify-center transition-all active:scale-95 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed border border-white/10"
                         >
                           <Delete size={17} />
+                          <span className="text-[8px] font-mono opacity-50">RETOUR</span>
                         </button>
                       );
                     }
                     return (
                       <button
-                        key={keyVal}
+                        key={item.key}
                         type="button"
-                        onClick={() => handleKeypadPress(keyVal)}
+                        onClick={() => handleKeypadPress(item.key)}
                         disabled={lockoutTimer > 0 || pinInput.length >= 12}
-                        className="h-11 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-900 dark:text-white font-mono font-bold text-sm flex items-center justify-center transition-all active:scale-95 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed border border-slate-200/60 dark:border-white/5 shadow-xs"
+                        className="h-12 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] hover:border-amber-400/40 text-white border border-white/5 flex flex-col items-center justify-center transition-all active:scale-95 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed group shadow-xs"
                       >
-                        {keyVal}
+                        <span className="font-mono font-bold text-base leading-none group-hover:text-amber-400 transition-colors">
+                          {item.key}
+                        </span>
+                        {item.sub && (
+                          <span className="text-[8px] font-mono text-white/40 tracking-wider mt-0.5 leading-none">
+                            {item.sub}
+                          </span>
+                        )}
                       </button>
                     );
                   })}
@@ -782,29 +869,29 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
                   <button
                     type="submit"
                     disabled={lockoutTimer > 0 || pinInput.length < 4}
-                    className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold flex items-center justify-center gap-2 shadow-md shadow-amber-500/25 cursor-pointer transition-all text-xs"
+                    className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 disabled:opacity-35 disabled:cursor-not-allowed text-slate-950 font-bold flex items-center justify-center gap-2 shadow-lg shadow-amber-500/30 cursor-pointer transition-all text-xs tracking-wide"
                   >
-                    <Key size={14} />
-                    <span>Deverrouiller le Coffre-Fort</span>
-                    <ArrowRight size={14} />
+                    <Key size={14} className="text-slate-950" />
+                    <span>Deverrouiller le Coffre</span>
+                    <ArrowRight size={14} className="text-slate-950" />
                   </button>
                 </div>
               </form>
             )}
 
             {/* Pied de page : Garanties de Sécurité */}
-            <div className="pt-3 border-t border-slate-200/80 dark:border-white/10 w-full grid grid-cols-3 gap-2 text-center text-[10px] text-slate-400 dark:text-white/40">
+            <div className="relative z-10 pt-3 border-t border-white/10 w-full grid grid-cols-3 gap-2 text-center text-[10px] text-white/45">
               <div className="flex flex-col items-center gap-1">
-                <ShieldCheck size={14} className="text-emerald-500" />
-                <span>SHA-256 Hashing</span>
+                <ShieldCheck size={14} className="text-emerald-400" />
+                <span className="font-mono">SHA-256 VAULT</span>
               </div>
               <div className="flex flex-col items-center gap-1">
                 <Fingerprint size={14} className="text-cyan-400" />
-                <span>WebAuthn FIDO2</span>
+                <span className="font-mono">WEBAUTHN FIDO2</span>
               </div>
               <div className="flex flex-col items-center gap-1">
-                <Clock size={14} className="text-amber-500" />
-                <span>Session 15 min</span>
+                <Clock size={14} className="text-amber-400" />
+                <span className="font-mono">AUTO-LOCK 15M</span>
               </div>
             </div>
           </div>
