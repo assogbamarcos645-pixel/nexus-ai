@@ -2,14 +2,14 @@
 /**
  * scripts/send-v040-notification.mjs
  *
- * Script d'envoi et de prévisualisation de la campagne d'e-mails pour NEXUS AI v0.4.0.
+ * Script d'envoi et de test de notification par e-mail pour NEXUS AI v0.4.0 via l'API Resend.
  *
- * Utilisation :
- *   1. Prévisualisation locale :
- *      node scripts/send-v040-notification.mjs --preview
+ * Usage:
+ *   node scripts/send-v040-notification.mjs
+ *     -> Genere un apercu HTML localement dans scripts/preview-email.html
  *
- *   2. Envoi réel via l'API Resend :
- *      RESEND_API_KEY=re_xxxx node scripts/send-v040-notification.mjs --send [--to=email@example.com]
+ *   node scripts/send-v040-notification.mjs --send --api-key=re_xxxx [--to=user@example.com]
+ *     -> Declenche l'envoi reel via l'API REST de Resend
  */
 
 import fs from 'fs';
@@ -20,9 +20,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const VERSION = '0.4.0';
-const SUBJECT = `🚀 NEXUS AI v${VERSION} est disponible : Swarm 2.0, WebContainers & Codebase Search !`;
+const SUBJECT = `NEXUS AI v${VERSION} est disponible : Swarm 2.0, WebContainers & Codebase Search`;
 
-function getEmailHtml(userName = 'Développeur', appUrl = 'https://nexus-ai.app') {
+function getEmailHtml(userName = 'Developpeur', appUrl = 'https://nexus-ai.app') {
   return `<!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -50,35 +50,35 @@ function getEmailHtml(userName = 'Développeur', appUrl = 'https://nexus-ai.app'
   <div class="wrapper">
     <div class="container">
       <div class="header">
-        <span class="logo-badge">NEXUS AI • v${VERSION}</span>
-        <h1 class="title">Une nouvelle ère commence</h1>
+        <span class="logo-badge">NEXUS AI - v${VERSION}</span>
+        <h1 class="title">Une nouvelle ere commence</h1>
         <p class="subtitle">Plateforme d'intelligence collective multi-agents et IDE in-browser</p>
       </div>
       <div class="content">
         <p>Bonjour <strong>${userName}</strong>,</p>
         <p style="color: #cbd5e1; font-size: 14px;">
-          Nous avons le plaisir de vous annoncer le déploiement officiel de <strong>NEXUS AI v${VERSION}</strong> :
+          Nous avons le plaisir de vous annoncer le deploiement officiel de <strong>NEXUS AI v${VERSION}</strong> :
         </p>
         <div class="card">
-          <h2 class="card-title">⚡ 1. Runtime WebContainers In-Browser & Streaming</h2>
-          <p class="card-desc">Exécutez vos projets Node.js, serveurs d'API et scripts npm directement dans votre navigateur avec streaming stdout/stderr fluide et détection de serveur automatique.</p>
+          <h2 class="card-title">1. Runtime WebContainers In-Browser & Streaming</h2>
+          <p class="card-desc">Executez vos projets Node.js, serveurs d'API et scripts npm directement dans votre navigateur avec streaming stdout/stderr fluide et detection de serveur automatique.</p>
         </div>
         <div class="card">
-          <h2 class="card-title">🧠 2. Multi-Agents Swarm 2.0 & Auto-Heal en Temps Réel</h2>
-          <p class="card-desc">Orchestrez une équipe modulaire (Architecte, UI, QA, Données Supabase/SQL, Sécurité OWASP). Le mode Auto-Heal diagnostique et répare en un clic vos erreurs de build et linter.</p>
+          <h2 class="card-title">2. Multi-Agents Swarm 2.0 & Auto-Heal en Temps Reel</h2>
+          <p class="card-desc">Orchestrez une equipe modulaire (Architecte, UI, QA, Donnees Supabase/SQL, Securite OWASP). Le mode Auto-Heal diagnostique et repare en un clic vos erreurs de build et linter.</p>
         </div>
         <div class="card">
-          <h2 class="card-title">🔍 3. Codebase Search & RAG Vectoriel Hybride</h2>
-          <p class="card-desc">Vos agents comprennent désormais la globalité du projet grâce au découpage sémantique (BM25 + TF-IDF) injectant les bons snippets dans vos échanges.</p>
+          <h2 class="card-title">3. Codebase Search & RAG Vectoriel Hybride</h2>
+          <p class="card-desc">Vos agents comprennent desormais la globalite du projet grace au decoupage semantique (BM25 + TF-IDF) injectant les bons snippets dans vos echanges.</p>
         </div>
         <div class="cta-container">
           <a href="${appUrl}" target="_blank" rel="noopener noreferrer" class="cta-button">
-            Ouvrir NEXUS AI v${VERSION} →
+            Ouvrir NEXUS AI v${VERSION}
           </a>
         </div>
       </div>
       <div class="footer">
-        <p>© ${new Date().getFullYear()} NEXUS AI — Tous droits réservés.</p>
+        <p>(c) ${new Date().getFullYear()} NEXUS AI - Tous droits reserves.</p>
       </div>
     </div>
   </div>
@@ -94,25 +94,25 @@ async function main() {
   const customToArg = args.find((a) => a.startsWith('--to='));
   const targetEmail = customToArg ? customToArg.replace('--to=', '') : 'marcosassogba645@gmail.com';
 
-  console.log(`[NEXUS NOTIFICATION] Préparation de la notification v${VERSION}...`);
+  console.log(`[NEXUS NOTIFICATION] Preparation de la notification v${VERSION}...`);
 
   if (!isSend) {
     const previewPath = path.resolve(__dirname, 'preview-email.html');
     const html = getEmailHtml('Super Administrateur');
     fs.writeFileSync(previewPath, html, 'utf-8');
-    console.log(`✅ Fichier de prévisualisation généré : ${previewPath}`);
-    console.log(`👉 Sujet de l'e-mail : "${SUBJECT}"`);
-    console.log(`ℹ️ Pour déclencher l'envoi réel vers ${targetEmail} :`);
+    console.log(`[SUCCES] Fichier de previsualisation genere : ${previewPath}`);
+    console.log(`[SUJET] Sujet du message : "${SUBJECT}"`);
+    console.log(`[INFO] Pour declencher l'envoi reel vers ${targetEmail} :`);
     console.log(`   node scripts/send-v040-notification.mjs --send --api-key=${apiKey || 're_xxxx'}`);
     return;
   }
 
   if (!apiKey) {
-    console.error('❌ Erreur : Clé RESEND_API_KEY manquante. Passez --api-key=re_... ou définissez la variable d\'environnement.');
+    console.error('[ERREUR] Cle RESEND_API_KEY manquante. Passez --api-key=re_... ou definissez la variable d\'environnement.');
     process.exit(1);
   }
 
-  console.log(`🚀 Envoi de l'e-mail de release à : ${targetEmail}...`);
+  console.log(`[ENVOI] Envoi du message de release a : ${targetEmail}...`);
 
   const html = getEmailHtml('Super Administrateur');
   const response = await fetch('https://api.resend.com/emails', {
@@ -132,13 +132,13 @@ async function main() {
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    console.error(`❌ Échec d'envoi Resend (${response.status}) :`, data);
+    console.error(`[ERREUR] Echec d'envoi Resend (${response.status}) :`, data);
     process.exit(1);
   }
 
-  console.log(`✅ Succès ! E-mail envoyé avec succès via Resend.`);
-  console.log(`📧 ID du message Resend : ${data.id}`);
-  console.log(`📬 Vérifiez votre boîte de réception : ${targetEmail}`);
+  console.log(`[SUCCES] Message envoye avec succes via Resend.`);
+  console.log(`[INFO] ID du message Resend : ${data.id}`);
+  console.log(`[DESTINATAIRE] Verifiez votre boite de reception : ${targetEmail}`);
 }
 
 main().catch(console.error);

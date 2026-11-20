@@ -43,7 +43,7 @@ export const BroadcastTab: React.FC = () => {
   const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null);
 
   const [emailSubject, setEmailSubject] = useState(
-    '🚀 NEXUS AI v0.4.0 est disponible : Swarm 2.0, WebContainers & Codebase Search !'
+    'NEXUS AI v0.4.0 est disponible : Swarm 2.0, WebContainers & Codebase Search'
   );
   const [resendApiKey, setResendApiKey] = useState('');
   const [isSendingEmail, setIsSendingEmail] = useState(false);

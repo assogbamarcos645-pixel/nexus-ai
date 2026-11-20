@@ -174,7 +174,7 @@ export function generateReleaseNotificationHtml(options: {
 
         <!-- Feature 1 -->
         <div class="card">
-          <h2 class="card-title">⚡ 1. Runtime WebContainers In-Browser & Streaming</h2>
+          <h2 class="card-title">1. Runtime WebContainers In-Browser & Streaming</h2>
           <p class="card-desc">
             Exécutez vos projets Node.js, serveurs d'API et scripts npm directement dans votre navigateur avec un streaming stdout/stderr fluide et détection de serveur automatique sans dépendance de serveur distant.
           </p>
@@ -182,7 +182,7 @@ export function generateReleaseNotificationHtml(options: {
 
         <!-- Feature 2 -->
         <div class="card">
-          <h2 class="card-title">🧠 2. Multi-Agents Swarm 2.0 & Auto-Heal en Temps Réel</h2>
+          <h2 class="card-title">2. Multi-Agents Swarm 2.0 & Auto-Heal en Temps Réel</h2>
           <p class="card-desc">
             Orchestrez une équipe modulaire (Architecte, UI, QA, Données Supabase/SQL, Sécurité OWASP). Grâce au mode <strong>Auto-Heal</strong>, le Swarm diagnostique et répare en un clic vos erreurs de build et de linter.
           </p>
@@ -190,7 +190,7 @@ export function generateReleaseNotificationHtml(options: {
 
         <!-- Feature 3 -->
         <div class="card">
-          <h2 class="card-title">🔍 3. Codebase Search & RAG Vectoriel Hybride</h2>
+          <h2 class="card-title">3. Codebase Search & RAG Vectoriel Hybride</h2>
           <p class="card-desc">
             Vos agents disposent désormais d'une compréhension globale du projet grâce au découpage sémantique (BM25 + TF-IDF) injectant exactement les fichiers de code utiles dans vos échanges.
           </p>

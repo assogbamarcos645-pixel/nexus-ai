@@ -18,7 +18,7 @@ export function getDefaultBroadcastBanner(): BroadcastBanner {
     id: 'broadcast-v040-release',
     enabled: true,
     type: 'info',
-    title: '🚀 NEXUS AI v0.4.0 est disponible !',
+    title: 'NEXUS AI v0.4.0 est disponible',
     message: 'Nouveautés majeures : Swarm 2.0 avec Auto-Heal en temps réel, exécution in-browser WebContainers & recherche sémantique de codebase.',
     createdAt: new Date().toISOString(),
     allowDismiss: true,
