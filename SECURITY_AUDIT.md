@@ -18,12 +18,17 @@ Ce document récapitule les mesures de sécurité, les assainissements effectué
   - Absence de la directive permissive `unsafe-eval`.
   - Restriction des connexions aux canaux sécurisés (`connect-src 'self' https: wss:` pour Supabase).
   - Autorisation ciblée des polices (`https://fonts.googleapis.com` et `https://fonts.gstatic.com`) et des workers web Monaco Editor (`blob:`).
-- Configuration des en-têtes HTTP de protection du navigateur :
+- Configuration des en-têtes HTTP de protection du navigateur (Vercel, Netlify, Cloudflare Pages via `_headers`, et serveur Vite) :
+  - `Content-Security-Policy` : restriction stricte des scripts, styles, workers blob, polices Google, et connectivités HTTPS/WSS/local Ollama.
   - `X-Content-Type-Options: nosniff` (protection contre l'interprétation abusive des types MIME).
   - `X-Frame-Options: SAMEORIGIN` (protection contre le clickjacking).
   - `X-XSS-Protection: 1; mode=block`.
   - `Referrer-Policy: strict-origin-when-cross-origin`.
-  - `Permissions-Policy: camera=(self), microphone=(self), geolocation=()`.
+  - `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload` (HSTS).
+  - `Permissions-Policy: camera=(self), microphone=(self), geolocation=(), payment=(), usb=()`.
+  - `Cross-Origin-Opener-Policy: same-origin`.
+  - `Cross-Origin-Resource-Policy: same-origin`.
+  - `X-Permitted-Cross-Domain-Policies: none`.
 
 ### Protection du Centre de Contrôle Administratif
 - **Barrière d'authentification (`AuthGate`)** : Lorsque l'infrastructure cloud Supabase est configurée, l'accès à la gouvernance des modèles IA, à la configuration des fournisseurs et aux déclenchements de tests serveur est réservé aux administrateurs authentifiés.
