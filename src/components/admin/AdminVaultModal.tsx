@@ -454,10 +454,10 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
       <div
         onClick={(e) => e.stopPropagation()}
         className={cn(
-          'relative w-full transition-all duration-300 flex flex-col overflow-hidden cursor-default text-xs',
+          'relative w-full max-h-[92dvh] sm:max-h-[90vh] flex flex-col overflow-hidden cursor-default text-xs transition-all duration-300',
           !isUnlocked
-            ? 'max-w-md sm:max-w-lg liquid-glass border-2 border-amber-500/50 dark:border-amber-400/40 rounded-3xl shadow-[0_0_80px_rgba(245,158,11,0.35)] backdrop-blur-2xl'
-            : 'max-w-5xl liquid-glass border border-amber-500/30 rounded-3xl shadow-[0_0_60px_rgba(245,158,11,0.25)] max-h-[94vh]',
+            ? 'max-w-sm sm:max-w-md bg-white/95 dark:bg-[#0c1022]/95 liquid-glass border border-amber-500/40 dark:border-amber-400/40 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.4)] dark:shadow-[0_0_70px_rgba(245,158,11,0.25)] backdrop-blur-2xl'
+            : 'max-w-5xl bg-white/95 dark:bg-[#090a18]/95 liquid-glass border border-amber-500/30 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.3)]',
         )}
       >
         {/* Toast interne */}
@@ -473,9 +473,9 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
           /* ====================================================================
              EN-TÊTE PORTE DU COFFRE (VAULT ENTRANCE) EN LIQUID-GLASS
              ==================================================================== */
-          <div className="relative flex items-center justify-between px-5 py-3.5 border-b border-amber-500/30 liquid-glass shrink-0">
+          <div className="relative flex items-center justify-between px-4 sm:px-5 py-3 border-b border-amber-500/30 liquid-glass shrink-0">
             <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent animate-pulse" />
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-700 flex items-center justify-center text-white shadow-md shadow-amber-500/30 shrink-0">
                 <Shield size={16} />
               </div>
@@ -486,11 +486,11 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
                   </span>
                   <span className="text-[10px] text-slate-400 dark:text-white/40 font-mono">//</span>
                   <span className="px-1.5 py-0.2 rounded-md bg-amber-500/20 text-amber-700 dark:text-amber-300 font-mono text-[9px] font-bold uppercase tracking-wider">
-                    Clairance Niveau 5
+                    Clairance 5
                   </span>
                 </div>
-                <p className="text-[10px] text-slate-500 dark:text-white/50 font-mono">
-                  ACCES STRICTEMENT RESERVE AU PROPRIETAIRE
+                <p className="text-[10px] text-slate-500 dark:text-white/50 font-mono leading-tight">
+                  ACCES RESTREINT AU PROPRIETAIRE
                 </p>
               </div>
             </div>
@@ -528,56 +528,42 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
           /* ====================================================================
              ÉCRAN DE CONNEXION CYBERNÉTIQUE HAUTE SÉCURITÉ EN LIQUID-GLASS
              ==================================================================== */
-          <div className="relative p-5 sm:p-7 overflow-y-auto space-y-5 flex flex-col items-center justify-center text-center w-full">
-            {/* Coins HUD Graphiques Sci-Fi */}
-            <div className="absolute top-2.5 left-2.5 w-3 h-3 border-t-2 border-l-2 border-amber-500/60 pointer-events-none" />
-            <div className="absolute top-2.5 right-2.5 w-3 h-3 border-t-2 border-r-2 border-amber-500/60 pointer-events-none" />
-            <div className="absolute bottom-2.5 left-2.5 w-3 h-3 border-b-2 border-l-2 border-amber-500/60 pointer-events-none" />
-            <div className="absolute bottom-2.5 right-2.5 w-3 h-3 border-b-2 border-r-2 border-amber-500/60 pointer-events-none" />
-
+          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 sm:p-5 space-y-3.5 flex flex-col items-center text-center w-full">
             {/* Arrière-plan subtil Matrix Grid */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(245,158,11,0.15),transparent_70%)] pointer-events-none" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(245,158,11,0.12),transparent_70%)] pointer-events-none" />
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none" />
 
-            {/* Emblème Holographique à Double Anneau Rotatif */}
-            <div className="relative z-10 my-1">
-              {/* Pulsation lumineuse externe */}
-              <div className="absolute -inset-4 rounded-full bg-amber-500/20 blur-xl animate-pulse pointer-events-none" />
-              {/* Anneau externe doré rotatif */}
-              <div className="absolute -inset-2.5 rounded-full border border-dashed border-amber-500/50 animate-spin [animation-duration:16s] pointer-events-none" />
-              {/* Anneau interne cyan contre-rotatif */}
-              <div className="absolute -inset-1 rounded-full border border-cyan-400/50 animate-spin [animation-duration:12s] [animation-direction:reverse] pointer-events-none" />
-
-              {/* Coeur central en verre liquide (Liquid Glass Core) */}
-              <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-3xl liquid-glass border-2 border-amber-400/70 flex items-center justify-center text-amber-500 dark:text-amber-400 shadow-[0_0_35px_rgba(245,158,11,0.4)]">
-                <Lock size={32} className="drop-shadow-[0_0_10px_rgba(251,191,36,0.8)]" />
-                <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-slate-900 border-2 border-cyan-400 flex items-center justify-center text-cyan-400 shadow-md">
-                  <Fingerprint size={13} />
+            {/* Emblème Holographique Compact */}
+            <div className="relative z-10 shrink-0 my-0.5">
+              <div className="relative w-13 h-13 sm:w-14 sm:h-14 rounded-2xl liquid-glass border-2 border-amber-400/70 flex items-center justify-center text-amber-500 dark:text-amber-400 shadow-[0_0_25px_rgba(245,158,11,0.35)]">
+                <Lock size={24} className="drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]" />
+                <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-slate-900 border-2 border-cyan-400 flex items-center justify-center text-cyan-400 shadow-md">
+                  <Fingerprint size={11} />
                 </div>
               </div>
             </div>
 
             {/* Titre & Sous-titre Technologique */}
-            <div className="relative z-10 space-y-1">
-              <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-wide">
+            <div className="relative z-10 space-y-0.5 shrink-0">
+              <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-wide">
                 Portail d Acces Super-Admin
               </h3>
-              <p className="text-slate-500 dark:text-white/65 text-[11px] max-w-xs mx-auto leading-relaxed">
-                Verrouillage triple facteur FIDO2 & SHA-256 sous optique Liquid Glass. Reserve au proprietaire de NEXUS AI.
+              <p className="text-slate-500 dark:text-slate-400 text-[11px] leading-tight">
+                Authentification protegee FIDO2 & SHA-256 sous Liquid Glass.
               </p>
             </div>
 
             {/* Carte Passeport d'Identité Super-Admin en Liquid Glass */}
-            <div className="relative z-10 w-full p-3.5 rounded-2xl liquid-glass liquid-glass-card border border-amber-500/35 flex items-center justify-between gap-3 text-left shadow-lg">
-              <div className="flex items-center gap-3 min-w-0">
+            <div className="relative z-10 w-full p-2.5 sm:p-3 rounded-2xl liquid-glass liquid-glass-card border border-amber-500/35 flex items-center justify-between gap-2.5 text-left shadow-sm shrink-0">
+              <div className="flex items-center gap-2.5 min-w-0">
                 <div className="relative shrink-0">
-                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-600 via-amber-500 to-amber-400 p-0.5 shadow-sm shadow-amber-500/40">
-                    <div className="w-full h-full rounded-[14px] bg-slate-900 flex items-center justify-center font-bold text-sm text-amber-400 font-mono">
-                      M
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-600 via-amber-500 to-amber-400 p-0.5 shadow-sm shadow-amber-500/40">
+                    <div className="w-full h-full rounded-[10px] bg-slate-900 flex items-center justify-center font-bold text-xs text-amber-400 font-mono">
+                      MA
                     </div>
                   </div>
-                  <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900 flex items-center justify-center text-white">
-                    <Check size={8} strokeWidth={3} />
+                  <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900 flex items-center justify-center text-white">
+                    <Check size={7} strokeWidth={3} />
                   </div>
                 </div>
                 <div className="min-w-0">
@@ -589,7 +575,7 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
                       Proprietaire
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-500 dark:text-white/60 truncate font-mono mt-0.5">
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate font-mono mt-0.5">
                     {emailInput}
                   </p>
                 </div>
@@ -598,7 +584,7 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
               <button
                 type="button"
                 onClick={() => setIsEditingEmail(!isEditingEmail)}
-                className="px-2.5 py-1 rounded-lg liquid-glass-pill hover:border-amber-400 text-slate-700 dark:text-white/80 text-[10px] font-medium transition-colors shrink-0 cursor-pointer border border-slate-200/80 dark:border-white/10"
+                className="px-2 py-1 rounded-lg liquid-glass-pill hover:border-amber-400 text-slate-700 dark:text-white/80 text-[10px] font-medium transition-colors shrink-0 cursor-pointer border border-slate-200/80 dark:border-white/10"
               >
                 {isEditingEmail ? 'Fermer' : 'Changer'}
               </button>
@@ -606,8 +592,8 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
 
             {/* Saisie d'email personnalisé si activée */}
             {isEditingEmail && (
-              <div className="relative z-10 w-full space-y-1.5 text-left animate-in fade-in duration-150">
-                <label className="block text-[11px] font-semibold text-slate-700 dark:text-white/80">
+              <div className="relative z-10 w-full space-y-1 text-left animate-in fade-in duration-150 shrink-0">
+                <label className="block text-[10px] font-semibold text-slate-700 dark:text-white/80">
                   Adresse e-mail administrateur autorisee :
                 </label>
                 <div className="flex gap-2">
@@ -616,12 +602,12 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
                     value={emailInput}
                     onChange={(e) => setEmailInput(e.target.value)}
                     placeholder="marcosassogba645@gmail.com"
-                    className="flex-1 px-3 py-2 liquid-glass border border-slate-300/80 dark:border-white/15 rounded-xl text-slate-900 dark:text-white font-mono text-xs focus:outline-none focus:border-amber-500"
+                    className="flex-1 px-3 py-1.5 liquid-glass border border-slate-300/80 dark:border-white/15 rounded-xl text-slate-900 dark:text-white font-mono text-xs focus:outline-none focus:border-amber-500"
                   />
                   <button
                     type="button"
                     onClick={() => setIsEditingEmail(false)}
-                    className="px-3 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs cursor-pointer shadow-xs transition-colors"
+                    className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs cursor-pointer shadow-xs transition-colors"
                   >
                     OK
                   </button>
@@ -630,7 +616,7 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
             )}
 
             {/* Sélecteur d'onglets de connexion : Biométrie vs Code PIN en Liquid Glass Pill */}
-            <div className="relative z-10 w-full flex items-center p-1 rounded-2xl liquid-glass-pill border border-slate-200/80 dark:border-white/10 shadow-inner">
+            <div className="relative z-10 w-full flex items-center p-1 rounded-2xl liquid-glass-pill border border-slate-200/80 dark:border-white/10 shadow-inner shrink-0">
               <button
                 type="button"
                 onClick={() => {
@@ -638,13 +624,13 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
                   setAuthError(null);
                 }}
                 className={cn(
-                  'flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer',
+                  'flex-1 py-1.5 sm:py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer',
                   loginMode === 'biometric'
                     ? 'bg-gradient-to-r from-cyan-600 to-cyan-500 text-white shadow-md shadow-cyan-500/30'
-                    : 'text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white',
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white',
                 )}
               >
-                <Fingerprint size={15} />
+                <Fingerprint size={14} />
                 <span>Empreinte Digitale</span>
               </button>
               <button
@@ -654,25 +640,25 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
                   setAuthError(null);
                 }}
                 className={cn(
-                  'flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer',
+                  'flex-1 py-1.5 sm:py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer',
                   loginMode === 'pin'
                     ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/30'
-                    : 'text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white',
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white',
                 )}
               >
-                <Key size={14} />
+                <Key size={13} />
                 <span>Code PIN & Pave</span>
               </button>
             </div>
 
             {/* Alerte de verrouillage temporaire anti brute-force */}
             {lockoutTimer > 0 && (
-              <div className="relative z-10 w-full p-4 rounded-2xl bg-red-500/15 border-2 border-red-500/50 text-red-600 dark:text-red-300 flex items-center gap-3 text-left">
-                <Clock size={24} className="shrink-0 animate-spin text-red-500" />
+              <div className="relative z-10 w-full p-3.5 rounded-2xl bg-red-500/15 border-2 border-red-500/50 text-red-600 dark:text-red-300 flex items-center gap-3 text-left shrink-0">
+                <Clock size={22} className="shrink-0 animate-spin text-red-500" />
                 <div className="text-xs">
                   <p className="font-bold text-red-700 dark:text-red-200">Securite Anti-Intrusion Active</p>
                   <p className="text-[11px] opacity-90 mt-0.5">
-                    Acces temporairement verrouille suite a plusieurs echecs. Reessayez dans{' '}
+                    Acces temporairement verrouille. Reessayez dans{' '}
                     <span className="font-mono font-bold text-sm text-red-600 dark:text-red-400">{lockoutTimer}s</span>.
                   </p>
                 </div>
@@ -681,69 +667,67 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
 
             {/* Message d'erreur d'authentification */}
             {authError && lockoutTimer === 0 && (
-              <div className="relative z-10 w-full p-3 rounded-xl bg-red-500/15 border border-red-500/40 text-red-600 dark:text-red-300 flex items-center gap-2 text-left text-xs animate-in fade-in duration-150">
-                <ShieldAlert size={16} className="shrink-0 text-red-500" />
+              <div className="relative z-10 w-full p-2.5 rounded-xl bg-red-500/15 border border-red-500/40 text-red-600 dark:text-red-300 flex items-center gap-2 text-left text-xs animate-in fade-in duration-150 shrink-0">
+                <ShieldAlert size={15} className="shrink-0 text-red-500" />
                 <span>{authError}</span>
               </div>
             )}
 
             {/* ─── ONGLET 1 : RECONNAISSANCE BIOMÉTRIQUE ─── */}
             {loginMode === 'biometric' && (
-              <div className="relative z-10 w-full py-2 flex flex-col items-center justify-center space-y-4 animate-in fade-in duration-150">
-                {/* Grand Scanner Biométrique Tactile & Balayage Laser en Liquid Glass */}
-                <div className="relative my-2">
+              <div className="relative z-10 w-full py-1 flex flex-col items-center justify-center space-y-3 animate-in fade-in duration-150">
+                {/* Grand Scanner Biométrique Tactile */}
+                <div className="relative my-1">
                   <button
                     type="button"
                     onClick={handleBiometricDirectUnlock}
                     disabled={isVerifyingBio || lockoutTimer > 0}
-                    className="group relative w-32 h-32 rounded-full p-1.5 liquid-glass border-2 border-cyan-400/50 flex items-center justify-center shadow-[0_0_40px_rgba(6,182,212,0.4)] hover:shadow-[0_0_65px_rgba(6,182,212,0.7)] transition-all cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="group relative w-24 h-24 sm:w-28 sm:h-28 rounded-full p-1.5 liquid-glass border-2 border-cyan-400/50 flex items-center justify-center shadow-[0_0_35px_rgba(6,182,212,0.4)] hover:shadow-[0_0_55px_rgba(6,182,212,0.65)] transition-all cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {/* Anneau radar externe rotatif */}
-                    <div className="absolute -inset-2.5 rounded-full border border-dashed border-cyan-400/40 animate-spin [animation-duration:14s] pointer-events-none" />
-                    <div className="absolute -inset-5 rounded-full border border-cyan-500/20 animate-pulse pointer-events-none" />
+                    <div className="absolute -inset-2 rounded-full border border-dashed border-cyan-400/40 animate-spin [animation-duration:14s] pointer-events-none" />
+                    <div className="absolute -inset-3.5 rounded-full border border-cyan-500/20 animate-pulse pointer-events-none" />
 
                     <div className="w-full h-full rounded-full liquid-glass flex flex-col items-center justify-center relative overflow-hidden">
-                      {/* Ligne de balayage laser néon */}
-                      <div className="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_12px_#22d3ee] animate-pulse" />
+                      <div className="absolute inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_10px_#22d3ee] animate-pulse" />
 
                       {isVerifyingBio ? (
-                        <RefreshCw size={42} className="text-cyan-500 dark:text-cyan-400 animate-spin" />
+                        <RefreshCw size={36} className="text-cyan-500 dark:text-cyan-400 animate-spin" />
                       ) : (
                         <Fingerprint
-                          size={50}
-                          className="text-cyan-500 dark:text-cyan-400 group-hover:scale-110 group-hover:text-cyan-400 transition-all duration-300 drop-shadow-[0_0_14px_rgba(34,211,238,0.7)]"
+                          size={42}
+                          className="text-cyan-500 dark:text-cyan-400 group-hover:scale-110 transition-all duration-300 drop-shadow-[0_0_12px_rgba(34,211,238,0.7)]"
                         />
                       )}
                     </div>
                   </button>
                 </div>
 
-                <div className="text-center space-y-1">
+                <div className="text-center space-y-0.5">
                   <p className="font-semibold text-xs text-slate-800 dark:text-white">
                     {isVerifyingBio
                       ? 'Numerisation de l empreinte en cours...'
-                      : 'Appuyez sur le scanner pour vous authentifier'}
+                      : 'Appuyez pour scanner votre empreinte'}
                   </p>
-                  <p className="text-[11px] text-slate-500 dark:text-white/60">
-                    Prend en charge Windows Hello, Touch ID, Face ID et capteurs d empreinte mobiles.
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                    Windows Hello, Touch ID, Face ID et capteurs mobiles.
                   </p>
                 </div>
 
                 {isBiometricsSupported() && !config.biometricEnabled && (
-                  <div className="w-full p-3 rounded-xl liquid-glass border border-cyan-500/30 flex items-center justify-between gap-3 text-left">
+                  <div className="w-full p-2.5 rounded-xl liquid-glass border border-cyan-500/30 flex items-center justify-between gap-2.5 text-left">
                     <div className="min-w-0">
                       <p className="font-bold text-xs text-cyan-700 dark:text-cyan-300">
-                        Capteur detecte sur cet appareil
+                        Capteur detecte
                       </p>
-                      <p className="text-[10px] text-slate-500 dark:text-cyan-200/70">
-                        Associez l empreinte de ce terminal pour des ouvertures futures en 1 clic.
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                        Enregistrez votre empreinte sur cet appareil.
                       </p>
                     </div>
                     <button
                       type="button"
                       onClick={handleEnrollBiometrics}
                       disabled={isVerifyingBio || lockoutTimer > 0}
-                      className="px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-[11px] shrink-0 cursor-pointer shadow-xs disabled:opacity-50 transition-colors"
+                      className="px-2.5 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-[10px] shrink-0 cursor-pointer shadow-xs disabled:opacity-50 transition-colors"
                     >
                       {isVerifyingBio ? 'Scan...' : 'Enregistrer'}
                     </button>
@@ -753,9 +737,9 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
                 <button
                   type="button"
                   onClick={() => setLoginMode('pin')}
-                  className="text-[11px] text-slate-500 dark:text-white/50 hover:text-amber-500 dark:hover:text-amber-400 font-medium transition-colors flex items-center gap-1.5 pt-1 cursor-pointer"
+                  className="text-[10px] text-slate-500 dark:text-slate-400 hover:text-amber-500 dark:hover:text-amber-400 font-medium transition-colors flex items-center gap-1 pt-1 cursor-pointer"
                 >
-                  <Key size={13} />
+                  <Key size={12} />
                   <span>Basculer sur le code PIN maitre</span>
                 </button>
               </div>
@@ -763,57 +747,62 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
 
             {/* ─── ONGLET 2 : CODE PIN & PAVÉ TACTILE NUMÉRIQUE ─── */}
             {loginMode === 'pin' && (
-              <form onSubmit={handleUnlockWithPinAndEmail} className="relative z-10 w-full space-y-3.5 text-left animate-in fade-in duration-150">
-                {/* Pastilles PIN Lumineuses (PIN Dots) Stylisées en Cristaux de Sécurité Liquid Glass */}
-                <div className="flex flex-col items-center justify-center space-y-2 py-1">
-                  <div className="flex items-center justify-center gap-3">
+              <form onSubmit={handleUnlockWithPinAndEmail} className="relative z-10 w-full space-y-3 text-left animate-in fade-in duration-150">
+                {/* Pastilles PIN Lumineuses (PIN Dots) */}
+                <div className="flex flex-col items-center justify-center space-y-1.5 py-0.5 shrink-0">
+                  <div className="flex items-center justify-center gap-2.5">
                     {[0, 1, 2, 3, 4, 5].map((idx) => {
                       const isFilled = pinInput.length > idx;
                       return (
                         <div
                           key={idx}
                           className={cn(
-                            'w-4 h-4 rounded-full transition-all duration-200 flex items-center justify-center liquid-glass border',
+                            'w-3.5 h-3.5 rounded-full transition-all duration-200 flex items-center justify-center liquid-glass border',
                             isFilled
-                              ? 'bg-gradient-to-tr from-amber-500 to-amber-300 shadow-[0_0_16px_rgba(245,158,11,0.95)] scale-115 border-amber-300 dark:border-amber-200'
+                              ? 'bg-gradient-to-tr from-amber-500 to-amber-300 shadow-[0_0_14px_rgba(245,158,11,0.95)] scale-110 border-amber-300 dark:border-amber-200'
                               : 'border-slate-300/80 dark:border-white/20 bg-transparent',
                           )}
                         >
-                          {isFilled && <div className="w-1.5 h-1.5 rounded-full bg-slate-900" />}
+                          {isFilled && <div className="w-1 h-1 rounded-full bg-slate-950" />}
                         </div>
                       );
                     })}
                   </div>
-                  <span className="text-[10px] text-slate-500 dark:text-white/45 font-mono">
-                    {config.isPinConfigured ? 'Code PIN protege par SHA-256' : 'PIN usine initial : 0000'}
-                  </span>
+                  <div className="flex items-center gap-2 text-[10px] text-slate-500 dark:text-slate-400 font-mono">
+                    <span>{config.isPinConfigured ? 'Protege SHA-256' : 'PIN initial : 0000'}</span>
+                    <span>•</span>
+                    <button
+                      type="button"
+                      onClick={() => setShowPin(!showPin)}
+                      className="hover:text-amber-600 dark:hover:text-amber-400 cursor-pointer flex items-center gap-1"
+                    >
+                      {showPin ? <EyeOff size={11} /> : <Eye size={11} />}
+                      <span>{showPin ? 'Masquer' : 'Afficher'}</span>
+                    </button>
+                  </div>
+                  {showPin && pinInput.length > 0 && (
+                    <div className="font-mono text-sm tracking-widest font-bold text-amber-600 dark:text-amber-400">
+                      {pinInput}
+                    </div>
+                  )}
                 </div>
 
-                {/* Champ de saisie physique avec affichage/masquage en Liquid Glass */}
-                <div className="relative">
-                  <input
-                    type={showPin ? 'text' : 'password'}
-                    value={pinInput}
-                    onChange={(e) => {
-                      if (lockoutTimer > 0) return;
-                      setPinInput(e.target.value.replace(/[^0-9]/g, ''));
-                    }}
-                    placeholder="Tapez votre code PIN..."
-                    disabled={lockoutTimer > 0}
-                    maxLength={12}
-                    className="w-full px-4 py-2.5 liquid-glass border border-slate-300/80 dark:border-white/15 rounded-xl text-center text-slate-900 dark:text-white font-mono text-sm tracking-widest focus:outline-none focus:border-amber-400 disabled:opacity-50 shadow-inner"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPin(!showPin)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-white/50 dark:hover:text-white cursor-pointer p-1"
-                  >
-                    {showPin ? <EyeOff size={15} /> : <Eye size={15} />}
-                  </button>
-                </div>
+                {/* Saisie clavier invisible pour capturer la frappe desktop physique */}
+                <input
+                  type="password"
+                  value={pinInput}
+                  onChange={(e) => {
+                    if (lockoutTimer > 0) return;
+                    setPinInput(e.target.value.replace(/[^0-9]/g, ''));
+                  }}
+                  autoFocus
+                  maxLength={12}
+                  className="sr-only"
+                  tabIndex={0}
+                />
 
-                {/* Pavé Numérique Virtuel Haute Fidélité en Liquid Glass Cards (Mobile, Tablette & Desktop) */}
-                <div className="grid grid-cols-3 gap-2 pt-1 max-w-[280px] mx-auto w-full">
+                {/* Pavé Numérique Virtuel Compact (3x4) */}
+                <div className="grid grid-cols-3 gap-1.5 sm:gap-2 max-w-[260px] mx-auto w-full shrink-0">
                   {KEYPAD_MATRIX.map((item) => {
                     if (item.key === 'clear') {
                       return (
@@ -822,10 +811,10 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
                           type="button"
                           onClick={() => handleKeypadPress('clear')}
                           disabled={lockoutTimer > 0 || pinInput.length === 0}
-                          className="h-12 rounded-xl liquid-glass liquid-glass-card hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold text-xs flex flex-col items-center justify-center transition-all active:scale-95 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed border border-amber-500/40"
+                          className="h-10 sm:h-11 rounded-xl liquid-glass liquid-glass-card hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold text-xs flex flex-col items-center justify-center transition-all active:scale-95 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed border border-amber-500/40"
                         >
-                          <span>C</span>
-                          <span className="text-[8px] font-mono opacity-60">EFFACER</span>
+                          <span className="leading-none">C</span>
+                          <span className="text-[7px] font-mono opacity-60">EFFACER</span>
                         </button>
                       );
                     }
@@ -836,10 +825,10 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
                           type="button"
                           onClick={() => handleKeypadPress('backspace')}
                           disabled={lockoutTimer > 0 || pinInput.length === 0}
-                          className="h-12 rounded-xl liquid-glass liquid-glass-card text-slate-600 dark:text-white/70 flex flex-col items-center justify-center transition-all active:scale-95 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed border border-slate-200/80 dark:border-white/10"
+                          className="h-10 sm:h-11 rounded-xl liquid-glass liquid-glass-card text-slate-600 dark:text-white/70 flex flex-col items-center justify-center transition-all active:scale-95 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed border border-slate-200/80 dark:border-white/10"
                         >
-                          <Delete size={17} />
-                          <span className="text-[8px] font-mono opacity-50">RETOUR</span>
+                          <Delete size={15} />
+                          <span className="text-[7px] font-mono opacity-50">RETOUR</span>
                         </button>
                       );
                     }
@@ -849,13 +838,13 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
                         type="button"
                         onClick={() => handleKeypadPress(item.key)}
                         disabled={lockoutTimer > 0 || pinInput.length >= 12}
-                        className="h-12 rounded-xl liquid-glass liquid-glass-card hover:border-amber-400/60 text-slate-900 dark:text-white border border-slate-200/80 dark:border-white/10 flex flex-col items-center justify-center transition-all active:scale-95 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed group shadow-xs"
+                        className="h-10 sm:h-11 rounded-xl liquid-glass liquid-glass-card hover:border-amber-400/60 text-slate-900 dark:text-white border border-slate-200/80 dark:border-white/10 flex flex-col items-center justify-center transition-all active:scale-95 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed group shadow-xs"
                       >
-                        <span className="font-mono font-bold text-base leading-none group-hover:text-amber-500 dark:group-hover:text-amber-400 transition-colors">
+                        <span className="font-mono font-bold text-sm sm:text-base leading-none group-hover:text-amber-500 dark:group-hover:text-amber-400 transition-colors">
                           {item.key}
                         </span>
                         {item.sub && (
-                          <span className="text-[8px] font-mono text-slate-400 dark:text-white/40 tracking-wider mt-0.5 leading-none">
+                          <span className="text-[7px] font-mono text-slate-400 dark:text-white/40 tracking-wider mt-0.5 leading-none">
                             {item.sub}
                           </span>
                         )}
@@ -865,33 +854,33 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
                 </div>
 
                 {/* Bouton Soumettre le Code PIN en Liquid Glass Pill */}
-                <div className="pt-2">
+                <div className="pt-1 shrink-0">
                   <button
                     type="submit"
                     disabled={lockoutTimer > 0 || pinInput.length < 4}
                     className="w-full py-2.5 px-4 rounded-xl liquid-glass-pill bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 disabled:opacity-35 disabled:cursor-not-allowed text-slate-950 font-bold flex items-center justify-center gap-2 shadow-lg shadow-amber-500/30 cursor-pointer transition-all text-xs tracking-wide"
                   >
-                    <Key size={14} className="text-slate-950" />
+                    <Key size={13} className="text-slate-950" />
                     <span>Deverrouiller le Coffre</span>
-                    <ArrowRight size={14} className="text-slate-950" />
+                    <ArrowRight size={13} className="text-slate-950" />
                   </button>
                 </div>
               </form>
             )}
 
             {/* Pied de page : Garanties de Sécurité en Liquid Glass Capsules */}
-            <div className="relative z-10 pt-3 border-t border-slate-200/80 dark:border-white/10 w-full grid grid-cols-3 gap-2 text-center text-[10px] text-slate-500 dark:text-white/45">
-              <div className="p-2 rounded-xl liquid-glass-pill flex flex-col items-center gap-1 border border-slate-200/80 dark:border-white/10">
-                <ShieldCheck size={14} className="text-emerald-500" />
-                <span className="font-mono">SHA-256 VAULT</span>
+            <div className="relative z-10 pt-2.5 border-t border-slate-200/80 dark:border-white/10 w-full grid grid-cols-3 gap-1.5 text-center text-[9px] text-slate-500 dark:text-slate-400 shrink-0">
+              <div className="p-1.5 rounded-xl liquid-glass-pill flex flex-col items-center gap-0.5 border border-slate-200/80 dark:border-white/10">
+                <ShieldCheck size={12} className="text-emerald-500" />
+                <span className="font-mono tracking-wider">SHA-256</span>
               </div>
-              <div className="p-2 rounded-xl liquid-glass-pill flex flex-col items-center gap-1 border border-slate-200/80 dark:border-white/10">
-                <Fingerprint size={14} className="text-cyan-500 dark:text-cyan-400" />
-                <span className="font-mono">WEBAUTHN FIDO2</span>
+              <div className="p-1.5 rounded-xl liquid-glass-pill flex flex-col items-center gap-0.5 border border-slate-200/80 dark:border-white/10">
+                <Fingerprint size={12} className="text-cyan-500 dark:text-cyan-400" />
+                <span className="font-mono tracking-wider">WEBAUTHN</span>
               </div>
-              <div className="p-2 rounded-xl liquid-glass-pill flex flex-col items-center gap-1 border border-slate-200/80 dark:border-white/10">
-                <Clock size={14} className="text-amber-500 dark:text-amber-400" />
-                <span className="font-mono">AUTO-LOCK 15M</span>
+              <div className="p-1.5 rounded-xl liquid-glass-pill flex flex-col items-center gap-0.5 border border-slate-200/80 dark:border-white/10">
+                <Clock size={12} className="text-amber-500 dark:text-amber-400" />
+                <span className="font-mono tracking-wider">15 MIN</span>
               </div>
             </div>
           </div>
