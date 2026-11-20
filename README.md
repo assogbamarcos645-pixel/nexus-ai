@@ -2,7 +2,7 @@
 
 > Plateforme d'intelligence artificielle multi-agents et espace de développement intégré — moderne, évolutive et professionnelle.
 
-![NEXUS AI](https://img.shields.io/badge/NEXUS_AI-v0.3.0-7c0df4?style=for-the-badge)
+![NEXUS AI](https://img.shields.io/badge/NEXUS_AI-v0.4.0-7c0df4?style=for-the-badge)
 ![React](https://img.shields.io/badge/React-19-61DAFB?style=flat&logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat&logo=typescript)
 ![Vite](https://img.shields.io/badge/Vite-8-646CFF?style=flat&logo=vite)
@@ -35,8 +35,8 @@
 | **Centre de Contrôle IA** | **100% Réel** | Catalogue de 7 fournisseurs avec capacités et tarifications officielles réelles. Calcul précis des coûts en USD au token près. Plafonnement strict des paramètres. | L'état du moteur est calculé rigoureusement. Aucun faux chiffre ni statistique inventée n'est affiché. |
 | **Test de Connectivité Serveur** | **100% Réel** | Teste la santé réelle du proxy `/api/ai/test` ou de l'Edge Function Supabase et mesure la latence réseau en millisecondes. | Nécessite que le serveur proxy ou l'Edge Function soit accessible pour renvoyer `200 OK`. |
 | **Inférence & Réponses LLM** | **Hybride (Réel / Démo)** | Si `VITE_API_BASE_URL` et les clés d'API (Gemini, OpenAI, Groq...) sont configurées côté serveur : inférence cloud réelle. | Si non configuré ou en mode « Démonstration », bascule sur le simulateur local heuristique de réponses. |
-| **Multi-Agents « Swarm »** | **100% Opérationnel** | Orchestration collective d'un trio autonome (Architecte, Frontend UI React 19, Auditeur QA WCAG AA/Vitest) avec délibération en direct, convergence unanime, calcul de Diff et création de fichiers. | Connecté à l'inférence réelle si disponible, avec réplique heuristique déterministe en mode démo. |
-| **NEXUS LAB (IDE & Projets)** | **100% Réel** | Arborescence de fichiers, coloration syntaxique Monaco, création/suppression de fichiers, export `.zip` téléchargeable. | L'exécution dans le navigateur est 100% réelle pour les projets HTML/CSS/JS (sandbox iframe). Les projets Node.js, PHP et Python fournissent des fiches de démarrage local guidées (car les interpréteurs serveurs ne tournent pas dans le navigateur). |
+| **Multi-Agents « Swarm 2.0 »** | **100% Opérationnel** | Orchestration collective d'experts modulaires (Architecte, Frontend UI React 19, Auditeur QA WCAG AA/Vitest, Architecte Données/Supabase, Auditeur Sécurité OWASP, Ingénieur DevOps). Boucle d'Auto-Heal en temps réel pour corriger les anomalies de build et linter. | Connecté à l'inférence réelle si disponible, avec réplique heuristique déterministe en mode démo. |
+| **NEXUS LAB (IDE & Projets)** | **100% Réel** | Arborescence de fichiers, coloration syntaxique Monaco, création/suppression de fichiers, export `.zip` téléchargeable, recherche sémantique de codebase (RAG local) et montage automatique de FileSystemTree WebContainers avec streaming terminal interactif. | L'exécution dans le navigateur est 100% réelle pour les projets HTML/CSS/JS (sandbox iframe) et s'exécute nativement via WebContainers in-browser lorsque l'isolation Cross-Origin est présente (avec repli heuristique instantané). |
 
 ---
 

@@ -6,7 +6,7 @@
  */
 
 export const APP_NAME = 'NEXUS AI';
-export const APP_VERSION = '0.3.0';
+export const APP_VERSION = '0.4.0';
 export const APP_DESCRIPTION = 'Plateforme d\'intelligence artificielle multi-agents';
 
 /** Base URL for the future API backend (configure via env variable). */

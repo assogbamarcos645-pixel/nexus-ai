@@ -27,17 +27,21 @@ import {
   Sparkles,
   Plus,
   X,
+  Database,
+  Lock,
+  Cloud,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
-import type { LabFile, DevProposal } from '@/types/lab';
+import type { LabFile, LabProject, DevProposal } from '@/types/lab';
 import type { SwarmSessionState, SwarmSpecialistRole } from '@/types/swarm';
-import { SWARM_SPECIALISTS, runSwarmSession } from '@/services/lab/swarmService';
+import { SWARM_SPECIALISTS, runSwarmSession, runSwarmAutoHeal } from '@/services/lab/swarmService';
 import { chat } from '@/services/ai/aiService';
 import { ModalCloseButton } from '@/components/ui/ModalCloseButton';
 
 interface NexusSwarmDrawerProps {
   isOpen: boolean;
   file: LabFile | null;
+  project?: LabProject | null;
   onClose: () => void;
   onRequestDiff: (proposal: DevProposal) => void;
   onAddFile?: (path: string, content: string) => void;
@@ -53,6 +57,7 @@ const QUICK_SWARM_PROMPTS = [
 export function NexusSwarmDrawer({
   isOpen,
   file,
+  project,
   onClose,
   onRequestDiff,
   onAddFile,
@@ -63,8 +68,37 @@ export function NexusSwarmDrawer({
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [createdFiles, setCreatedFiles] = useState<Record<string, boolean>>({});
   const [autoApplyOnConvergence, setAutoApplyOnConvergence] = useState(true);
+  const [selectedSpecialists, setSelectedSpecialists] = useState<SwarmSpecialistRole[]>([
+    'architect',
+    'frontend',
+    'qa',
+  ]);
   const abortControllerRef = useRef<AbortController | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const allRoles: SwarmSpecialistRole[] = ['architect', 'frontend', 'qa', 'database', 'security', 'devops'];
+
+  const toggleSpecialist = (role: SwarmSpecialistRole) => {
+    if (isRunning) return;
+    setSelectedSpecialists((prev) => {
+      if (prev.includes(role)) {
+        if (prev.length <= 1) return prev;
+        return prev.filter((r) => r !== role);
+      } else {
+        return [...prev, role];
+      }
+    });
+  };
+
+  const renderSpecialistIcon = (role: string) => {
+    if (role === 'architect') return <Layers size={13} className="text-blue-500" />;
+    if (role === 'frontend') return <LayoutTemplate size={13} className="text-cyan-400" />;
+    if (role === 'qa') return <ShieldCheck size={13} className="text-emerald-500" />;
+    if (role === 'database') return <Database size={13} className="text-emerald-400" />;
+    if (role === 'security') return <Lock size={13} className="text-rose-400" />;
+    if (role === 'devops') return <Cloud size={13} className="text-purple-400" />;
+    return <Sparkles size={13} className="text-nexus-400" />;
+  };
 
   // Défilement automatique vers le dernier échange
   useEffect(() => {
@@ -86,6 +120,47 @@ export function NexusSwarmDrawer({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, isRunning, onClose]);
 
+  const handleLaunchAutoHeal = async () => {
+    if (!project || isRunning) return;
+    abortControllerRef.current = new AbortController();
+    setIsRunning(true);
+    try {
+      const target = file || project.files[0];
+      const result = await runSwarmAutoHeal({
+        project,
+        issues: [
+          {
+            filePath: target?.path || 'src/App.tsx',
+            message: 'Normalisation de syntaxe et conformité React 19 / TypeScript',
+            severity: 'error',
+            source: 'lint',
+          },
+        ],
+        onUpdate: (state) => {
+          setSessionState(state);
+        },
+        signal: abortControllerRef.current.signal,
+      });
+
+      if (result.success && target) {
+        onRequestDiff({
+          id: `autoheal-${Date.now()}`,
+          filePath: result.fixedFilePath,
+          explanation: `[Auto-Heal Swarm] ${result.explanation}`,
+          originalCode: result.originalCode,
+          suggestedCode: result.repairedCode,
+          timestamp: new Date(),
+          isMock: false,
+        });
+      }
+    } catch {
+      // Annulation
+    } finally {
+      setIsRunning(false);
+      abortControllerRef.current = null;
+    }
+  };
+
   const handleLaunchSwarm = async (customPrompt?: string) => {
     const promptToRun = customPrompt ?? taskPrompt;
     if (!promptToRun.trim() || isRunning) return;
@@ -97,6 +172,8 @@ export function NexusSwarmDrawer({
       await runSwarmSession({
         taskPrompt: promptToRun,
         contextFile: file,
+        project,
+        specialists: selectedSpecialists,
         onUpdate: (state) => {
           setSessionState(state);
           if (state.status === 'converged' && state.finalSynthesis && autoApplyOnConvergence && file) {
@@ -210,13 +287,13 @@ export function NexusSwarmDrawer({
           </div>
           <div className="min-w-0 flex-1">
             <h1 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2 truncate">
-              <span>Multi-Agents Swarm</span>
+              <span>Multi-Agents Swarm 2.0</span>
               <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-nexus-500/10 text-nexus-600 dark:text-nexus-400 border border-nexus-500/20 shrink-0">
                 Intelligence Collective
               </span>
             </h1>
             <p className="text-[11px] text-slate-500 dark:text-white/40 truncate">
-              Trio autonome : L'Architecte • Le Frontend UI • L'Auditeur QA
+              Équipe autonome modulaire : Architecte • Frontend UI • QA • Données • Sécurité
             </p>
           </div>
         </div>
@@ -230,38 +307,51 @@ export function NexusSwarmDrawer({
         />
       </header>
 
-      {/* 2. Tableau de bord des 3 spécialistes & Jauge de convergence */}
+      {/* 2. Tableau de bord des spécialistes & Jauge de convergence */}
       <div className="p-4 border-b border-slate-200/80 dark:border-white/10 bg-slate-50/70 dark:bg-[#080816]/70 shrink-0 space-y-3">
-        {/* Trio de spécialistes */}
-        <div className="grid grid-cols-3 gap-2">
-          {(['architect', 'frontend', 'qa'] as SwarmSpecialistRole[]).map((role) => {
+        {/* Grille de spécialistes sélectionnables */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          {allRoles.map((role) => {
             const spec = SWARM_SPECIALISTS[role];
+            if (!spec) return null;
+            const isSelected = selectedSpecialists.includes(role);
             const isActive = sessionState?.activeSpecialist === role;
             const hasSpoken = sessionState?.messages.some((m) => m.specialistRole === role);
 
             return (
-              <div
+              <button
                 key={role}
+                type="button"
+                onClick={() => toggleSpecialist(role)}
+                disabled={isRunning}
+                title={isSelected ? 'Cliquez pour retirer ce spécialiste du Swarm' : 'Cliquez pour ajouter ce spécialiste au Swarm'}
                 className={cn(
-                  'p-2.5 rounded-xl border transition-all flex flex-col justify-between text-left relative overflow-hidden',
+                  'p-2 rounded-xl border transition-all flex flex-col justify-between text-left relative overflow-hidden cursor-pointer select-none',
                   isActive
                     ? 'border-cyan-500/50 bg-cyan-500/10 shadow-[0_0_15px_rgba(6,182,212,0.15)] ring-1 ring-cyan-500/40'
                     : hasSpoken
+                    ? 'border-emerald-500/30 bg-emerald-500/5'
+                    : isSelected
                     ? 'border-slate-200 dark:border-white/10 bg-white/70 dark:bg-white/5'
-                    : 'border-slate-200/60 dark:border-white/5 bg-slate-100/40 dark:bg-white/[0.02] opacity-60',
+                    : 'border-dashed border-slate-300 dark:border-white/5 bg-slate-100/30 dark:bg-transparent opacity-40 hover:opacity-75',
                 )}
               >
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-1.5">
-                    {role === 'architect' && <Layers size={13} className="text-blue-500" />}
-                    {role === 'frontend' && <LayoutTemplate size={13} className="text-cyan-400" />}
-                    {role === 'qa' && <ShieldCheck size={13} className="text-emerald-500" />}
+                <div className="flex items-center justify-between mb-0.5">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    {renderSpecialistIcon(role)}
                     <span className="text-xs font-semibold text-slate-900 dark:text-white truncate">
                       {spec.name}
                     </span>
                   </div>
-                  {hasSpoken && (
+                  {hasSpoken ? (
                     <CheckCircle2 size={12} className="text-emerald-500 shrink-0" />
+                  ) : (
+                    <span
+                      className={cn(
+                        'w-2 h-2 rounded-full shrink-0',
+                        isSelected ? 'bg-cyan-400' : 'bg-slate-400/30',
+                      )}
+                    />
                   )}
                 </div>
                 <p className="text-[10px] text-slate-500 dark:text-white/40 line-clamp-1">
@@ -272,7 +362,7 @@ export function NexusSwarmDrawer({
                     En délibération...
                   </span>
                 )}
-              </div>
+              </button>
             );
           })}
         </div>
@@ -544,6 +634,19 @@ export function NexusSwarmDrawer({
             placeholder="Ex : Créer un formulaire d'abonnement accessible avec validation..."
             className="flex-1 px-3.5 py-2 rounded-xl text-[16px] sm:text-xs bg-white dark:bg-white/5 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-nexus-500/50"
           />
+
+          {project && !isRunning && (
+            <button
+              type="button"
+              id="btn-swarm-autoheal"
+              onClick={handleLaunchAutoHeal}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-nexus-600 dark:text-nexus-400 bg-nexus-500/10 hover:bg-nexus-500/20 border border-nexus-500/25 transition-all cursor-pointer shrink-0"
+              title="Lancer l'Auto-Heal Swarm pour corriger les erreurs de syntaxe/linter du projet"
+            >
+              <Sparkles size={13} />
+              <span className="hidden sm:inline">Auto-Heal</span>
+            </button>
+          )}
 
           {isRunning ? (
             <button

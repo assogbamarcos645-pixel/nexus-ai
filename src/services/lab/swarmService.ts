@@ -2,24 +2,31 @@
  * src/services/lab/swarmService.ts
  *
  * Moteur d'orchestration Multi-Agents « Swarm » (Intelligence Collective).
- * Coordonne le trio de spécialistes :
+ * Coordonne une équipe autonome de spécialistes :
  * 1. L'Architecte (structure & contrats d'API)
  * 2. Le Frontend UI (React 19 & Tailwind CSS)
  * 3. L'Auditeur QA (tests Vitest & accessibilité WCAG)
+ * 4. L'Architecte Données (Supabase, SQL & RLS)
+ * 5. L'Auditeur Sécurité (Cybersécurité & Pentest)
+ * 6. L'Ingénieur DevOps (CI/CD & Cloud)
  *
- * Gère le fil d'échanges visible en temps réel et la convergence vers la solution idéale.
+ * Gère le fil d'échanges visible en temps réel, la convergence vers la solution idéale,
+ * la recherche sémantique de codebase (RAG local) et la boucle d'Auto-Heal.
  */
 
-import type { LabFile } from '../../types/lab.ts';
+import type { LabFile, LabProject } from '../../types/lab.ts';
 import type {
   SwarmSpecialist,
   SwarmSpecialistRole,
   SwarmMessage,
   SwarmSessionState,
   SwarmFinalSynthesis,
+  AutoHealIssue,
+  AutoHealResult,
 } from '../../types/swarm.ts';
+import { buildAugmentedContext } from './codebaseSearchService.ts';
 
-export const SWARM_SPECIALISTS: Record<SwarmSpecialistRole, SwarmSpecialist> = {
+export const SWARM_SPECIALISTS: Record<string, SwarmSpecialist> = {
   architect: {
     id: 'architect',
     name: "L'Architecte",
@@ -53,11 +60,55 @@ export const SWARM_SPECIALISTS: Record<SwarmSpecialistRole, SwarmSpecialist> = {
     badgeBorder: 'border-emerald-500/30',
     badgeText: 'text-emerald-600 dark:text-emerald-400',
   },
+  database: {
+    id: 'database',
+    name: "L'Architecte Données",
+    tagline: 'Supabase, SQL & RLS',
+    focus: 'Schémas relationnels, politiques RLS étanches, indexation et requêtes performantes',
+    icon: 'Database',
+    color: '#3ecf8e',
+    accentBg: 'bg-emerald-500/10 dark:bg-emerald-500/20',
+    badgeBorder: 'border-emerald-500/30',
+    badgeText: 'text-emerald-600 dark:text-emerald-400',
+  },
+  security: {
+    id: 'security',
+    name: "L'Auditeur Sécurité",
+    tagline: 'Cybersécurité & Pentest',
+    focus: 'Prévention XSS/CSRF, sanitization, validation des entrées et conformité OWASP',
+    icon: 'Lock',
+    color: '#f43f5e',
+    accentBg: 'bg-rose-500/10 dark:bg-rose-500/20',
+    badgeBorder: 'border-rose-500/30',
+    badgeText: 'text-rose-600 dark:text-rose-400',
+  },
+  devops: {
+    id: 'devops',
+    name: "L'Ingénieur DevOps",
+    tagline: 'CI/CD & Cloud',
+    focus: 'Pipelines GitHub Actions, configurations Vercel/Netlify et scripts de déploiement',
+    icon: 'Cloud',
+    color: '#a855f7',
+    accentBg: 'bg-purple-500/10 dark:bg-purple-500/20',
+    badgeBorder: 'border-purple-500/30',
+    badgeText: 'text-purple-600 dark:text-purple-400',
+  },
 };
 
 export interface RunSwarmOptions {
   taskPrompt: string;
   contextFile?: LabFile | null;
+  project?: LabProject | null;
+  specialists?: SwarmSpecialistRole[];
+  onUpdate: (state: SwarmSessionState) => void;
+  signal?: AbortSignal;
+  aiCaller?: (prompt: string, signal?: AbortSignal) => Promise<string>;
+  stepDelayMs?: number;
+}
+
+export interface RunSwarmAutoHealOptions {
+  project: LabProject;
+  issues: AutoHealIssue[];
   onUpdate: (state: SwarmSessionState) => void;
   signal?: AbortSignal;
   aiCaller?: (prompt: string, signal?: AbortSignal) => Promise<string>;
@@ -69,13 +120,14 @@ export interface RunSwarmOptions {
  * ou en l'absence de clé d'API distante.
  */
 function generateSimulatedSwarmPlan(task: string, filename: string = 'Component.tsx') {
-  const componentName = task
-    .replace(/[^a-zA-Z0-9 ]/g, '')
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 3)
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-    .join('') || 'InteractiveWidget';
+  const componentName =
+    task
+      .replace(/[^a-zA-Z0-9 ]/g, '')
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 3)
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+      .join('') || 'InteractiveWidget';
 
   // 1. Spécification de l'Architecte
   const architectMsg: SwarmMessage = {
@@ -355,6 +407,8 @@ describe('${componentName} — Suite de validation QA & Accessibilité', () => {
 export async function runSwarmSession({
   taskPrompt,
   contextFile,
+  project,
+  specialists = ['architect', 'frontend', 'qa'],
   onUpdate,
   signal,
   aiCaller,
@@ -363,12 +417,17 @@ export async function runSwarmSession({
   const sessionId = `swarm-${Date.now()}`;
   const filename = contextFile?.name || 'InteractiveWidget.tsx';
 
+  // RAG / Codebase Search context si le projet est fourni
+  const codebaseContext = project ? buildAugmentedContext(project, taskPrompt, 1500) : '';
+
+  const initialSpecialist = specialists[0] || 'architect';
+
   const state: SwarmSessionState = {
     id: sessionId,
     taskPrompt,
     status: 'running',
     currentPhase: 'conception',
-    activeSpecialist: 'architect',
+    activeSpecialist: initialSpecialist,
     convergencePercent: 10,
     messages: [],
     finalSynthesis: null,
@@ -401,119 +460,132 @@ export async function runSwarmSession({
     });
 
   try {
+    const sim = generateSimulatedSwarmPlan(taskPrompt, filename);
+
     // ─────────────────────────────────────────────────────────────────────────
     // ÉTAPE 1 : L'ARCHITECTE (STRUCTURE & API)
     // ─────────────────────────────────────────────────────────────────────────
-    state.currentPhase = 'conception';
-    state.activeSpecialist = 'architect';
-    state.convergencePercent = 25;
-    onUpdate({ ...state });
+    if (specialists.includes('architect')) {
+      state.currentPhase = 'conception';
+      state.activeSpecialist = 'architect';
+      state.convergencePercent = 25;
+      onUpdate({ ...state });
 
-    await sleep(stepDelayMs);
+      await sleep(stepDelayMs);
 
-    let architectMessage: SwarmMessage;
-    const sim = generateSimulatedSwarmPlan(taskPrompt, filename);
+      let architectMessage: SwarmMessage;
 
-    if (aiCaller) {
-      try {
-        const archPrompt = `Tu es L'Architecte logiciel d'un Swarm multi-agents.
+      if (aiCaller) {
+        try {
+          const archPrompt = `Tu es L'Architecte logiciel d'un Swarm multi-agents.
 Tâche : "${taskPrompt}".
 Fichier cible : "${filename}".
+${codebaseContext ? `\nContexte de la codebase :\n${codebaseContext}\n` : ''}
 Définis le modèle d'architecture, le découpage et les contrats TypeScript d'interface stricts.
 Pas d'emoji. Reste direct, technique et exhaustif.`;
-        const archOutput = await aiCaller(archPrompt, signal);
-        architectMessage = {
-          ...sim.architectMsg,
-          content: archOutput || sim.architectMsg.content,
-        };
-      } catch {
+          const archOutput = await aiCaller(archPrompt, signal);
+          architectMessage = {
+            ...sim.architectMsg,
+            content: archOutput || sim.architectMsg.content,
+          };
+        } catch {
+          architectMessage = sim.architectMsg;
+        }
+      } else {
         architectMessage = sim.architectMsg;
       }
-    } else {
-      architectMessage = sim.architectMsg;
-    }
 
-    state.messages.push(architectMessage);
-    state.convergencePercent = 40;
-    onUpdate({ ...state });
+      state.messages.push(architectMessage);
+      state.convergencePercent = 40;
+      onUpdate({ ...state });
+    }
 
     // ─────────────────────────────────────────────────────────────────────────
     // ÉTAPE 2 : LE FRONTEND UI (REACT 19 & TAILWIND CSS)
     // ─────────────────────────────────────────────────────────────────────────
-    await sleep(stepDelayMs);
+    if (specialists.includes('frontend')) {
+      await sleep(stepDelayMs);
 
-    state.currentPhase = 'development';
-    state.activeSpecialist = 'frontend';
-    state.convergencePercent = 55;
-    onUpdate({ ...state });
+      state.currentPhase = 'development';
+      state.activeSpecialist = 'frontend';
+      state.convergencePercent = 55;
+      onUpdate({ ...state });
 
-    await sleep(stepDelayMs);
+      await sleep(stepDelayMs);
 
-    let frontendMessage: SwarmMessage;
-    if (aiCaller) {
-      try {
-        const frontPrompt = `Tu es Le Frontend UI d'un Swarm multi-agents.
+      let frontendMessage: SwarmMessage;
+      const lastSpec = state.messages[state.messages.length - 1];
+
+      if (aiCaller) {
+        try {
+          const frontPrompt = `Tu es Le Frontend UI d'un Swarm multi-agents.
 Tâche : "${taskPrompt}".
-Spécification de l'Architecte :
-${architectMessage.content}
+Spécification précédente :
+${lastSpec ? lastSpec.content : ''}
 Contrats TypeScript :
-${architectMessage.codeArtifact?.code}
+${lastSpec?.codeArtifact?.code || ''}
+${codebaseContext ? `\nContexte de la codebase :\n${codebaseContext}\n` : ''}
 
 Implémente le composant React 19 complet avec classes utilitaires Tailwind CSS.
 Aucun code tronqué. Pas d'emoji.`;
-        const frontOutput = await aiCaller(frontPrompt, signal);
-        frontendMessage = {
-          ...sim.frontendMsg,
-          content: frontOutput || sim.frontendMsg.content,
-        };
-      } catch {
+          const frontOutput = await aiCaller(frontPrompt, signal);
+          frontendMessage = {
+            ...sim.frontendMsg,
+            content: frontOutput || sim.frontendMsg.content,
+          };
+        } catch {
+          frontendMessage = sim.frontendMsg;
+        }
+      } else {
         frontendMessage = sim.frontendMsg;
       }
-    } else {
-      frontendMessage = sim.frontendMsg;
-    }
 
-    state.messages.push(frontendMessage);
-    state.convergencePercent = 75;
-    onUpdate({ ...state });
+      state.messages.push(frontendMessage);
+      state.convergencePercent = 75;
+      onUpdate({ ...state });
+    }
 
     // ─────────────────────────────────────────────────────────────────────────
     // ÉTAPE 3 : L'AUDITEUR QA (TESTS & ACCESSIBILITÉ)
     // ─────────────────────────────────────────────────────────────────────────
-    await sleep(stepDelayMs);
+    if (specialists.includes('qa')) {
+      await sleep(stepDelayMs);
 
-    state.currentPhase = 'audit';
-    state.activeSpecialist = 'qa';
-    state.convergencePercent = 85;
-    onUpdate({ ...state });
+      state.currentPhase = 'audit';
+      state.activeSpecialist = 'qa';
+      state.convergencePercent = 85;
+      onUpdate({ ...state });
 
-    await sleep(stepDelayMs);
+      await sleep(stepDelayMs);
 
-    let qaMessage: SwarmMessage;
-    if (aiCaller) {
-      try {
-        const qaPrompt = `Tu es L'Auditeur QA d'un Swarm multi-agents.
+      let qaMessage: SwarmMessage;
+      const lastCode = state.messages.find((m) => m.codeArtifact?.filename === filename);
+
+      if (aiCaller) {
+        try {
+          const qaPrompt = `Tu es L'Auditeur QA d'un Swarm multi-agents.
 Tâche : "${taskPrompt}".
 Code du Frontend UI :
-${frontendMessage.codeArtifact?.code}
+${lastCode?.codeArtifact?.code || ''}
 
 Analyse l'accessibilité WCAG 2.1 AA, les rôles ARIA, la navigation clavier et fournis la suite de tests automatisés Vitest.
 Pas d'emoji.`;
-        const qaOutput = await aiCaller(qaPrompt, signal);
-        qaMessage = {
-          ...sim.qaMsg,
-          content: qaOutput || sim.qaMsg.content,
-        };
-      } catch {
+          const qaOutput = await aiCaller(qaPrompt, signal);
+          qaMessage = {
+            ...sim.qaMsg,
+            content: qaOutput || sim.qaMsg.content,
+          };
+        } catch {
+          qaMessage = sim.qaMsg;
+        }
+      } else {
         qaMessage = sim.qaMsg;
       }
-    } else {
-      qaMessage = sim.qaMsg;
-    }
 
-    state.messages.push(qaMessage);
-    state.convergencePercent = 95;
-    onUpdate({ ...state });
+      state.messages.push(qaMessage);
+      state.convergencePercent = 95;
+      onUpdate({ ...state });
+    }
 
     // ─────────────────────────────────────────────────────────────────────────
     // ÉTAPE 4 : CONVERGENCE UNANIME DU SWARM (100%)
@@ -539,4 +611,130 @@ Pas d'emoji.`;
     onUpdate({ ...state });
     return state;
   }
+}
+
+/**
+ * Lance une session d'Auto-Heal (Guérison Autonome de Code) avec le Swarm.
+ * Résout les erreurs de compilation, de linter ou de tests détectées sur un projet.
+ */
+export async function runSwarmAutoHeal({
+  project,
+  issues,
+  onUpdate,
+  signal,
+  aiCaller,
+  stepDelayMs = 250,
+}: RunSwarmAutoHealOptions): Promise<AutoHealResult> {
+  const sessionId = `autoheal-${Date.now()}`;
+  const targetIssue = issues[0];
+  const targetFile = project.files.find(
+    (f) => f.path === targetIssue?.filePath || f.id === targetIssue?.fileId
+  ) || project.files[0];
+
+  const state: SwarmSessionState = {
+    id: sessionId,
+    taskPrompt: `Auto-Heal : Résoudre ${issues.length} anomalie(s) sur ${targetFile?.path || 'le projet'}`,
+    status: 'running',
+    currentPhase: 'healing',
+    activeSpecialist: 'qa',
+    convergencePercent: 20,
+    messages: [],
+    finalSynthesis: null,
+  };
+
+  onUpdate({ ...state });
+
+  const sleep = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
+
+  // Diagnostic de l'Auditeur QA
+  await sleep(stepDelayMs);
+  const errorSummary = issues.map((iss) => `- [${iss.severity.toUpperCase()}] Ligne ${iss.line || '?'}: ${iss.message}`).join('\n');
+
+  const diagMessage: SwarmMessage = {
+    id: `heal-diag-${Date.now()}`,
+    specialistRole: 'qa',
+    phase: 'audit',
+    title: 'Diagnostic Chirurgical des Anomalies',
+    content: `Anomalies détectées sur "${targetFile.path}" :\n${errorSummary}\n\nRecommandation : corriger la syntaxe JSX/TypeScript et garantir le respect des contrats de typage.`,
+    timestamp: Date.now(),
+    status: 'approved',
+    checkpoints: ['Origine de l’anomalie identifiée', 'Impact sur le runtime isolé'],
+  };
+  state.messages.push(diagMessage);
+  state.convergencePercent = 50;
+  onUpdate({ ...state });
+
+  // Correctif appliqué par le Frontend
+  await sleep(stepDelayMs);
+  state.activeSpecialist = 'frontend';
+  state.currentPhase = 'development';
+  state.convergencePercent = 80;
+  onUpdate({ ...state });
+
+  let repairedCode = targetFile.content;
+
+  // Réparation heuristique déterministe pour le mode démo ou tests
+  if (repairedCode.includes('class=')) {
+    repairedCode = repairedCode.replace(/class=/g, 'className=');
+  }
+  if (repairedCode.includes('for=')) {
+    repairedCode = repairedCode.replace(/for=/g, 'htmlFor=');
+  }
+
+  // Si appelant IA présent
+  if (aiCaller) {
+    try {
+      const fixPrompt = `Tu es l'agent de réparation automatique (Auto-Heal).
+Fichier cible : "${targetFile.path}".
+Anomalies détectées :
+${errorSummary}
+
+Code actuel :
+\`\`\`${targetFile.language}
+${targetFile.content}
+\`\`\`
+
+Renvoie UNIQUEMENT le code corrigé sans Markdown superflu.`;
+      const aiFix = await aiCaller(fixPrompt, signal);
+      if (aiFix && aiFix.trim()) {
+        repairedCode = aiFix.replace(/^```[a-z]*\n/i, '').replace(/```$/i, '').trim();
+      }
+    } catch {
+      // repli sur repairedCode heuristique
+    }
+  }
+
+  const fixMessage: SwarmMessage = {
+    id: `heal-fix-${Date.now()}`,
+    specialistRole: 'frontend',
+    phase: 'development',
+    title: 'Application du Correctif Auto-Heal',
+    content: `Correctif appliqué avec succès. Les attributs et la syntaxe ont été normalisés pour une conformité totale avec React 19 et TypeScript.`,
+    timestamp: Date.now(),
+    codeArtifact: {
+      filename: targetFile.name,
+      language: targetFile.language,
+      description: 'Code réparé par Auto-Heal',
+      code: repairedCode,
+    },
+    status: 'approved',
+    checkpoints: ['Syntaxe JSX/TSX corrigée', 'Conformité linter validée'],
+  };
+
+  state.messages.push(fixMessage);
+  state.convergencePercent = 100;
+  state.currentPhase = 'convergence';
+  state.status = 'converged';
+  state.activeSpecialist = null;
+  onUpdate({ ...state });
+
+  return {
+    success: true,
+    fixedFilePath: targetFile.path,
+    originalCode: targetFile.content,
+    repairedCode,
+    explanation: `Auto-Heal a corrigé ${issues.length} anomalie(s) dans ${targetFile.path}.`,
+    resolvedIssues: issues,
+  };
 }

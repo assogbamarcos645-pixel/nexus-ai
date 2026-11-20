@@ -15,11 +15,11 @@ const MAINTENANCE_STORAGE_KEY = 'nexus_admin_sched_maintenance_v1';
 
 export function getDefaultBroadcastBanner(): BroadcastBanner {
   return {
-    id: 'broadcast-default-1',
+    id: 'broadcast-v040-release',
     enabled: true,
     type: 'info',
-    title: 'Mise à niveau NEXUS AI v3.2',
-    message: 'Les nouveaux modèles Claude 3.5 Sonnet et Llama 3.3 70B sont désormais actifs sur la Passerelle IA.',
+    title: '🚀 NEXUS AI v0.4.0 est disponible !',
+    message: 'Nouveautés majeures : Swarm 2.0 avec Auto-Heal en temps réel, exécution in-browser WebContainers & recherche sémantique de codebase.',
     createdAt: new Date().toISOString(),
     allowDismiss: true,
   };
@@ -43,7 +43,11 @@ export function getBroadcastBanner(): BroadcastBanner {
   try {
     const raw = localStorage.getItem(BROADCAST_STORAGE_KEY);
     if (!raw) return getDefaultBroadcastBanner();
-    return JSON.parse(raw) || getDefaultBroadcastBanner();
+    const parsed = JSON.parse(raw);
+    if (!parsed || parsed.id === 'broadcast-default-1') {
+      return getDefaultBroadcastBanner();
+    }
+    return parsed;
   } catch {
     return getDefaultBroadcastBanner();
   }

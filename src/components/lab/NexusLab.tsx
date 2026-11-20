@@ -393,6 +393,7 @@ export function NexusLab() {
                     setActiveTab('editor');
                   }}
                   onNewFileClick={() => setIsNewFileModalOpen(true)}
+                  onTriggerAutoHeal={() => setIsSwarmOpen(true)}
                 />
               </div>
 
@@ -449,6 +450,7 @@ export function NexusLab() {
       <NexusSwarmDrawer
         isOpen={isSwarmOpen}
         file={activeFile}
+        project={activeProject}
         onClose={() => setIsSwarmOpen(false)}
         onRequestDiff={handleRequestDiff}
         onAddFile={(path, content) => addFile(path, content)}

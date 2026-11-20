@@ -26,6 +26,59 @@ export function isWebContainerSupported(): boolean {
 }
 
 /**
+ * Convertit la liste des fichiers plats du projet en arbre imbriqué compatible
+ * avec le FileSystemTree natif de WebContainer (@webcontainer/api).
+ */
+export function convertFilesToWebContainerTree(files: LabFile[]): Record<string, any> {
+  const tree: Record<string, any> = {};
+
+  for (const file of files) {
+    const cleanPath = file.path.replace(/^\//, '');
+    const parts = cleanPath.split('/');
+    let current = tree;
+
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
+      const isFile = i === parts.length - 1;
+
+      if (isFile) {
+        current[part] = {
+          file: {
+            contents: file.content || '',
+          },
+        };
+      } else {
+        if (!current[part]) {
+          current[part] = {
+            directory: {},
+          };
+        }
+        current = current[part].directory;
+      }
+    }
+  }
+
+  return tree;
+}
+
+/**
+ * Monte ou synchronise l'arborescence des fichiers du projet dans l'instance WebContainer.
+ */
+export async function mountProjectFilesToWebContainer(project: LabProject): Promise<boolean> {
+  const wc = await getOrBootWebContainer();
+  if (!wc) return false;
+
+  try {
+    const tree = convertFilesToWebContainerTree(project.files);
+    await wc.mount(tree);
+    return true;
+  } catch (err) {
+    console.warn('[NEXUS RUNTIME] Échec de montage WebContainer:', err);
+    return false;
+  }
+}
+
+/**
  * Initialise l'instance WebContainer si l'environnement le permet.
  */
 export async function getOrBootWebContainer(): Promise<any | null> {
@@ -754,6 +807,11 @@ export async function bundleProjectForPreview(project: LabProject | null): Promi
   return html;
 }
 
+export interface TerminalExecutionOptions {
+  onChunk?: (chunk: string) => void;
+  onServerReady?: (port: number, url: string) => void;
+}
+
 /**
  * Résultat de l'exécution d'une commande terminale.
  */
@@ -764,16 +822,79 @@ export interface CommandResult {
 }
 
 /**
- * Émulateur interactif du Shell de NEXUS LAB.
- * Exécute des commandes réelles (npm install, npm run dev, node, ls, cat, etc.)
+ * Moteur d'exécution Shell & Terminal de NEXUS LAB.
+ * Orchestre WebContainers nativement si supporté par le navigateur (COOP/COEP),
+ * avec repli heuristique haute-fidélité in-browser pour une fluidité sans faille.
  */
 export async function executeTerminalCommand(
   rawCommand: string,
   project: LabProject,
+  options?: TerminalExecutionOptions,
 ): Promise<CommandResult> {
   const trimmed = rawCommand.trim();
   if (!trimmed) {
     return { output: '', type: 'output' };
+  }
+
+  // 0. Si WebContainers est pris en charge (Navigateur avec isolation COOP/COEP)
+  if (isWebContainerSupported()) {
+    try {
+      const wc = await getOrBootWebContainer();
+      if (wc) {
+        // Montage initial ou synchronisation de l'arborescence
+        await mountProjectFilesToWebContainer(project);
+
+        if (options?.onServerReady) {
+          wc.on('server-ready', (port: number, url: string) => {
+            options.onServerReady!(port, url);
+          });
+        }
+
+        const parts = trimmed.split(/\s+/);
+        const binary = parts[0];
+        const cmdArgs = parts.slice(1);
+
+        const process = await wc.spawn(binary, cmdArgs);
+        let fullOutput = '';
+
+        if (process.output && typeof process.output.pipeTo === 'function') {
+          process.output.pipeTo(
+            new WritableStream({
+              write(data: string) {
+                fullOutput += data;
+                options?.onChunk?.(data);
+              },
+            })
+          ).catch(() => {});
+        }
+
+        const exitCode = await process.exit;
+
+        // Mise à jour de package.json si commande d'installation
+        let updatedFiles: LabFile[] | undefined;
+        if (binary === 'npm' && (cmdArgs[0] === 'install' || cmdArgs[0] === 'i' || cmdArgs[0] === 'add')) {
+          try {
+            const updatedPkgStr = await wc.fs.readFile('package.json', 'utf-8');
+            const pkgFile = project.files.find((f) => f.path === 'package.json');
+            if (pkgFile && updatedPkgStr) {
+              updatedFiles = project.files.map((f) =>
+                f.id === pkgFile.id ? { ...f, content: updatedPkgStr, isModified: true } : f
+              );
+            }
+          } catch {
+            // Ignorer l'erreur de lecture
+          }
+        }
+
+        return {
+          output: fullOutput || `[WebContainer] Commande "${trimmed}" terminée (code ${exitCode}).`,
+          type: exitCode === 0 ? 'success' : 'error',
+          updatedFiles,
+        };
+      }
+    } catch (wcErr) {
+      console.warn('[NEXUS RUNTIME] Repli vers le simulateur in-browser:', wcErr);
+    }
   }
 
   const parts = trimmed.split(/\s+/);

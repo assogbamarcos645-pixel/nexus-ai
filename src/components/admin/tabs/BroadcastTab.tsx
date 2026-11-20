@@ -17,6 +17,11 @@ import {
   CheckCircle2,
   Eye,
   Radio,
+  Mail,
+  Send,
+  Download,
+  Copy,
+  Check,
 } from 'lucide-react';
 import {
   getBroadcastBanner,
@@ -24,12 +29,71 @@ import {
   getScheduledMaintenance,
   saveScheduledMaintenance,
 } from '../../../services/admin/adminBroadcastService.ts';
+import {
+  getAllUserEmails,
+  exportUsersCsv,
+  generateReleaseNotificationHtml,
+  sendBroadcastEmail,
+} from '../../../services/admin/adminEmailNotificationService.ts';
 import type { BroadcastBanner, ScheduledMaintenance } from '../../../types/admin.ts';
 
 export const BroadcastTab: React.FC = () => {
   const [banner, setBanner] = useState<BroadcastBanner>(getBroadcastBanner);
   const [maintenance, setMaintenance] = useState<ScheduledMaintenance>(getScheduledMaintenance);
   const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null);
+
+  const [emailSubject, setEmailSubject] = useState(
+    '🚀 NEXUS AI v0.4.0 est disponible : Swarm 2.0, WebContainers & Codebase Search !'
+  );
+  const [resendApiKey, setResendApiKey] = useState('');
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [emailCopied, setEmailCopied] = useState(false);
+  const [showHtmlPreview, setShowHtmlPreview] = useState(false);
+  const recipientsList = getAllUserEmails();
+
+  const handleCopyEmailHtml = () => {
+    const html = generateReleaseNotificationHtml({
+      version: '0.4.0',
+    });
+    navigator.clipboard.writeText(html);
+    setEmailCopied(true);
+    setTimeout(() => setEmailCopied(false), 2500);
+  };
+
+  const handleDownloadCsv = () => {
+    const csv = exportUsersCsv();
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `nexus-users-email-list-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleSendEmailCampaign = async () => {
+    setIsSendingEmail(true);
+    try {
+      const res = await sendBroadcastEmail({
+        subject: emailSubject,
+        resendApiKey: resendApiKey.trim() || undefined,
+      });
+      if (res.success) {
+        setFeedbackMsg(
+          res.simulated
+            ? `Campagne simulée avec succès pour ${res.totalSent} utilisateur(s) !`
+            : `Campagne réelle envoyée via Resend à ${res.totalSent} utilisateur(s) !`
+        );
+      } else {
+        setFeedbackMsg(`Échec d'envoi : ${res.errors.join(', ')}`);
+      }
+    } catch (err: any) {
+      setFeedbackMsg(`Erreur : ${err?.message || err}`);
+    } finally {
+      setIsSendingEmail(false);
+      setTimeout(() => setFeedbackMsg(null), 4000);
+    }
+  };
 
   const handleBannerSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -290,6 +354,108 @@ export const BroadcastTab: React.FC = () => {
             </button>
           </div>
         </form>
+      </div>
+
+      {/* Module 3 : Notification Externe par E-mail & Campagnes de Release */}
+      <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-2">
+            <Mail size={14} className="text-purple-400" />
+            Campagne de Notification Externe par E-mail (Release v0.4.0)
+          </h4>
+
+          <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+            <strong>{recipientsList.length}</strong> utilisateur(s) ciblé(s)
+          </span>
+        </div>
+
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          Envoyez un e-mail responsive et stylé aux couleurs de NEXUS AI pour informer directement vos utilisateurs des nouveautés (Swarm 2.0, WebContainers & Codebase Search).
+        </p>
+
+        <div className="space-y-3">
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              Sujet de l'e-mail :
+            </label>
+            <input
+              type="text"
+              value={emailSubject}
+              onChange={(e) => setEmailSubject(e.target.value)}
+              className="w-full px-3 py-1.5 text-xs rounded-lg bg-white dark:bg-black/30 border border-slate-300 dark:border-white/15 text-slate-900 dark:text-white"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              Clé d'API Resend (Optionnel, pour envoi réel automatique) :
+            </label>
+            <input
+              type="password"
+              placeholder="re_xxxxxxxxxxxxxxxxxxxx (laisser vide pour simuler ou copier le template)"
+              value={resendApiKey}
+              onChange={(e) => setResendApiKey(e.target.value)}
+              className="w-full px-3 py-1.5 text-xs rounded-lg bg-white dark:bg-black/30 border border-slate-300 dark:border-white/15 text-slate-900 dark:text-white font-mono"
+            />
+          </div>
+
+          {/* Actions & Boutons d'export */}
+          <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-200/60 dark:border-white/10">
+            <button
+              type="button"
+              onClick={handleSendEmailCampaign}
+              disabled={isSendingEmail || !emailSubject.trim()}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+            >
+              <Send size={13} />
+              <span>{isSendingEmail ? 'Envoi en cours...' : 'Diffuser la Campagne E-mail'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleCopyEmailHtml}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white dark:bg-white/10 hover:bg-slate-100 dark:hover:bg-white/15 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white text-xs font-medium transition-colors cursor-pointer"
+              title="Copier le code source HTML complet prêt pour Brevo, Mailchimp ou Resend"
+            >
+              {emailCopied ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
+              <span>{emailCopied ? 'HTML copié !' : 'Copier le Template HTML'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleDownloadCsv}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white dark:bg-white/10 hover:bg-slate-100 dark:hover:bg-white/15 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white text-xs font-medium transition-colors cursor-pointer"
+              title="Télécharger la liste des destinataires sous format CSV"
+            >
+              <Download size={13} />
+              <span>Exporter la liste des e-mails (CSV)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowHtmlPreview(!showHtmlPreview)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white cursor-pointer ml-auto"
+            >
+              <Eye size={13} />
+              <span>{showHtmlPreview ? 'Masquer Aperçu' : 'Prévisualiser'}</span>
+            </button>
+          </div>
+
+          {/* Prévisualisation Iframe du Template */}
+          {showHtmlPreview && (
+            <div className="mt-3 rounded-xl border border-slate-300 dark:border-white/15 overflow-hidden bg-black/40">
+              <div className="px-3 py-1.5 bg-slate-200 dark:bg-white/10 text-[11px] font-mono text-slate-600 dark:text-slate-300 border-b border-slate-300 dark:border-white/10 flex items-center justify-between">
+                <span>Rendu responsive de l'e-mail</span>
+                <span className="text-[10px] text-slate-400">Desktop & Mobile ready</span>
+              </div>
+              <iframe
+                title="Email Preview"
+                srcDoc={generateReleaseNotificationHtml({ version: '0.4.0' })}
+                className="w-full h-96 border-none bg-[#070712]"
+              />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

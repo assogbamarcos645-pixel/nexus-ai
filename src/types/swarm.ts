@@ -5,7 +5,14 @@
  * (Équipe Autonome de Développement & Intelligence Collective).
  */
 
-export type SwarmSpecialistRole = 'architect' | 'frontend' | 'qa';
+export type SwarmSpecialistRole =
+  | 'architect'
+  | 'frontend'
+  | 'qa'
+  | 'database'
+  | 'security'
+  | 'devops'
+  | (string & {});
 
 export interface SwarmSpecialist {
   id: SwarmSpecialistRole;
@@ -17,9 +24,16 @@ export interface SwarmSpecialist {
   accentBg: string;
   badgeBorder: string;
   badgeText: string;
+  isCustom?: boolean;
 }
 
-export type SwarmPhase = 'conception' | 'development' | 'audit' | 'convergence';
+export type SwarmPhase =
+  | 'conception'
+  | 'development'
+  | 'audit'
+  | 'convergence'
+  | 'healing'
+  | 'verification';
 
 export interface SwarmCodeArtifact {
   filename: string;
@@ -51,6 +65,15 @@ export interface SwarmFinalSynthesis {
     passedChecks: string[];
     ariaAttributes: string[];
   };
+  securityAudit?: {
+    owaspChecked: boolean;
+    sanitized: boolean;
+    notes: string;
+  };
+  databaseSchema?: {
+    sqlSnippet?: string;
+    rlsPolicies?: string[];
+  };
 }
 
 export interface SwarmSessionState {
@@ -63,4 +86,22 @@ export interface SwarmSessionState {
   messages: SwarmMessage[];
   finalSynthesis: SwarmFinalSynthesis | null;
   error?: string | null;
+}
+
+export interface AutoHealIssue {
+  fileId?: string;
+  filePath: string;
+  line?: number;
+  message: string;
+  severity: 'error' | 'warning';
+  source?: 'lint' | 'compiler' | 'test' | 'runtime';
+}
+
+export interface AutoHealResult {
+  success: boolean;
+  fixedFilePath: string;
+  originalCode: string;
+  repairedCode: string;
+  explanation: string;
+  resolvedIssues: AutoHealIssue[];
 }

@@ -67,6 +67,7 @@ interface CodeEditorProps {
   project?: LabProject | null;
   onUpdateProjectFiles?: (files: LabFile[]) => void;
   onTriggerPreviewReload?: () => void;
+  onTriggerAutoHeal?: () => void;
 }
 
 function getTabFileIcon(path: string) {
@@ -173,6 +174,7 @@ export function CodeEditor({
   project,
   onUpdateProjectFiles,
   onTriggerPreviewReload,
+  onTriggerAutoHeal,
 }: CodeEditorProps) {
   const { resolvedTheme } = useTheme();
   const [monacoFailed, setMonacoFailed] = useState(false);
@@ -823,6 +825,7 @@ export function CodeEditor({
         onSelectFile={onSelectFile}
         onUpdateProjectFiles={onUpdateProjectFiles}
         onTriggerPreviewReload={onTriggerPreviewReload}
+        onTriggerAutoHeal={onTriggerAutoHeal}
       />
 
       {/* Barre d'état inférieure style VS Code */}

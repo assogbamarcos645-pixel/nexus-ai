@@ -6,7 +6,7 @@
  */
 
 export const APP_NAME = 'NEXUS AI';
-export const APP_VERSION = '0.3.0';
+export const APP_VERSION = '0.4.0';
 
 /** URL du backend API (définie dans .env — jamais de clé secrète ici). */
 export const API_BASE_URL =

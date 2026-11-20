@@ -93,7 +93,7 @@ function WelcomeScreenComponent({ onSuggestionClick, children }: WelcomeScreenPr
       <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full liquid-glass-pill mb-2.5 sm:mb-4 shimmer-sweep hover:scale-105 transition-transform duration-200 cursor-default">
         <Sparkles size={12} className="text-blue-600 dark:text-sky-400 animate-pulse sm:w-[13px] sm:h-[13px]" />
         <span className="text-[11px] sm:text-[11.5px] font-semibold tracking-wide text-slate-800 dark:text-slate-200">
-          NEXUS AI <span className="text-blue-600 dark:text-sky-400 font-mono text-[10px] sm:text-[10.5px]">• v0.3.0</span>
+          NEXUS AI <span className="text-blue-600 dark:text-sky-400 font-mono text-[10px] sm:text-[10.5px]">• v0.4.0</span>
         </span>
         <span className="h-2.5 w-px bg-slate-200 dark:bg-slate-800" aria-hidden="true" />
         <span className="text-[10px] sm:text-[10.5px] text-slate-500 dark:text-slate-400 font-medium">

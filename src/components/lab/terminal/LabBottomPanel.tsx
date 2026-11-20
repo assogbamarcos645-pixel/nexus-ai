@@ -40,6 +40,7 @@ interface LabBottomPanelProps {
   onSelectFile?: (fileId: string) => void;
   onUpdateProjectFiles?: (files: LabFile[]) => void;
   onTriggerPreviewReload?: () => void;
+  onTriggerAutoHeal?: () => void;
 }
 
 export function LabBottomPanel({
@@ -54,6 +55,7 @@ export function LabBottomPanel({
   onSelectFile,
   onUpdateProjectFiles,
   onTriggerPreviewReload,
+  onTriggerAutoHeal,
 }: LabBottomPanelProps) {
   const [isMaximized, setIsMaximized] = useState(false);
   const [inputVal, setInputVal] = useState('');
@@ -118,7 +120,11 @@ export function LabBottomPanel({
     }
 
     try {
-      const res = await executeTerminalCommand(trimmed, project);
+      const res = await executeTerminalCommand(trimmed, project, {
+        onServerReady: () => {
+          onTriggerPreviewReload?.();
+        },
+      });
       const resEntry: TerminalEntry = {
         id: `res-${Date.now()}`,
         type: res.type,
@@ -515,11 +521,24 @@ export function LabBottomPanel({
         {activeTab === 'lint' && (
           <div className="flex-1 flex flex-col bg-[#070712] text-slate-200 overflow-hidden">
             <div className="px-3 py-1.5 border-b border-white/5 bg-[#090916] flex items-center justify-between shrink-0">
-              <span className="text-xs text-slate-400">
-                {lintDiagnostics.length === 0
-                  ? 'Aucun problème détecté dans le projet'
-                  : `${lintDiagnostics.length} problème(s) détecté(s)`}
-              </span>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-slate-400">
+                  {lintDiagnostics.length === 0
+                    ? 'Aucun problème détecté dans le projet'
+                    : `${lintDiagnostics.length} problème(s) détecté(s)`}
+                </span>
+                {onTriggerAutoHeal && errorsCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={onTriggerAutoHeal}
+                    className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-nexus-500/20 hover:bg-nexus-500/30 text-nexus-300 border border-nexus-500/35 text-[11px] font-semibold transition-all shadow-xs cursor-pointer"
+                    title="Lancer l'Auto-Heal Swarm pour réparer ces erreurs automatiquement"
+                  >
+                    <Sparkles size={11} className="text-nexus-400" />
+                    <span>Auto-Heal Swarm</span>
+                  </button>
+                )}
+              </div>
               <div className="flex items-center gap-2 text-[11px]">
                 <span className="text-red-400 font-semibold">{errorsCount} Erreur(s)</span>
                 <span className="text-slate-500">•</span>
