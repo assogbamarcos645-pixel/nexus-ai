@@ -51,6 +51,7 @@ export type AdminAuditAction =
   | 'ip_blocked'
   | 'ip_unblocked'
   | 'broadcast_update'
+  | 'broadcast_email'
   | 'maintenance_scheduled';
 
 export interface AdminAuditEntry {

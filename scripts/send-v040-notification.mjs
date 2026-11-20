@@ -22,7 +22,7 @@ const __dirname = path.dirname(__filename);
 const VERSION = '0.4.0';
 const SUBJECT = `NEXUS AI v${VERSION} est disponible : Swarm 2.0, WebContainers & Codebase Search`;
 
-function getEmailHtml(userName = 'Developpeur', appUrl = 'https://nexus-ai.app') {
+function getEmailHtml(userName = 'Developpeur', appUrl = 'https://nexus-ai-rose-three.vercel.app') {
   return `<!DOCTYPE html>
 <html lang="fr">
 <head>

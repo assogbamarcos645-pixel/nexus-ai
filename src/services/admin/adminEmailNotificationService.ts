@@ -6,14 +6,17 @@
  * via l'API Resend, un relais SMTP ou d'exporter la liste des adresses pour Brevo/Mailchimp.
  */
 
-import { getManagedUsers } from './adminSecurityService.ts';
+import { getManagedUsers, logAdminAudit } from './adminSecurityService.ts';
 
 export interface EmailCampaignOptions {
   subject: string;
   appUrl?: string;
   senderName?: string;
   senderEmail?: string;
+  provider?: 'brevo' | 'resend';
+  brevoApiKey?: string;
   resendApiKey?: string;
+  recipients?: string[];
   customNote?: string;
 }
 
@@ -36,7 +39,7 @@ export function generateReleaseNotificationHtml(options: {
 } = {}): string {
   const {
     userName = 'Développeur',
-    appUrl = 'https://nexus-ai.app',
+    appUrl = typeof window !== 'undefined' ? window.location.origin : 'https://nexus-ai-rose-three.vercel.app',
     customNote,
     version = '0.4.0',
   } = options;
@@ -250,16 +253,24 @@ export function exportUsersCsv(): string {
 }
 
 /**
- * Déclenche l'envoi d'e-mails réels (via Resend) ou en mode simulation haute-fidélité.
+ * Déclenche l'envoi d'e-mails réels (via Brevo ou Resend) ou en mode simulation haute-fidélité.
  */
 export async function sendBroadcastEmail(options: EmailCampaignOptions): Promise<SendEmailResult> {
-  const recipients = getAllUserEmails();
+  const recipients = options.recipients && options.recipients.length > 0 ? options.recipients : getAllUserEmails();
   const {
     subject,
-    resendApiKey,
-    appUrl = 'https://nexus-ai.app',
+    provider = 'brevo',
+    brevoApiKey =
+      options.brevoApiKey ||
+      (typeof window !== 'undefined' ? localStorage.getItem('nexus_admin_brevo_api_key') : null) ||
+      (typeof import.meta !== 'undefined' ? import.meta.env?.VITE_BREVO_API_KEY : undefined),
+    resendApiKey =
+      options.resendApiKey ||
+      (typeof window !== 'undefined' ? localStorage.getItem('nexus_admin_resend_api_key') : null) ||
+      (typeof import.meta !== 'undefined' ? import.meta.env?.VITE_RESEND_API_KEY : undefined),
+    appUrl = typeof window !== 'undefined' ? window.location.origin : 'https://nexus-ai-rose-three.vercel.app',
     senderName = 'NEXUS AI',
-    senderEmail = options.senderEmail || 'onboarding@resend.dev',
+    senderEmail = options.senderEmail || (provider === 'brevo' ? 'assogbamarcos645@gmail.com' : 'onboarding@resend.dev'),
     customNote,
   } = options;
 
@@ -268,14 +279,76 @@ export async function sendBroadcastEmail(options: EmailCampaignOptions): Promise
       success: false,
       totalSent: 0,
       totalFailed: 0,
-      errors: ['Aucun utilisateur trouvé dans la base de données.'],
+      errors: ['Aucun utilisateur trouvé dans la liste des destinataires.'],
     };
   }
 
-  // 1. Si une clé Resend est fournie, tenter l'envoi direct via l'API Resend
-  if (resendApiKey && resendApiKey.startsWith('re_')) {
+  const html = generateReleaseNotificationHtml({ appUrl, customNote });
+
+  // 1. Envoi via Brevo (Fournisseur recommandé, pas de blocage de nom de domaine)
+  if (provider === 'brevo' && brevoApiKey) {
+    let totalSent = 0;
+    let totalFailed = 0;
+    const errors: string[] = [];
+
+    for (let i = 0; i < recipients.length; i++) {
+      const recipient = recipients[i].trim().toLowerCase();
+      if (!recipient || !recipient.includes('@')) continue;
+
+      try {
+        const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: {
+            'api-key': brevoApiKey,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            sender: {
+              name: senderName,
+              email: senderEmail,
+            },
+            to: [{ email: recipient }],
+            subject,
+            htmlContent: html,
+          }),
+        });
+
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          totalFailed++;
+          errors.push(`${recipient}: ${data.message || 'Erreur Brevo'}`);
+        } else {
+          totalSent++;
+        }
+      } catch (err: any) {
+        totalFailed++;
+        errors.push(`${recipient}: ${err.message || String(err)}`);
+      }
+
+      // Temporisation de 100ms entre les envois pour respecter les limites Brevo
+      if (i < recipients.length - 1) {
+        await new Promise((r) => setTimeout(r, 100));
+      }
+    }
+
+    logAdminAudit(
+      'broadcast_email',
+      totalSent > 0,
+      `Campagne e-mail Brevo : ${totalSent} envoyés, ${totalFailed} échecs ("${subject}")`,
+    );
+
+    return {
+      success: totalSent > 0,
+      totalSent,
+      totalFailed,
+      errors,
+      simulated: false,
+    };
+  }
+
+  // 2. Si le fournisseur Resend est sélectionné
+  if (provider === 'resend' && resendApiKey && resendApiKey.startsWith('re_')) {
     try {
-      const html = generateReleaseNotificationHtml({ appUrl, customNote });
       const response = await fetch('https://api.resend.com/emails/batch', {
         method: 'POST',
         headers: {
@@ -288,7 +361,7 @@ export async function sendBroadcastEmail(options: EmailCampaignOptions): Promise
             to,
             subject,
             html,
-          }))
+          })),
         ),
       });
 
@@ -296,6 +369,12 @@ export async function sendBroadcastEmail(options: EmailCampaignOptions): Promise
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || `Erreur API Resend (HTTP ${response.status})`);
       }
+
+      logAdminAudit(
+        'broadcast_email',
+        true,
+        `Campagne e-mail Resend : ${recipients.length} envoyés ("${subject}")`,
+      );
 
       return {
         success: true,
@@ -315,8 +394,7 @@ export async function sendBroadcastEmail(options: EmailCampaignOptions): Promise
     }
   }
 
-  // 2. Mode Démonstration / Enregistrement local en l'absence de clé de fournisseur externe
-  // Simule l'envoi réussi avec horodatage d'audit
+  // 3. Mode Démonstration / Simulation
   return {
     success: true,
     totalSent: recipients.length,

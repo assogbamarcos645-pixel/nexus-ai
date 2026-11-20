@@ -7,7 +7,7 @@
  * - Planificateur de maintenance avec compte a rebours
  */
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Megaphone,
   AlertTriangle,
@@ -22,6 +22,9 @@ import {
   Download,
   Copy,
   Check,
+  Users,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import {
   getBroadcastBanner,
@@ -43,13 +46,42 @@ export const BroadcastTab: React.FC = () => {
   const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null);
 
   const [emailSubject, setEmailSubject] = useState(
-    'NEXUS AI v0.4.0 est disponible : Swarm 2.0, WebContainers & Codebase Search'
+    'NEXUS AI v0.4.0 est en ligne : Swarm 2.0, WebContainers & Codebase Search'
   );
-  const [resendApiKey, setResendApiKey] = useState('');
+  const [provider, setProvider] = useState<'brevo' | 'resend'>('brevo');
+  const [brevoApiKey, setBrevoApiKey] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('nexus_admin_brevo_api_key');
+      if (saved) return saved;
+    }
+    return (typeof import.meta !== 'undefined' && import.meta.env?.VITE_BREVO_API_KEY) || '';
+  });
+  const [resendApiKey, setResendApiKey] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('nexus_admin_resend_api_key');
+      if (saved) return saved;
+    }
+    return (typeof import.meta !== 'undefined' && import.meta.env?.VITE_RESEND_API_KEY) || '';
+  });
+  const [senderEmail, setSenderEmail] = useState('assogbamarcos645@gmail.com');
+  const [senderName, setSenderName] = useState('NEXUS AI');
+  const [recipientsInput, setRecipientsInput] = useState(() => getAllUserEmails().join('\n'));
+  const [showRecipientsEditor, setShowRecipientsEditor] = useState(false);
+
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [emailCopied, setEmailCopied] = useState(false);
   const [showHtmlPreview, setShowHtmlPreview] = useState(false);
-  const recipientsList = getAllUserEmails();
+
+  const parsedRecipients = useMemo(() => {
+    return Array.from(
+      new Set(
+        recipientsInput
+          .split(/[\r\n,;]+/)
+          .map((e) => e.trim().replace(/^["']|["']$/g, ''))
+          .filter((e) => e.includes('@'))
+      )
+    );
+  }, [recipientsInput]);
 
   const handleCopyEmailHtml = () => {
     const html = generateReleaseNotificationHtml({
@@ -72,17 +104,27 @@ export const BroadcastTab: React.FC = () => {
   };
 
   const handleSendEmailCampaign = async () => {
+    if (parsedRecipients.length === 0) {
+      setFeedbackMsg('Veuillez spécifier au moins une adresse e-mail destinataire.');
+      return;
+    }
+
     setIsSendingEmail(true);
     try {
       const res = await sendBroadcastEmail({
         subject: emailSubject,
+        provider,
+        brevoApiKey: brevoApiKey.trim() || undefined,
         resendApiKey: resendApiKey.trim() || undefined,
+        senderEmail: senderEmail.trim() || undefined,
+        senderName: senderName.trim() || undefined,
+        recipients: parsedRecipients,
       });
       if (res.success) {
         setFeedbackMsg(
           res.simulated
             ? `Campagne simulée avec succès pour ${res.totalSent} utilisateur(s) !`
-            : `Campagne réelle envoyée via Resend à ${res.totalSent} utilisateur(s) !`
+            : `Campagne ${provider.toUpperCase()} envoyée avec succès à ${res.totalSent} utilisateur(s) !`
         );
       } else {
         setFeedbackMsg(`Échec d'envoi : ${res.errors.join(', ')}`);
@@ -91,7 +133,7 @@ export const BroadcastTab: React.FC = () => {
       setFeedbackMsg(`Erreur : ${err?.message || err}`);
     } finally {
       setIsSendingEmail(false);
-      setTimeout(() => setFeedbackMsg(null), 4000);
+      setTimeout(() => setFeedbackMsg(null), 5000);
     }
   };
 
@@ -365,13 +407,39 @@ export const BroadcastTab: React.FC = () => {
           </h4>
 
           <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">
-            <strong>{recipientsList.length}</strong> utilisateur(s) ciblé(s)
+            <strong>{parsedRecipients.length}</strong> utilisateur(s) ciblé(s)
           </span>
         </div>
 
         <p className="text-xs text-slate-500 dark:text-slate-400">
-          Envoyez un e-mail responsive et stylé aux couleurs de NEXUS AI pour informer directement vos utilisateurs des nouveautés (Swarm 2.0, WebContainers & Codebase Search).
+          Envoyez directement l'e-mail officiel avec les nouvelles fonctionnalités (Swarm 2.0, WebContainers & Codebase Search) dans les boîtes de réception de vos utilisateurs.
         </p>
+
+        {/* Choix du fournisseur d'e-mail */}
+        <div className="flex items-center gap-2 p-1 bg-slate-200/60 dark:bg-black/30 rounded-lg w-fit">
+          <button
+            type="button"
+            onClick={() => setProvider('brevo')}
+            className={`px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+              provider === 'brevo'
+                ? 'bg-purple-600 text-white shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            Brevo (Recommandé • Actif)
+          </button>
+          <button
+            type="button"
+            onClick={() => setProvider('resend')}
+            className={`px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+              provider === 'resend'
+                ? 'bg-purple-600 text-white shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            Resend (Sandbox / Domaine vérifié)
+          </button>
+        </div>
 
         <div className="space-y-3">
           <div>
@@ -386,17 +454,107 @@ export const BroadcastTab: React.FC = () => {
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-              Clé d'API Resend (Optionnel, pour envoi réel automatique) :
-            </label>
-            <input
-              type="password"
-              placeholder="re_xxxxxxxxxxxxxxxxxxxx (laisser vide pour simuler ou copier le template)"
-              value={resendApiKey}
-              onChange={(e) => setResendApiKey(e.target.value)}
-              className="w-full px-3 py-1.5 text-xs rounded-lg bg-white dark:bg-black/30 border border-slate-300 dark:border-white/15 text-slate-900 dark:text-white font-mono"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                Nom de l'expéditeur :
+              </label>
+              <input
+                type="text"
+                value={senderName}
+                onChange={(e) => setSenderName(e.target.value)}
+                className="w-full px-3 py-1.5 text-xs rounded-lg bg-white dark:bg-black/30 border border-slate-300 dark:border-white/15 text-slate-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                E-mail de l'expéditeur :
+              </label>
+              <input
+                type="email"
+                value={senderEmail}
+                onChange={(e) => setSenderEmail(e.target.value)}
+                className="w-full px-3 py-1.5 text-xs rounded-lg bg-white dark:bg-black/30 border border-slate-300 dark:border-white/15 text-slate-900 dark:text-white"
+              />
+            </div>
+          </div>
+
+          {provider === 'brevo' ? (
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                Clé d'API Brevo v3 :
+              </label>
+              <input
+                type="password"
+                placeholder="xkeysib-..."
+                value={brevoApiKey}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setBrevoApiKey(val);
+                  if (typeof window !== 'undefined') localStorage.setItem('nexus_admin_brevo_api_key', val);
+                }}
+                className="w-full px-3 py-1.5 text-xs rounded-lg bg-white dark:bg-black/30 border border-slate-300 dark:border-white/15 text-slate-900 dark:text-white font-mono"
+              />
+            </div>
+          ) : (
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                Clé d'API Resend :
+              </label>
+              <input
+                type="password"
+                placeholder="re_xxxxxxxxxxxxxxxxxxxx"
+                value={resendApiKey}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setResendApiKey(val);
+                  if (typeof window !== 'undefined') localStorage.setItem('nexus_admin_resend_api_key', val);
+                }}
+                className="w-full px-3 py-1.5 text-xs rounded-lg bg-white dark:bg-black/30 border border-slate-300 dark:border-white/15 text-slate-900 dark:text-white font-mono"
+              />
+            </div>
+          )}
+
+          {/* Destinataires modulables */}
+          <div className="border border-slate-200 dark:border-white/10 rounded-xl p-3 bg-white/40 dark:bg-black/20">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                <Users size={13} className="text-purple-400" />
+                Liste des destinataires ({parsedRecipients.length} e-mails valides)
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowRecipientsEditor(!showRecipientsEditor)}
+                className="text-[11px] text-purple-600 dark:text-purple-400 hover:underline flex items-center gap-1 cursor-pointer"
+              >
+                {showRecipientsEditor ? (
+                  <>
+                    <span>Réduire</span>
+                    <ChevronUp size={12} />
+                  </>
+                ) : (
+                  <>
+                    <span>Afficher / Modifier la liste</span>
+                    <ChevronDown size={12} />
+                  </>
+                )}
+              </button>
+            </div>
+
+            {showRecipientsEditor && (
+              <div className="mt-2.5 space-y-1.5">
+                <textarea
+                  rows={4}
+                  value={recipientsInput}
+                  onChange={(e) => setRecipientsInput(e.target.value)}
+                  placeholder="Collez ici les adresses e-mail des utilisateurs, séparées par des virgules ou retours à la ligne..."
+                  className="w-full px-3 py-2 text-xs rounded-lg bg-white dark:bg-black/40 border border-slate-300 dark:border-white/15 text-slate-900 dark:text-white font-mono"
+                />
+                <p className="text-[11px] text-slate-400">
+                  Astuce : vous pouvez coller directement la liste des e-mails exportés de Supabase ou d'un fichier.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Actions & Boutons d'export */}
@@ -404,11 +562,15 @@ export const BroadcastTab: React.FC = () => {
             <button
               type="button"
               onClick={handleSendEmailCampaign}
-              disabled={isSendingEmail || !emailSubject.trim()}
+              disabled={isSendingEmail || !emailSubject.trim() || parsedRecipients.length === 0}
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer disabled:opacity-50"
             >
               <Send size={13} />
-              <span>{isSendingEmail ? 'Envoi en cours...' : 'Diffuser la Campagne E-mail'}</span>
+              <span>
+                {isSendingEmail
+                  ? 'Envoi en cours...'
+                  : `Diffuser la Campagne E-mail (${provider === 'brevo' ? 'Brevo' : 'Resend'})`}
+              </span>
             </button>
 
             <button
