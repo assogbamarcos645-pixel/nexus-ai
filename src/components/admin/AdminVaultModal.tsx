@@ -41,6 +41,7 @@ import {
 import { cn } from '@/utils/cn';
 import { useAuth } from '@/hooks/useAuth';
 import { ModalCloseButton } from '@/components/ui/ModalCloseButton';
+import { UserInspectionDrawer } from './UserInspectionDrawer';
 import type {
   AdminSecurityConfig,
   AdminAuditEntry,
@@ -131,9 +132,6 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
   const [confirmPin, setConfirmPin] = useState('');
   const [isChangingPin, setIsChangingPin] = useState(false);
   const [newAdminEmail, setNewAdminEmail] = useState('');
-
-  // Quota utilisateur temporaire en édition
-  const [editingQuotaValue, setEditingQuotaValue] = useState<number>(100000);
 
   useEffect(() => {
     if (isOpen) {
@@ -381,13 +379,13 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
     }
   };
 
-  const handleSaveUserQuota = (userId: string) => {
-    updateManagedUserQuota(userId, editingQuotaValue);
+  const handleSaveUserQuota = (userId: string, quotaValue: number) => {
+    updateManagedUserQuota(userId, quotaValue);
     setManagedUsers(getManagedUsers());
     if (selectedUserForDetail && selectedUserForDetail.id === userId) {
-      setSelectedUserForDetail({ ...selectedUserForDetail, tokenQuotaLimit: editingQuotaValue });
+      setSelectedUserForDetail({ ...selectedUserForDetail, tokenQuotaLimit: quotaValue });
     }
-    showNotification(`Quota ajuste a ${editingQuotaValue.toLocaleString()} tokens.`);
+    showNotification(`Plafond de quota ajuste a ${quotaValue.toLocaleString()} tokens.`);
   };
 
   const handleExportJson = () => {
@@ -1226,13 +1224,12 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
                             <div className="flex items-center gap-2 shrink-0 self-end lg:self-center">
                               <button
                                 type="button"
-                                onClick={() => {
-                                  setSelectedUserForDetail(u);
-                                  setEditingQuotaValue(u.tokenQuotaLimit || 100000);
-                                }}
-                                className="px-2.5 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 font-semibold text-[11px] cursor-pointer"
+                                onClick={() => setSelectedUserForDetail(u)}
+                                className="px-3 py-1.5 rounded-xl liquid-glass-pill bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-700 dark:text-amber-300 font-semibold text-xs flex items-center gap-1.5 cursor-pointer transition-all shadow-xs"
+                                title="Ouvrir le tiroir d inspection detaillee"
                               >
-                                Fiche Complete
+                                <Eye size={13} className="text-amber-600 dark:text-amber-400" />
+                                <span>Inspecter</span>
                               </button>
 
                               {u.role !== 'super_admin' && (
@@ -1503,114 +1500,16 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
           </div>
         )}
 
-        {/* Modal de détail d'un utilisateur */}
-        {selectedUserForDetail && (
-          <div className="absolute inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150">
-            <div className="bg-white dark:bg-[#0f1026] border border-amber-500/40 rounded-2xl max-w-lg w-full p-5 space-y-4 shadow-2xl">
-              <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-500 font-bold flex items-center justify-center">
-                    {selectedUserForDetail.fullName[0]}
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm">
-                      {selectedUserForDetail.fullName}
-                    </h4>
-                    <p className="text-[11px] font-mono text-slate-400">{selectedUserForDetail.email}</p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setSelectedUserForDetail(null)}
-                  className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer"
-                >
-                  <X size={15} />
-                </button>
-              </div>
-
-              {/* Statistiques détaillées de l'utilisateur */}
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5">
-                  <span className="text-slate-400 text-[10px] block">Tokens Consommes</span>
-                  <span className="font-bold text-slate-900 dark:text-white font-mono text-sm">
-                    {selectedUserForDetail.metrics.tokensConsumed.toLocaleString()}
-                  </span>
-                </div>
-                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5">
-                  <span className="text-slate-400 text-[10px] block">Cout Estime ($)</span>
-                  <span className="font-bold text-slate-900 dark:text-white font-mono text-sm">
-                    {selectedUserForDetail.metrics.estimatedCostUsd.toFixed(2)}$ USD
-                  </span>
-                </div>
-                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5">
-                  <span className="text-slate-400 text-[10px] block">Modele Favori</span>
-                  <span className="font-semibold text-slate-900 dark:text-white truncate block">
-                    {selectedUserForDetail.metrics.preferredModel}
-                  </span>
-                </div>
-                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5">
-                  <span className="text-slate-400 text-[10px] block">Projets Lab</span>
-                  <span className="font-bold text-slate-900 dark:text-white font-mono text-sm">
-                    {selectedUserForDetail.metrics.projectsCount} projets
-                  </span>
-                </div>
-              </div>
-
-              {/* Quota personnalisé */}
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 space-y-2">
-                <label className="block font-semibold text-slate-800 dark:text-white text-xs">
-                  Plafond de Quota Personnalise (Tokens)
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="number"
-                    value={editingQuotaValue}
-                    onChange={(e) => setEditingQuotaValue(parseInt(e.target.value, 10) || 0)}
-                    step={10000}
-                    className="flex-1 px-3 py-1.5 bg-white dark:bg-surface-900 border border-slate-200 dark:border-white/10 rounded-lg font-mono text-xs"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleSaveUserQuota(selectedUserForDetail.id)}
-                    className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs cursor-pointer shadow-xs"
-                  >
-                    Sauvegarder
-                  </button>
-                </div>
-              </div>
-
-              {/* Projets récents créés */}
-              {selectedUserForDetail.recentProjects && selectedUserForDetail.recentProjects.length > 0 && (
-                <div className="space-y-1.5">
-                  <span className="font-semibold text-slate-400 text-[10px] uppercase tracking-wider block">
-                    Projets Récents dans le Studio
-                  </span>
-                  <div className="space-y-1">
-                    {selectedUserForDetail.recentProjects.map((p) => (
-                      <div
-                        key={p.id}
-                        className="p-2 rounded-lg bg-slate-50 dark:bg-white/5 flex items-center justify-between text-xs"
-                      >
-                        <span className="font-medium text-slate-900 dark:text-white">{p.name}</span>
-                        <span className="text-[10px] text-slate-400 font-mono">{p.fileCount} fichiers</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="flex justify-end pt-2">
-                <button
-                  type="button"
-                  onClick={() => setSelectedUserForDetail(null)}
-                  className="px-4 py-1.5 rounded-lg bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-white font-semibold text-xs cursor-pointer"
-                >
-                  Fermer la fiche
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Tiroir d'Inspection Detaillee du Super-Admin */}
+        <UserInspectionDrawer
+          isOpen={Boolean(selectedUserForDetail)}
+          user={selectedUserForDetail}
+          onClose={() => setSelectedUserForDetail(null)}
+          onUpdateRole={(userId, role) => handleUserRoleChange(userId, role)}
+          onToggleStatus={(userId) => handleUserStatusToggle(userId)}
+          onUpdateQuota={handleSaveUserQuota}
+          onDeleteUser={(userId) => handleDeleteUser(userId)}
+        />
 
         {/* Footer */}
         <div className="p-3 sm:p-4 border-t border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-surface-900/40 flex items-center justify-between text-[11px] text-slate-500 shrink-0">

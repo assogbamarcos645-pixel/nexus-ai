@@ -233,4 +233,45 @@ describe('NEXUS AI — Espace Super-Admin & Securite Biometrique', () => {
     assert.ok(metrics.providersHealth.length >= 3);
     assert.equal(typeof metrics.systemUptimeHours, 'number');
   });
+
+  test('Verifie les profils complets, metriques d utilisation chirurgicales, environnement et projets du Lab pour le tiroir d inspection', () => {
+    const users = getManagedUsers();
+    const adminUser = users.find((u) => u.role === 'super_admin');
+    assert.ok(adminUser, 'Le Super-Administrateur doit exister');
+
+    // 1. Profil complet
+    assert.ok(adminUser.id);
+    assert.equal(adminUser.email, 'marcosassogba645@gmail.com');
+    assert.equal(adminUser.role, 'super_admin');
+    assert.equal(adminUser.status, 'active');
+    assert.ok(adminUser.createdAt);
+    assert.ok(adminUser.lastSeen);
+
+    // 2. Metriques d utilisation (requetes, prompt vs completion, cout, modele)
+    assert.ok(typeof adminUser.metrics.totalRequests === 'number');
+    assert.ok(typeof adminUser.metrics.tokensConsumed === 'number');
+    assert.ok(typeof adminUser.metrics.promptTokens === 'number');
+    assert.ok(typeof adminUser.metrics.completionTokens === 'number');
+    assert.ok(adminUser.metrics.tokensConsumed >= adminUser.metrics.promptTokens);
+    assert.ok(typeof adminUser.metrics.estimatedCostUsd === 'number');
+    assert.ok(adminUser.metrics.preferredModel.length > 0);
+
+    // 3. Environnement (appareil, OS, IP)
+    assert.ok(adminUser.metrics.deviceInfo?.includes('Windows') || adminUser.metrics.deviceInfo?.includes('Chrome'));
+    assert.ok(adminUser.metrics.lastActiveIp?.includes('192.168.1.1'));
+
+    // 4. Gouvernance des Quotas
+    assert.ok(typeof adminUser.tokenQuotaLimit === 'number');
+    assert.ok((adminUser.tokenQuotaLimit || 0) >= 1000000);
+
+    // 5. Projets du Lab
+    assert.ok(Array.isArray(adminUser.recentProjects));
+    assert.ok(adminUser.recentProjects.length >= 1);
+    const firstProj = adminUser.recentProjects[0];
+    assert.ok(firstProj.id);
+    assert.ok(firstProj.name);
+    assert.ok(typeof firstProj.fileCount === 'number');
+    assert.ok(firstProj.template);
+    assert.ok(firstProj.updatedAt);
+  });
 });
