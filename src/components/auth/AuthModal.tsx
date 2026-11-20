@@ -184,10 +184,20 @@ export function AuthModal({ isOpen, initialMode = 'sign-in', onClose }: AuthModa
       const res = await signUp(email.trim(), password, fullName.trim());
       if (res.error) {
         setLocalError(res.error);
-      } else {
+      } else if (res.confirmationRequired) {
         // Affiche l'écran de confirmation e-mail avec minuterie anti-spam
         setMode('email-confirmation-pending');
         setResendCooldown(60);
+      } else {
+        // Inscription directe immédiate sans blocage
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('nexus-auth-success', {
+              detail: { user: { email: email.trim(), fullName: fullName.trim() } },
+            }),
+          );
+        }
+        handleClose();
       }
     } else if (mode === 'forgot-password') {
       const res = await resetPassword(email.trim());

@@ -66,7 +66,7 @@ export const BroadcastTab: React.FC = () => {
   const [senderEmail, setSenderEmail] = useState('assogbamarcos645@gmail.com');
   const [senderName, setSenderName] = useState('NEXUS AI');
   const [recipientsInput, setRecipientsInput] = useState(() => getAllUserEmails().join('\n'));
-  const [showRecipientsEditor, setShowRecipientsEditor] = useState(false);
+  const [showRecipientsEditor, setShowRecipientsEditor] = useState(true);
 
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [emailCopied, setEmailCopied] = useState(false);

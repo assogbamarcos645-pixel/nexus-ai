@@ -285,8 +285,52 @@ export async function sendBroadcastEmail(options: EmailCampaignOptions): Promise
 
   const html = generateReleaseNotificationHtml({ appUrl, customNote });
 
-  // 1. Envoi via Brevo (Fournisseur recommandé, pas de blocage de nom de domaine)
-  if (provider === 'brevo' && brevoApiKey) {
+  // 1. Tenter l'envoi via l'API Serverless Vercel sécurisée (anti-AdBlock, anti-CORS)
+  try {
+    const apiRes = await fetch('/api/admin/broadcast-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        apiKey: provider === 'brevo' ? brevoApiKey : resendApiKey,
+        provider,
+        subject,
+        recipients,
+        senderEmail,
+        senderName,
+        htmlContent: html,
+      }),
+    });
+
+    if (apiRes.ok) {
+      const data = await apiRes.json();
+      logAdminAudit(
+        'broadcast_email',
+        Boolean(data.totalSent > 0),
+        `Campagne e-mail ${provider.toUpperCase()} (Serverless) : ${data.totalSent || 0} envoyés, ${data.totalFailed || 0} échecs ("${subject}")`,
+      );
+      return {
+        success: Boolean(data.totalSent > 0),
+        totalSent: data.totalSent || 0,
+        totalFailed: data.totalFailed || 0,
+        errors: data.errors || (data.error ? [data.error] : []),
+        simulated: false,
+      };
+    }
+  } catch (apiErr) {
+    console.warn('[EMAIL NOTIFICATION] Repli sur envoi direct depuis le client:', apiErr);
+  }
+
+  // 2. Envoi via Brevo direct depuis le client (Repli)
+  if (provider === 'brevo') {
+    if (!brevoApiKey) {
+      return {
+        success: false,
+        totalSent: 0,
+        totalFailed: recipients.length,
+        errors: ['Clé API Brevo manquante. Saisissez votre clé Brevo (xkeysib-...) dans le champ prévu.'],
+      };
+    }
+
     let totalSent = 0;
     let totalFailed = 0;
     const errors: string[] = [];
@@ -325,7 +369,6 @@ export async function sendBroadcastEmail(options: EmailCampaignOptions): Promise
         errors.push(`${recipient}: ${err.message || String(err)}`);
       }
 
-      // Temporisation de 100ms entre les envois pour respecter les limites Brevo
       if (i < recipients.length - 1) {
         await new Promise((r) => setTimeout(r, 100));
       }
@@ -346,8 +389,17 @@ export async function sendBroadcastEmail(options: EmailCampaignOptions): Promise
     };
   }
 
-  // 2. Si le fournisseur Resend est sélectionné
-  if (provider === 'resend' && resendApiKey && resendApiKey.startsWith('re_')) {
+  // 3. Envoi via Resend direct depuis le client (Repli)
+  if (provider === 'resend') {
+    if (!resendApiKey || !resendApiKey.startsWith('re_')) {
+      return {
+        success: false,
+        totalSent: 0,
+        totalFailed: recipients.length,
+        errors: ['Clé API Resend manquante ou invalide (format re_...).'],
+      };
+    }
+
     try {
       const response = await fetch('https://api.resend.com/emails/batch', {
         method: 'POST',
@@ -394,7 +446,7 @@ export async function sendBroadcastEmail(options: EmailCampaignOptions): Promise
     }
   }
 
-  // 3. Mode Démonstration / Simulation
+  // 4. Mode Démonstration / Simulation
   return {
     success: true,
     totalSent: recipients.length,
