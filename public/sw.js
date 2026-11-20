@@ -1,5 +1,5 @@
 // NEXUS AI — Service Worker PWA (Offline & Asset Cache)
-const CACHE_NAME = 'nexus-ai-v4-futuristic-icon';
+const CACHE_NAME = 'nexus-ai-v040-cloud-active-v2';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -41,6 +41,22 @@ self.addEventListener('fetch', (event) => {
 
   // Laisser passer sans cache les appels API backend et streaming SSE
   if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/ai/')) {
+    return;
+  }
+
+  // Navigation SPA : Toujours tenter le réseau en premier pour garantir la dernière version déployée
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response && response.status === 200) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
+          return response;
+        })
+        .catch(() => caches.match('/index.html'))
+    );
     return;
   }
 
