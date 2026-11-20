@@ -34,7 +34,11 @@ import {
   UserCheck,
   UserX,
   X,
+  Clock,
+  ArrowRight,
+  Delete,
 } from 'lucide-react';
+import { cn } from '@/utils/cn';
 import { useAuth } from '@/hooks/useAuth';
 import { ModalCloseButton } from '@/components/ui/ModalCloseButton';
 import type {
@@ -91,6 +95,12 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
   const [authError, setAuthError] = useState<string | null>(null);
   const [successToast, setSuccessToast] = useState<string | null>(null);
 
+  // Ergonomie de connexion cybernetique
+  const [loginMode, setLoginMode] = useState<'biometric' | 'pin'>('pin');
+  const [isEditingEmail, setIsEditingEmail] = useState(false);
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [lockoutTimer, setLockoutTimer] = useState(0);
+
   // Donnees systeme et utilisateurs
   const [managedUsers, setManagedUsers] = useState<ManagedUser[]>([]);
   const [systemMetrics, setSystemMetrics] = useState<SystemFullMetrics>(getSystemFullMetrics());
@@ -122,8 +132,30 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
       setPinInput('');
       setEmailInput(user?.email || cfg.primaryAdminEmail);
       setSelectedUserForDetail(null);
+      setIsEditingEmail(false);
+
+      if (isBiometricsSupported() && cfg.biometricEnabled) {
+        setLoginMode('biometric');
+      } else {
+        setLoginMode('pin');
+      }
     }
   }, [isOpen, user]);
+
+  // Compte a rebours anti brute-force
+  useEffect(() => {
+    if (lockoutTimer <= 0) return;
+    const interval = setInterval(() => {
+      setLockoutTimer((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [lockoutTimer]);
 
   const showNotification = (msg: string) => {
     setSuccessToast(msg);
@@ -144,8 +176,23 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
     showNotification('Coffre-fort verrouille.');
   };
 
-  const handleUnlockWithPinAndEmail = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleKeypadPress = (val: string) => {
+    if (lockoutTimer > 0) return;
+    setAuthError(null);
+    if (val === 'clear') {
+      setPinInput('');
+    } else if (val === 'backspace') {
+      setPinInput((prev) => prev.slice(0, -1));
+    } else {
+      if (pinInput.length < 12) {
+        setPinInput((prev) => prev + val);
+      }
+    }
+  };
+
+  const handleUnlockWithPinAndEmail = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (lockoutTimer > 0) return;
     setAuthError(null);
 
     if (!isEmailAuthorizedAdmin(emailInput)) {
@@ -154,9 +201,22 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
       return;
     }
 
+    if (!pinInput || pinInput.length < 4) {
+      setAuthError('Veuillez saisir un code PIN d au moins 4 chiffres.');
+      return;
+    }
+
     const isValidPin = await verifyMasterAdminPin(pinInput);
     if (!isValidPin) {
-      setAuthError('Code PIN maitre incorrect.');
+      const nextFails = failedAttempts + 1;
+      setFailedAttempts(nextFails);
+      if (nextFails >= 5) {
+        setLockoutTimer(30);
+        setFailedAttempts(0);
+        setAuthError('5 tentatives infructueuses consecutives. Coffre temporairement verrouille pendant 30 secondes.');
+      } else {
+        setAuthError(`Code PIN maitre incorrect. Tentative ${nextFails}/5 avant verrouillage temporaire.`);
+      }
       logAdminAudit('failed_attempt', false, `Echec code PIN pour ${emailInput}`);
       return;
     }
@@ -171,6 +231,7 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
       }
     }
 
+    setFailedAttempts(0);
     unlockVaultSession();
     setIsUnlocked(true);
     setAuthError(null);
@@ -180,6 +241,7 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
   };
 
   const handleBiometricDirectUnlock = async () => {
+    if (lockoutTimer > 0) return;
     setAuthError(null);
     setIsVerifyingBio(true);
 
@@ -195,6 +257,7 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
         return;
       }
 
+      setFailedAttempts(0);
       unlockVaultSession();
       setIsUnlocked(true);
       reloadData();
@@ -411,124 +474,339 @@ export function AdminVaultModal({ isOpen, onClose }: AdminVaultModalProps) {
         {/* CONTENU : Écran Verrouillé vs Cockpit Déverrouillé */}
         {!isUnlocked ? (
           /* ====================================================================
-             ÉCRAN DE VÉRIFICATION MULTI-FACTEURS (Email + PIN + Empreinte)
+             ÉCRAN DE CONNEXION CYBERNÉTIQUE SUPER-ADMIN
              ==================================================================== */
-          <div className="p-6 md:p-8 overflow-y-auto space-y-6 flex flex-col items-center justify-center text-center max-w-lg mx-auto w-full">
+          <div className="p-4 sm:p-6 md:p-8 overflow-y-auto space-y-5 flex flex-col items-center justify-center text-center max-w-lg mx-auto w-full">
+            {/* Emblème Cadenas & Halo Holographique */}
             <div className="relative">
-              <div className="w-20 h-20 rounded-3xl bg-amber-500/15 border-2 border-amber-500/40 flex items-center justify-center text-amber-500 shadow-[0_0_35px_rgba(245,158,11,0.3)]">
-                <Lock size={36} />
+              <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-3xl bg-gradient-to-tr from-amber-500/20 via-amber-500/10 to-transparent border-2 border-amber-500/40 flex items-center justify-center text-amber-500 shadow-[0_0_35px_rgba(245,158,11,0.25)]">
+                <Lock size={34} />
               </div>
-              <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-slate-900 border-2 border-cyan-400 flex items-center justify-center text-cyan-400 shadow-md">
-                <Fingerprint size={16} />
+              <div className="absolute -bottom-1.5 -right-1.5 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-900 border-2 border-cyan-400 flex items-center justify-center text-cyan-400 shadow-md">
+                <Fingerprint size={15} />
               </div>
             </div>
 
-            <div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1">
-                Acces Restreint au Super-Administrateur
+            {/* Titre & Accréditation */}
+            <div className="space-y-1">
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                Portail d Acces Super-Admin
               </h3>
-              <p className="text-slate-500 dark:text-white/70 leading-relaxed text-xs">
-                Cet espace est strictement reserve au proprietaire de NEXUS AI. Authentifiez-vous par e-mail, code PIN maitre ou capteur d'empreinte digitale.
+              <p className="text-slate-500 dark:text-white/70 text-xs max-w-sm mx-auto leading-relaxed">
+                Espace protege sous triple facteur de securite. Reserve au proprietaire et createur de NEXUS AI.
               </p>
             </div>
 
-            {authError && (
-              <div className="w-full p-3 rounded-xl bg-red-500/15 border border-red-500/30 text-red-600 dark:text-red-400 flex items-center gap-2 text-left">
+            {/* Carte d'Identité Officielle du Propriétaire */}
+            <div className="w-full p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-slate-100 dark:via-white/5 to-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-3 text-left shadow-xs">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="relative shrink-0">
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-600 via-amber-500 to-amber-400 p-0.5 shadow-sm shadow-amber-500/30">
+                    <div className="w-full h-full rounded-[14px] bg-slate-900 flex items-center justify-center font-bold text-sm text-amber-400">
+                      M
+                    </div>
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900 flex items-center justify-center text-white">
+                    <Check size={8} strokeWidth={3} />
+                  </div>
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="font-bold text-slate-900 dark:text-white text-xs truncate">
+                      Marcos Assogba
+                    </span>
+                    <span className="px-1.5 py-0.2 rounded-md bg-amber-500/20 text-amber-700 dark:text-amber-300 font-mono text-[9px] font-bold uppercase tracking-wider">
+                      Proprietaire
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 dark:text-white/60 truncate font-mono">
+                    {emailInput}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsEditingEmail(!isEditingEmail)}
+                className="px-2.5 py-1 rounded-lg bg-slate-200/80 hover:bg-slate-300 dark:bg-white/10 dark:hover:bg-white/15 text-slate-700 dark:text-white/80 text-[10px] font-medium transition-colors shrink-0 cursor-pointer"
+              >
+                {isEditingEmail ? 'Valider' : 'Changer'}
+              </button>
+            </div>
+
+            {/* Saisie d'email personnalisé si activée */}
+            {isEditingEmail && (
+              <div className="w-full space-y-2 text-left animate-in fade-in duration-150">
+                <label className="block text-[11px] font-semibold text-slate-700 dark:text-white/80">
+                  Adresse e-mail administrateur autorisee :
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="email"
+                    value={emailInput}
+                    onChange={(e) => setEmailInput(e.target.value)}
+                    placeholder="marcosassogba645@gmail.com"
+                    className="flex-1 px-3 py-2 bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl text-slate-900 dark:text-white font-mono text-xs focus:outline-none focus:border-amber-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingEmail(false)}
+                    className="px-3 py-2 rounded-xl bg-amber-500 text-white font-bold text-xs cursor-pointer shadow-xs"
+                  >
+                    OK
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Sélecteur d'onglets de connexion : Biométrie vs Code PIN */}
+            <div className="w-full flex items-center p-1 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+              <button
+                type="button"
+                onClick={() => {
+                  setLoginMode('biometric');
+                  setAuthError(null);
+                }}
+                className={cn(
+                  'flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer',
+                  loginMode === 'biometric'
+                    ? 'bg-cyan-500 text-white shadow-md shadow-cyan-500/25'
+                    : 'text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white',
+                )}
+              >
+                <Fingerprint size={15} />
+                <span>Empreinte Digitale</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setLoginMode('pin');
+                  setAuthError(null);
+                }}
+                className={cn(
+                  'flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer',
+                  loginMode === 'pin'
+                    ? 'bg-amber-500 text-white shadow-md shadow-amber-500/25'
+                    : 'text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white',
+                )}
+              >
+                <Key size={14} />
+                <span>Code PIN & Pave Tactile</span>
+              </button>
+            </div>
+
+            {/* Bloc d'avertissement de temporisation anti brute-force */}
+            {lockoutTimer > 0 && (
+              <div className="w-full p-4 rounded-2xl bg-red-500/15 border-2 border-red-500/40 text-red-600 dark:text-red-400 flex items-center gap-3 text-left">
+                <Clock size={24} className="shrink-0 animate-spin text-red-500" />
+                <div className="text-xs">
+                  <p className="font-bold">Securite Anti-Intrusion Active</p>
+                  <p className="text-[11px] opacity-90 mt-0.5">
+                    Acces temporairement verrouille suite a plusieurs echecs. Reessayez dans{' '}
+                    <span className="font-mono font-bold text-sm text-red-500">{lockoutTimer}s</span>.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Message d'erreur d'authentification */}
+            {authError && lockoutTimer === 0 && (
+              <div className="w-full p-3 rounded-xl bg-red-500/15 border border-red-500/30 text-red-600 dark:text-red-400 flex items-center gap-2 text-left text-xs animate-in fade-in duration-150">
                 <ShieldAlert size={16} className="shrink-0" />
                 <span>{authError}</span>
               </div>
             )}
 
-            <form onSubmit={handleUnlockWithPinAndEmail} className="w-full space-y-3.5 text-left">
-              <div>
-                <label className="block font-semibold text-slate-700 dark:text-white/80 mb-1">
-                  Adresse e-mail administrateur
-                </label>
-                <input
-                  type="email"
-                  value={emailInput}
-                  onChange={(e) => setEmailInput(e.target.value)}
-                  placeholder="marcosassogba645@gmail.com"
-                  required
-                  className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl text-slate-900 dark:text-white font-mono text-xs focus:outline-none focus:border-amber-500"
-                />
-              </div>
+            {/* ─── ONGLET 1 : RECONNAISSANCE BIOMÉTRIQUE ─── */}
+            {loginMode === 'biometric' && (
+              <div className="w-full py-2 flex flex-col items-center justify-center space-y-4 animate-in fade-in duration-150">
+                {/* Grand Scanner Interactif Tactile */}
+                <button
+                  type="button"
+                  onClick={handleBiometricDirectUnlock}
+                  disabled={isVerifyingBio || lockoutTimer > 0}
+                  className="group relative w-28 h-28 sm:w-32 sm:h-32 rounded-full p-1 bg-gradient-to-tr from-cyan-500 via-blue-500 to-indigo-600 flex items-center justify-center shadow-[0_0_35px_rgba(6,182,212,0.35)] hover:shadow-[0_0_50px_rgba(6,182,212,0.55)] transition-all cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <div className="w-full h-full rounded-full bg-slate-950 flex flex-col items-center justify-center relative overflow-hidden">
+                    <div className="absolute inset-0 rounded-full border border-cyan-500/20 animate-ping opacity-30" />
+                    <div className="absolute inset-1 rounded-full border border-dashed border-cyan-400/40 animate-spin [animation-duration:12s]" />
 
-              <div>
-                <label className="block font-semibold text-slate-700 dark:text-white/80 mb-1 flex items-center justify-between">
-                  <span>Code PIN Maitre Secret</span>
-                  <span className="text-[10px] text-slate-400 font-normal">
-                    {config.isPinConfigured ? 'PIN securise' : 'PIN par defaut : 0000'}
+                    {isVerifyingBio ? (
+                      <RefreshCw size={38} className="text-cyan-400 animate-spin" />
+                    ) : (
+                      <Fingerprint
+                        size={44}
+                        className="text-cyan-400 group-hover:scale-110 transition-transform duration-200"
+                      />
+                    )}
+                  </div>
+                </button>
+
+                <div className="text-center space-y-1">
+                  <p className="font-semibold text-xs text-slate-800 dark:text-white">
+                    {isVerifyingBio
+                      ? 'Numerisation biométrique en cours...'
+                      : 'Appuyez pour scanner votre empreinte digitale'}
+                  </p>
+                  <p className="text-[11px] text-slate-500 dark:text-white/60">
+                    Prend en charge Windows Hello, Touch ID, Face ID et capteurs d empreinte mobiles.
+                  </p>
+                </div>
+
+                {isBiometricsSupported() && !config.biometricEnabled && (
+                  <div className="w-full p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/25 flex items-center justify-between gap-3 text-left">
+                    <div className="min-w-0">
+                      <p className="font-bold text-xs text-cyan-800 dark:text-cyan-300">
+                        Capteur detecte sur cet appareil
+                      </p>
+                      <p className="text-[10px] text-slate-500 dark:text-cyan-200/70">
+                        Associez l empreinte de ce terminal pour des connexions futures en 1 clic.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleEnrollBiometrics}
+                      disabled={isVerifyingBio || lockoutTimer > 0}
+                      className="px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-[11px] shrink-0 cursor-pointer shadow-xs disabled:opacity-50"
+                    >
+                      {isVerifyingBio ? 'Scan...' : 'Enregistrer'}
+                    </button>
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => setLoginMode('pin')}
+                  className="text-[11px] text-slate-500 dark:text-white/50 hover:text-amber-500 dark:hover:text-amber-400 font-medium transition-colors flex items-center gap-1.5 pt-1 cursor-pointer"
+                >
+                  <Key size={13} />
+                  <span>Utiliser le code PIN maitre secret</span>
+                </button>
+              </div>
+            )}
+
+            {/* ─── ONGLET 2 : CODE PIN & PAVÉ TACTILE NUMÉRIQUE ─── */}
+            {loginMode === 'pin' && (
+              <form onSubmit={handleUnlockWithPinAndEmail} className="w-full space-y-3.5 text-left animate-in fade-in duration-150">
+                {/* Pastilles PIN Lumineuses (PIN Dots) */}
+                <div className="flex flex-col items-center justify-center space-y-2 py-1">
+                  <div className="flex items-center justify-center gap-3">
+                    {[0, 1, 2, 3, 4, 5].map((idx) => {
+                      const isFilled = pinInput.length > idx;
+                      return (
+                        <div
+                          key={idx}
+                          className={cn(
+                            'w-3.5 h-3.5 rounded-full transition-all duration-150',
+                            isFilled
+                              ? 'bg-amber-400 shadow-[0_0_12px_rgba(251,191,36,0.9)] scale-110'
+                              : 'border-2 border-slate-300 dark:border-white/20 bg-transparent',
+                          )}
+                        />
+                      );
+                    })}
+                  </div>
+                  <span className="text-[10px] text-slate-400 dark:text-white/45">
+                    {config.isPinConfigured ? 'Code PIN securise SHA-256' : 'PIN usine initial : 0000'}
                   </span>
-                </label>
+                </div>
+
+                {/* Champ de saisie physique avec affichage/masquage */}
                 <div className="relative">
                   <input
                     type={showPin ? 'text' : 'password'}
                     value={pinInput}
-                    onChange={(e) => setPinInput(e.target.value)}
-                    placeholder="Entrez votre PIN..."
-                    required
+                    onChange={(e) => {
+                      if (lockoutTimer > 0) return;
+                      setPinInput(e.target.value.replace(/[^0-9]/g, ''));
+                    }}
+                    placeholder="Saisissez ou tapez votre PIN..."
+                    disabled={lockoutTimer > 0}
                     maxLength={12}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl text-slate-900 dark:text-white font-mono text-xs focus:outline-none focus:border-amber-500 tracking-widest"
+                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl text-center text-slate-900 dark:text-white font-mono text-sm tracking-widest focus:outline-none focus:border-amber-500 disabled:opacity-50"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPin(!showPin)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer p-1"
                   >
-                    {showPin ? <EyeOff size={14} /> : <Eye size={14} />}
+                    {showPin ? <EyeOff size={15} /> : <Eye size={15} />}
                   </button>
                 </div>
-              </div>
 
-              <div className="pt-2 flex flex-col sm:flex-row gap-2">
-                <button
-                  type="submit"
-                  className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white font-bold flex items-center justify-center gap-2 shadow-md shadow-amber-500/25 cursor-pointer transition-all"
-                >
-                  <Key size={14} />
-                  <span>Deverrouiller avec PIN</span>
-                </button>
+                {/* Pavé Numérique Virtuel Tactile (Idéal pour mobile, tablette et PWA) */}
+                <div className="grid grid-cols-3 gap-2 pt-1 max-w-[280px] mx-auto w-full">
+                  {['1', '2', '3', '4', '5', '6', '7', '8', '9', 'clear', '0', 'backspace'].map((keyVal) => {
+                    if (keyVal === 'clear') {
+                      return (
+                        <button
+                          key={keyVal}
+                          type="button"
+                          onClick={() => handleKeypadPress('clear')}
+                          disabled={lockoutTimer > 0 || pinInput.length === 0}
+                          className="h-11 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-amber-600 dark:text-amber-400 font-bold text-xs flex items-center justify-center transition-all active:scale-95 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed border border-slate-200/60 dark:border-white/5"
+                        >
+                          C
+                        </button>
+                      );
+                    }
+                    if (keyVal === 'backspace') {
+                      return (
+                        <button
+                          key={keyVal}
+                          type="button"
+                          onClick={() => handleKeypadPress('backspace')}
+                          disabled={lockoutTimer > 0 || pinInput.length === 0}
+                          className="h-11 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-white/70 flex items-center justify-center transition-all active:scale-95 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed border border-slate-200/60 dark:border-white/5"
+                        >
+                          <Delete size={17} />
+                        </button>
+                      );
+                    }
+                    return (
+                      <button
+                        key={keyVal}
+                        type="button"
+                        onClick={() => handleKeypadPress(keyVal)}
+                        disabled={lockoutTimer > 0 || pinInput.length >= 12}
+                        className="h-11 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-900 dark:text-white font-mono font-bold text-sm flex items-center justify-center transition-all active:scale-95 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed border border-slate-200/60 dark:border-white/5 shadow-xs"
+                      >
+                        {keyVal}
+                      </button>
+                    );
+                  })}
+                </div>
 
-                {isBiometricsSupported() && config.biometricEnabled && (
+                {/* Bouton Soumettre le Code PIN */}
+                <div className="pt-2">
                   <button
-                    type="button"
-                    onClick={handleBiometricDirectUnlock}
-                    disabled={isVerifyingBio}
-                    className="py-2.5 px-4 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/40 text-cyan-800 dark:text-cyan-300 font-bold flex items-center justify-center gap-2 cursor-pointer transition-all disabled:opacity-50"
+                    type="submit"
+                    disabled={lockoutTimer > 0 || pinInput.length < 4}
+                    className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold flex items-center justify-center gap-2 shadow-md shadow-amber-500/25 cursor-pointer transition-all text-xs"
                   >
-                    {isVerifyingBio ? (
-                      <RefreshCw size={14} className="animate-spin" />
-                    ) : (
-                      <Fingerprint size={16} />
-                    )}
-                    <span>Scanner l'Empreinte</span>
+                    <Key size={14} />
+                    <span>Deverrouiller le Coffre-Fort</span>
+                    <ArrowRight size={14} />
                   </button>
-                )}
-              </div>
-            </form>
-
-            {isBiometricsSupported() && !config.biometricEnabled && (
-              <div className="w-full p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/25 flex items-center justify-between gap-2 text-left">
-                <div className="space-y-0.5">
-                  <div className="font-semibold text-cyan-800 dark:text-cyan-300 flex items-center gap-1.5">
-                    <Fingerprint size={14} />
-                    <span>Lier votre empreinte digitale</span>
-                  </div>
-                  <p className="text-[10px] text-slate-500 dark:text-cyan-200/70">
-                    Activez la reconnaissance biometrique sur ce smartphone ou ordinateur.
-                  </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleEnrollBiometrics}
-                  disabled={isVerifyingBio}
-                  className="px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-[11px] shrink-0 cursor-pointer shadow-xs"
-                >
-                  {isVerifyingBio ? 'Scan...' : 'Enregistrer'}
-                </button>
-              </div>
+              </form>
             )}
+
+            {/* Pied de page : Garanties de Sécurité */}
+            <div className="pt-3 border-t border-slate-200/80 dark:border-white/10 w-full grid grid-cols-3 gap-2 text-center text-[10px] text-slate-400 dark:text-white/40">
+              <div className="flex flex-col items-center gap-1">
+                <ShieldCheck size={14} className="text-emerald-500" />
+                <span>SHA-256 Hashing</span>
+              </div>
+              <div className="flex flex-col items-center gap-1">
+                <Fingerprint size={14} className="text-cyan-400" />
+                <span>WebAuthn FIDO2</span>
+              </div>
+              <div className="flex flex-col items-center gap-1">
+                <Clock size={14} className="text-amber-500" />
+                <span>Session 15 min</span>
+              </div>
+            </div>
           </div>
         ) : (
           /* ====================================================================

@@ -74,14 +74,29 @@ export function AppHeader({
   const [aiConfig, setAiConfig] = useState(getAIConfig);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Synchronisation réactive immédiate du modèle actif
+  // Synchronisation réactive immédiate du modèle actif et écoute de l'accès direct Super-Admin (#admin)
   useEffect(() => {
     const handleConfigChange = () => {
       setAiConfig(getAIConfig());
     };
+    const handleCheckAdminHash = () => {
+      if (typeof window !== 'undefined' && window.location.hash.toLowerCase() === '#admin') {
+        setIsAdminModalOpen(true);
+      }
+    };
+    const handleOpenAdminEvent = () => {
+      setIsAdminModalOpen(true);
+    };
+
+    handleCheckAdminHash();
+    window.addEventListener('hashchange', handleCheckAdminHash);
+    window.addEventListener('nexus:open-admin-vault', handleOpenAdminEvent);
     window.addEventListener('nexus:ai-config-changed', handleConfigChange);
     window.addEventListener('storage', handleConfigChange);
+
     return () => {
+      window.removeEventListener('hashchange', handleCheckAdminHash);
+      window.removeEventListener('nexus:open-admin-vault', handleOpenAdminEvent);
       window.removeEventListener('nexus:ai-config-changed', handleConfigChange);
       window.removeEventListener('storage', handleConfigChange);
     };
